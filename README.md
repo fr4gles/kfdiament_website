@@ -116,24 +116,74 @@ git commit -m "feat: add company logo"
 git push -u origin master
 ```
 
-### 3) Cloudflare Pages
+### 3) Cloudflare Pages — pierwszy deploy
 
 1. Wejdź na [dash.cloudflare.com](https://dash.cloudflare.com/) → **Workers & Pages → Create application → Pages → Connect to Git**
-2. Podłącz repozytorium `fr4gles/kfdiament_website`
+2. Autoryzuj GitHub, wybierz repozytorium `fr4gles/kfdiament_website`
 3. Konfiguracja buildu:
 
    | Pole | Wartość |
    |---|---|
+   | Project name | `kfdiament` (lub dowolne) |
+   | Production branch | `master` |
    | Framework preset | **None** |
    | Build command | _(puste)_ |
    | Build output directory | `/` |
    | Root directory | `/` |
+   | Environment variables | _(brak — strona jest 100% statyczna)_ |
 
-4. **Deploy**. Po ~30 sekundach dostaniesz adres `https://kfdiament-website.pages.dev`.
+4. **Save and Deploy**. Po ~30 sekundach dostaniesz adres `https://kfdiament.pages.dev` (lub `kfdiament-xyz.pages.dev` jeśli nazwa zajęta).
 
-Każdy push do `master` triggeruje nowy deploy automatycznie.
+Każdy `git push origin master` triggeruje nowy deploy automatycznie. Każdy push do innych branchy daje **preview deployment** z osobnym URL — dobre do testowania PR-ów.
 
-### 4) Custom domain `kfdiament.pl`
+### Co plik `_headers` robi automatycznie
+
+W repozytorium jest plik `_headers` — Cloudflare Pages go automatycznie czyta i ustawia HTTP nagłówki:
+
+- **Security**: HSTS (force HTTPS rok+), X-Content-Type-Options, Referrer-Policy, Permissions-Policy (blokuje camera/microphone/geolocation, opt-out z FLoC)
+- **Cache**: fonty/obrazki = 1 rok immutable (Cloudflare CDN cache), HTML = 10 min must-revalidate (szybkie propagowanie zmian)
+
+Nie wymaga konfiguracji — działa po pierwszym deployu.
+
+### 4) Konfiguracja Cloudflare po pierwszym deployu (KRYTYCZNE)
+
+Po tym jak strona już chodzi na `kfdiament.pages.dev`, zrób te 4 kroki w Cloudflare Dashboard:
+
+#### A. Email Address Obfuscation (anti-spam)
+
+Dashboard → Twoja strefa → **Scrape Shield → Email Address Obfuscation: ON**
+
+Cloudflare automatycznie obfuskuje WSZYSTKIE emaile w HTML (włącznie z JSON-LD)
+zamieniając na `<a data-cfemail="hex...">[email&nbsp;protected]</a>` + auto-deszyfracja
+przez ich JS po stronie usera. Bot scrapery widzą hex junk. **2. warstwa** ochrony
+po `email-obf` pattern z `index.html`.
+
+#### B. SSL/TLS — Full (strict)
+
+Dashboard → SSL/TLS → Overview → **Full (strict)**.
+Plus włącz: **Always Use HTTPS**, **HTTP Strict Transport Security (HSTS)** (już mamy w `_headers`, ale CF dodaje warstwę edge).
+
+#### C. Cloudflare Web Analytics (darmowe, bez RODO bannera)
+
+Dashboard → Analytics & Logs → **Web Analytics → Add a site**.
+Skopiuj snippet i wstaw do `index.html` przed `</body>` (lub włącz "Automatic setup" jeśli korzystasz z Cloudflare proxy).
+
+Daje:
+- Real User Monitoring (RUM): Core Web Vitals (LCP, INP, CLS) z prawdziwego ruchu
+- Stats odwiedzin bez cookies, bez bannera RODO
+- Top pages, referrers, countries
+
+#### D. Auto Minify + Brotli + HTTP/3
+
+Dashboard → Speed → Optimization:
+- **Brotli**: ON (kompresja lepsza niż gzip)
+- **Early Hints**: ON (preload HTTP/3 hints)
+- **0-RTT Connection Resumption**: ON
+- Auto Minify: HTML/CSS/JS już są zminifikowane (inline) — można zostawić ON, nie zaszkodzi
+
+---
+
+### 5) Custom domain `kfdiament.pl`
 
 W Cloudflare Pages:
 
@@ -212,17 +262,43 @@ Strona ma kompletny SEO bundle:
 - **`prefers-reduced-motion`** — wszystkie animacje wyłączone dla osób
   z preferencją zredukowanego ruchu
 
-### Po pierwszym deployu zrób:
+### Po pierwszym deployu zrób (full post-deploy checklist):
+
+**SEO setup** (godzina pracy, jednorazowo):
 
 1. **Google Search Console** ([search.google.com/search-console](https://search.google.com/search-console)):
-   - Dodaj `kfdiament.pl` jako property
-   - Zweryfikuj (najprościej: rekord TXT w Cloudflare DNS)
-   - Wyślij `sitemap.xml`
-2. **Google Business Profile** ([business.google.com](https://www.google.com/business/)):
-   - Dodaj firmę (NIP, adres, telefony, godziny, zdjęcia z realizacji)
-   - To ważniejsze niż SEO klasyczne dla lokalnych usług budowlanych
-3. **Walidacja Schema.org**: wrzuć URL na [validator.schema.org](https://validator.schema.org/)
-4. **Walidacja Rich Results**: [search.google.com/test/rich-results](https://search.google.com/test/rich-results)
+   - Dodaj `kfdiament.pl` jako property (domain property zalecane)
+   - Zweryfikuj: rekord TXT w Cloudflare DNS (kopiuj-wklej)
+   - **Submit sitemap**: `https://kfdiament.pl/sitemap.xml`
+   - Włącz email alerts dla błędów crawlowania
+2. **Bing Webmaster Tools** ([bing.com/webmasters](https://www.bing.com/webmasters)):
+   - Import property z Search Console (1 klik), submit sitemap
+3. **Google Business Profile** ⭐ NAJWAŻNIEJSZE dla lokalnego biznesu
+   ([business.google.com](https://www.google.com/business/)):
+   - Dodaj firmę: nazwa "KFDIAMENT Obrębski Motyka Sp. j.", kategoria "Firma budowlana / wyburzeniowa", adres Grunwaldzka 9 33-330 Grybów, telefony, godziny pracy, link do `kfdiament.pl`
+   - Wrzuć zdjęcia (z realizacji, sprzętu, zespołu) — Google to indeksuje
+   - Po weryfikacji listing pojawia się w **Google Maps Local Pack** + Knowledge Panel
+4. **Walidacja Schema.org**: [validator.schema.org](https://validator.schema.org/) z URL — sprawdza 3 schematy (LocalBusiness, Organization, WebSite)
+5. **Rich Results Test**: [search.google.com/test/rich-results](https://search.google.com/test/rich-results) — pokaże jak Google renderuje rich snippets
+
+**Performance verification** (15 min, jednorazowo):
+
+6. **Lighthouse** (Chrome DevTools → Lighthouse): mobile + desktop, expected 95-100/95-100/95-100/100
+7. **PageSpeed Insights** ([pagespeed.web.dev](https://pagespeed.web.dev)): real-world Core Web Vitals
+8. **Cloudflare Speed Test** (Dashboard → Speed → Test) — measurement z różnych regionów
+
+**Sprawdzenie maila** (5 min):
+
+9. Otwórz `kfdiament.pl`, kliknij `kontakt@kfdiament.pl` w sekcji Kontakt → powinien otworzyć klient poczty z poprawnym adresem
+10. Kliknij każdą z 4 mailto-cards → każda powinna dać inny temat + szablon body
+11. **View page source** (Ctrl+U) — wyszukaj `kontakt@kfdiament.pl` → powinno być **tylko w JSON-LD**, nie w body HTML (Cloudflare obfuscation + nasz `email-obf` pattern)
+
+**Maintenance (raz na miesiąc / kwartał):**
+
+12. Search Console → Coverage (czy wszystko zaindeksowane bez błędów)
+13. Cloudflare Analytics → Top pages + referrers (skąd przychodzą)
+14. Google Business Profile → odpowiadać na opinie + dodawać nowe zdjęcia z realizacji
+15. Aktualizacja fontów: `scripts/optimize-logo.ps1` (jeśli zmiana loga), self-hosted woff2 nie wymaga update — będą działać latami
 
 ## 🎨 Kolory / brandowanie
 
