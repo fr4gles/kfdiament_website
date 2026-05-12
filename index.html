@@ -801,14 +801,83 @@
 
     .hero__title .outline {
       color: transparent;
-      -webkit-text-stroke: 2px var(--fg);
-      letter-spacing: 0.01em;
+      -webkit-text-stroke: 0.018em var(--fg);
+      letter-spacing: 0.015em;
       font-weight: 700;
+    }
+    @supports not (-webkit-text-stroke: 0.018em var(--fg)) {
+      .hero__title .outline { -webkit-text-stroke: 1.6px var(--fg); }
+    }
+    @media (max-width: 768px) {
+      .hero__title .outline { -webkit-text-stroke: 0.8px var(--fg); }
+    }
+    @media (max-width: 480px) {
+      .hero__title .outline { -webkit-text-stroke: 0.6px var(--fg); }
     }
     .hero__title .accent {
       color: var(--accent);
       font-weight: 900;
       font-style: normal;
+    }
+
+    /* Brand byline — wyeksponowana nazwa firmy miedzy h1 a sub */
+    .hero__byline {
+      display: inline-grid;
+      grid-template-columns: 4px auto;
+      gap: 20px;
+      align-items: center;
+      margin: 0 0 40px;
+      padding-block: 6px;
+      opacity: 0;
+      animation: fadeUp 1.1s ease forwards;
+      animation-delay: .42s;
+    }
+    .hero__byline::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 72px;
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%);
+    }
+    .hero__byline-text {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .hero__byline-key {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .hero__byline-brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(1.7rem, 3.2vw, 2.6rem);
+      line-height: 1;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-variation-settings: 'opsz' 32;
+    }
+    .hero__byline-sub {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+      line-height: 1.1;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--fg);
+      font-variation-settings: 'opsz' 16;
+    }
+    .hero__byline-sub em {
+      color: var(--muted);
+      font-style: normal;
+      font-weight: 500;
     }
 
     .hero__sub {
@@ -819,7 +888,7 @@
       margin: 0 0 44px;
       opacity: 0;
       animation: fadeUp 1.1s ease forwards;
-      animation-delay: .5s;
+      animation-delay: .55s;
     }
 
     .hero__cta {
@@ -1669,6 +1738,7 @@
       .reveal { opacity: 1; transform: none; }
       .hero__tag,
       .hero__title span,
+      .hero__byline,
       .hero__sub,
       .hero__cta,
       .hero__stats { opacity: 1; }
@@ -1730,6 +1800,14 @@
         <span class="outline">precyzyjne</span>
         <span class="accent">jak diament.</span>
       </h1>
+
+      <p class="hero__byline">
+        <span class="hero__byline-text">
+          <span class="hero__byline-key">Realizuje</span>
+          <span class="hero__byline-brand">KFDIAMENT</span>
+          <span class="hero__byline-sub">Obrębski · Motyka <em>Sp. j.</em></span>
+        </span>
+      </p>
 
       <p class="hero__sub">
         Zajmujemy się profesjonalną obróbką betonu oraz żelbetu przy użyciu nowoczesnej
@@ -2070,7 +2148,7 @@
             <div>
               <p class="contact-block__label">E-mail</p>
               <p class="contact-block__value">
-                <a href="mailto:kontakt@kfdiament.pl">kontakt@kfdiament.pl</a>
+                <a class="email-obf" data-u="kontakt" data-d="kfdiament.pl" href="#kontakt" rel="nofollow">kontakt [at] kfdiament [dot] pl</a>
               </p>
             </div>
           </div>
@@ -2119,28 +2197,28 @@
 
         <div class="reveal">
           <div class="mailto-stack">
-            <a class="mailto-card" href="mailto:kontakt@kfdiament.pl" data-mailto="ciecie">
+            <a class="mailto-card" href="#kontakt" data-mailto="ciecie">
               <div>
                 <h3 class="mailto-card__title">Cięcie betonu</h3>
                 <p class="mailto-card__desc">Otwory technologiczne, ściany, stropy, fundamenty</p>
               </div>
               <span class="mailto-card__arrow" aria-hidden="true">→</span>
             </a>
-            <a class="mailto-card" href="mailto:kontakt@kfdiament.pl" data-mailto="wiercenie">
+            <a class="mailto-card" href="#kontakt" data-mailto="wiercenie">
               <div>
                 <h3 class="mailto-card__title">Wiercenie otworów</h3>
                 <p class="mailto-card__desc">Otwory do Ø800mm w żelbecie i betonie</p>
               </div>
               <span class="mailto-card__arrow" aria-hidden="true">→</span>
             </a>
-            <a class="mailto-card" href="mailto:kontakt@kfdiament.pl" data-mailto="kotwy">
+            <a class="mailto-card" href="#kontakt" data-mailto="kotwy">
               <div>
                 <h3 class="mailto-card__title">Osadzanie kotew</h3>
                 <p class="mailto-card__desc">Kotwy chemiczne w betonie i żelbecie · wysoka nośność</p>
               </div>
               <span class="mailto-card__arrow" aria-hidden="true">→</span>
             </a>
-            <a class="mailto-card" href="mailto:kontakt@kfdiament.pl" data-mailto="ogolne">
+            <a class="mailto-card" href="#kontakt" data-mailto="ogolne">
               <div>
                 <h3 class="mailto-card__title">Inne zapytanie</h3>
                 <p class="mailto-card__desc">Konsultacja, niestandardowy zakres prac</p>
@@ -2150,7 +2228,7 @@
           </div>
           <p class="mailto-note">
             Jeśli Twój klient poczty się nie otworzy — napisz bezpośrednio na
-            <a href="mailto:kontakt@kfdiament.pl">kontakt@kfdiament.pl</a> lub zadzwoń.
+            <a class="email-obf" data-u="kontakt" data-d="kfdiament.pl" href="#kontakt" rel="nofollow">kontakt [at] kfdiament [dot] pl</a> lub zadzwoń.
           </p>
         </div>
       </div>
@@ -2215,7 +2293,7 @@
             </li>
             <li>
               <span class="footer__list-label">E-mail</span>
-              <span><a href="mailto:kontakt@kfdiament.pl">kontakt@kfdiament.pl</a></span>
+              <span><a class="email-obf" data-u="kontakt" data-d="kfdiament.pl" href="#kontakt" rel="nofollow">kontakt [at] kfdiament [dot] pl</a></span>
             </li>
           </ul>
         </div>
@@ -2232,8 +2310,18 @@
     (function () {
       'use strict';
 
+      // ─── email obfuscation reveal ──────────────────────────────
+      // HTML zawiera "kontakt [at] kfdiament [dot] pl" — bot widzi to,
+      // user nigdy. JS po starcie strony assembluje prawdziwy adres.
+      document.querySelectorAll('a.email-obf').forEach(function (el) {
+        const addr = el.dataset.u + '@' + el.dataset.d;
+        el.setAttribute('href', 'mailto:' + addr);
+        el.textContent = addr;
+        el.removeAttribute('rel');
+      });
+
       // ─── mailto generator ──────────────────────────────────────
-      const EMAIL = 'kontakt@kfdiament.pl';
+      const EMAIL = 'kontakt' + '@' + 'kfdiament.pl';
 
       // Subjecty tak skonstruowane, żeby:
       //  • biuro łatwo filtrowało w inboxie (każda usługa = inny temat)
