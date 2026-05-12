@@ -750,10 +750,6 @@
     .section__num-bg--left  { left: -3vw; }
     .section > .container { position: relative; z-index: 1; }
 
-    /* Zasięg block — 2 pary label/value (Zasięg + Baza) w jednym bloku */
-    .contact-block--zasieg .contact-icon {
-      align-self: flex-start;
-    }
 
     .hero__tag {
       font-family: var(--font-mono);
@@ -1413,6 +1409,31 @@
       border-bottom: 1px solid var(--line);
     }
     .contact-block:last-child { border-bottom: none; padding-bottom: 0; }
+    /* Zasieg block — 3 kolumny (override .contact-block base): ikona | text | mapa Polski */
+    .contact-block.contact-block--zasieg {
+      grid-template-columns: 52px 1fr auto;
+      align-items: center;
+    }
+    .contact-block.contact-block--zasieg .contact-icon {
+      align-self: flex-start;
+    }
+    .zasieg-map {
+      width: 110px;
+      height: auto;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .zasieg-map path {
+      fill: none;
+      stroke: var(--fg);
+      stroke-width: 0.55;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+    @media (max-width: 540px) {
+      .contact-block.contact-block--zasieg { grid-template-columns: 52px 1fr; }
+      .zasieg-map { display: none; }
+    }
     .contact-icon {
       width: 42px;
       height: 42px;
@@ -2087,6 +2108,11 @@
                 <p class="contact-block__value">Grybów, Małopolska</p>
               </div>
             </div>
+            <svg class="zasieg-map" viewBox="0 0 24 24" aria-hidden="true">
+              <!-- Prawdziwy outline Polski — Natural Earth 110m (CC0), 45 punktow,
+                   Mercator-projected. Zrodlo: martynafford/natural-earth-geojson -->
+              <path d="M 21.35 5.25 L 21.44 6.76 L 22.03 8.06 L 22.01 9.43 L 20.75 10.13 L 21.40 11.71 L 21.44 13.24 L 22.50 16.22 L 22.27 17.18 L 21.23 17.58 L 19.31 20.43 L 19.86 21.96 L 19.40 21.76 L 17.39 20.45 L 15.87 20.93 L 14.88 20.58 L 13.63 21.31 L 12.57 20.10 L 11.70 20.57 L 11.58 20.36 L 10.61 18.67 L 9.04 18.47 L 8.84 17.40 L 7.39 17.01 L 7.08 17.90 L 5.93 17.19 L 6.06 16.25 L 4.49 15.95 L 3.49 14.85 L 2.62 12.66 L 2.79 11.49 L 2.27 9.65 L 1.50 8.44 L 2.09 7.52 L 1.60 5.78 L 3.04 4.78 L 6.33 3.19 L 8.98 2.04 L 11.09 2.61 L 11.25 3.45 L 13.28 3.49 L 15.88 3.88 L 19.76 3.83 L 20.84 4.19 L 21.35 5.25 Z"/>
+            </svg>
           </div>
 
         </div>
