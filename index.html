@@ -482,33 +482,119 @@
       padding-inline: var(--pad-x);
     }
 
-    /* Decorative hero logo — slow rotation, premium glow */
+    /* Dramatic hero logo — large compositional element */
     .hero__logo {
       position: absolute;
-      top: calc(var(--nav-h) + 24px);
-      right: var(--pad-x);
-      width: clamp(140px, 16vw, 240px);
+      top: 50%;
+      right: -8vw;
+      transform: translateY(-50%);
+      width: clamp(360px, 52vw, 720px);
       height: auto;
       pointer-events: none;
       z-index: 1;
-      opacity: 0.92;
-      filter: drop-shadow(0 12px 32px rgba(26, 22, 20, 0.18))
-              drop-shadow(0 0 36px rgba(168, 132, 44, 0.16));
-      animation: slow-spin 140s linear infinite;
+      opacity: 0.18;
+      filter: drop-shadow(0 24px 64px rgba(26, 22, 20, 0.22))
+              drop-shadow(0 0 80px rgba(168, 132, 44, 0.28));
+      animation: slow-spin 180s linear infinite;
+      mix-blend-mode: multiply;
     }
     @keyframes slow-spin {
-      to { transform: rotate(360deg); }
+      from { transform: translateY(-50%) rotate(0deg); }
+      to   { transform: translateY(-50%) rotate(360deg); }
     }
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
       .hero__logo {
-        width: 130px;
-        top: calc(var(--nav-h) + 16px);
-        opacity: 0.55;
+        right: -25vw;
+        width: 90vw;
+        opacity: 0.12;
       }
     }
     @media (max-width: 480px) {
-      .hero__logo { display: none; }
+      .hero__logo {
+        right: -40vw;
+        width: 110vw;
+        opacity: 0.10;
+      }
     }
+
+    /* Scroll progress bar — top gold strip */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+      width: 0%;
+      z-index: 100;
+      transition: width 0.05s linear;
+      box-shadow: 0 0 12px rgba(168, 132, 44, 0.4);
+    }
+
+    /* Marquee ticker — scrolling gold strip */
+    .marquee {
+      position: relative;
+      overflow: hidden;
+      background: var(--fg);
+      color: var(--bg);
+      border-block: 1px solid var(--accent-deep);
+      padding-block: 18px;
+    }
+    .marquee__track {
+      display: flex;
+      width: max-content;
+      animation: marquee-scroll 38s linear infinite;
+    }
+    .marquee__item {
+      display: inline-flex;
+      align-items: center;
+      gap: 28px;
+      padding-inline: 28px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.2rem, 2vw, 1.6rem);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      font-variation-settings: 'opsz' 24;
+    }
+    .marquee__item::after {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+    .marquee__item span:nth-child(even) { color: var(--accent); }
+    @keyframes marquee-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .marquee:hover .marquee__track { animation-play-state: paused; }
+
+    /* Section number — huge background numeral */
+    .section--with-num { position: relative; overflow: hidden; }
+    .section__num-bg {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(14rem, 32vw, 36rem);
+      line-height: 0.78;
+      color: var(--fg);
+      opacity: 0.04;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+      z-index: 0;
+      letter-spacing: -0.05em;
+      font-variation-settings: 'opsz' 72;
+    }
+    .section__num-bg--right { right: -3vw; }
+    .section__num-bg--left  { left: -3vw; }
+    .section > .container { position: relative; z-index: 1; }
 
     .hero__tag {
       font-family: var(--font-mono);
@@ -542,6 +628,12 @@
       margin: 0 0 36px;
       max-width: 14ch;
       font-variation-settings: 'opsz' 72;
+      /* Engraved brass-plate effect — multi-layer shadow */
+      text-shadow:
+        1px 1px 0 rgba(168, 132, 44, 0.12),
+        2px 2px 0 rgba(168, 132, 44, 0.08),
+        3px 3px 0 rgba(168, 132, 44, 0.06),
+        4px 4px 24px rgba(26, 22, 20, 0.08);
     }
     .hero__title span {
       display: block;
@@ -602,14 +694,14 @@
     .stat:last-child { border-right: none; }
     .stat__num {
       font-family: var(--font-display);
-      font-weight: 700;
-      font-size: clamp(1.8rem, 3.2vw, 2.6rem);
-      line-height: 1.02;
-      letter-spacing: 0.005em;
+      font-weight: 800;
+      font-size: clamp(2.4rem, 4.8vw, 3.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.005em;
       color: var(--fg);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       display: block;
-      font-variation-settings: 'opsz' 36;
+      font-variation-settings: 'opsz' 48;
     }
     .stat__num em {
       font-style: normal;
@@ -737,6 +829,7 @@
       flex-direction: column;
       gap: 24px;
       transition: background .3s ease, transform .3s ease;
+      overflow: hidden;
     }
     .service::before {
       content: '';
@@ -745,16 +838,33 @@
       left: 0;
       width: 100%;
       height: 3px;
-      background: var(--accent);
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
       transform: scaleX(0);
       transform-origin: left;
       transition: transform .4s ease;
+      z-index: 2;
+    }
+    /* Diamond reveal in corner — appears on hover */
+    .service::after {
+      content: '';
+      position: absolute;
+      top: 22px;
+      right: 22px;
+      width: 14px;
+      height: 14px;
+      background: var(--accent);
+      transform: rotate(45deg) scale(0);
+      transition: transform .4s cubic-bezier(.34, 1.56, .64, 1);
+      transform-origin: center;
+      z-index: 2;
+      box-shadow: 0 0 14px rgba(168, 132, 44, 0.4);
     }
     .service:hover {
       background: var(--bg-2);
-      transform: translateY(-4px);
+      transform: translateY(-6px);
     }
     .service:hover::before { transform: scaleX(1); }
+    .service:hover::after  { transform: rotate(45deg) scale(1); }
 
     .service__num {
       font-family: var(--font-mono);
@@ -1293,10 +1403,14 @@
       .hero__cta,
       .hero__stats { opacity: 1; }
       .hero__logo { animation: none; }
+      .marquee__track { animation: none; }
     }
   </style>
 </head>
 <body>
+
+  <!-- Scroll progress indicator -->
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
   <!-- ─── NAVIGATION ───────────────────────────────────────────── -->
   <nav class="nav" aria-label="Główna nawigacja">
@@ -1371,8 +1485,28 @@
     </div>
   </header>
 
+  <!-- ─── MARQUEE TICKER ───────────────────────────────────────── -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track">
+      <div class="marquee__item"><span>Cięcie diamentowe</span></div>
+      <div class="marquee__item"><span>Wiercenie do Ø800mm</span></div>
+      <div class="marquee__item"><span>Osadzanie kotew chemicznych</span></div>
+      <div class="marquee__item"><span>Sprzęt Hilti</span></div>
+      <div class="marquee__item"><span>Cała Polska</span></div>
+      <div class="marquee__item"><span>Bez kucia · bez wibracji</span></div>
+      <!-- duplikat dla seamless loop -->
+      <div class="marquee__item"><span>Cięcie diamentowe</span></div>
+      <div class="marquee__item"><span>Wiercenie do Ø800mm</span></div>
+      <div class="marquee__item"><span>Osadzanie kotew chemicznych</span></div>
+      <div class="marquee__item"><span>Sprzęt Hilti</span></div>
+      <div class="marquee__item"><span>Cała Polska</span></div>
+      <div class="marquee__item"><span>Bez kucia · bez wibracji</span></div>
+    </div>
+  </div>
+
   <!-- ─── O NAS ────────────────────────────────────────────────── -->
-  <section class="section section--alt" id="o-nas">
+  <section class="section section--alt section--with-num" id="o-nas">
+    <span class="section__num-bg section__num-bg--right" aria-hidden="true">01</span>
     <div class="container">
       <div class="section__head reveal">
         <span class="section-label">01 — O nas</span>
@@ -1425,7 +1559,8 @@
   </section>
 
   <!-- ─── USŁUGI ───────────────────────────────────────────────── -->
-  <section class="section" id="uslugi">
+  <section class="section section--with-num" id="uslugi">
+    <span class="section__num-bg section__num-bg--left" aria-hidden="true">02</span>
     <div class="container">
       <div class="section__head reveal">
         <span class="section-label">02 — Usługi</span>
@@ -1515,7 +1650,8 @@
   </section>
 
   <!-- ─── REALIZACJE ───────────────────────────────────────────── -->
-  <section class="section section--alt" id="realizacje">
+  <section class="section section--alt section--with-num" id="realizacje">
+    <span class="section__num-bg section__num-bg--right" aria-hidden="true">03</span>
     <div class="container">
       <div class="section__head reveal">
         <span class="section-label">03 — Realizacje</span>
@@ -1596,7 +1732,8 @@
   </section>
 
   <!-- ─── KONTAKT ──────────────────────────────────────────────── -->
-  <section class="section" id="kontakt">
+  <section class="section section--with-num" id="kontakt">
+    <span class="section__num-bg section__num-bg--left" aria-hidden="true">05</span>
     <div class="container">
       <div class="section__head reveal">
         <span class="section-label">05 — Kontakt</span>
@@ -1860,6 +1997,26 @@
           '&body=' + encodeURIComponent(buildBody(q));
         el.setAttribute('href', href);
       });
+
+      // ─── scroll progress bar ───────────────────────────────────
+      const progressBar = document.getElementById('scrollProgress');
+      if (progressBar) {
+        let ticking = false;
+        const updateProgress = function () {
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const scrolled = window.scrollY;
+          const pct = docHeight > 0 ? (scrolled / docHeight) * 100 : 0;
+          progressBar.style.width = pct.toFixed(2) + '%';
+          ticking = false;
+        };
+        window.addEventListener('scroll', function () {
+          if (!ticking) {
+            requestAnimationFrame(updateProgress);
+            ticking = true;
+          }
+        }, { passive: true });
+        updateProgress();
+      }
 
       // ─── reveal on scroll ──────────────────────────────────────
       if ('IntersectionObserver' in window) {
