@@ -1,0 +1,30 @@
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+ehthumbs_vista.db
+$RECYCLE.BIN/
+
+# Editor / IDE
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs / temp
+*.log
+*.tmp
+*.bak
+*.orig
+
+# OS
+.AppleDouble
+.LSOverride
+
+# Cloudflare Pages local previews (opcjonalnie)
+.wrangler/
+.dev.vars
