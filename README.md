@@ -6,7 +6,7 @@ Statyczna jednoplikowa strona-wizytówka firmy **KFDIAMENT Obrębski Motyka Spó
 ## Stack i charakter
 
 - Czysty HTML5 + CSS + vanilla JS (jeden plik `index.html`)
-- Google Fonts: **Bricolage Grotesque**, **Manrope**, **JetBrains Mono**
+- Google Fonts: **Big Shoulders Display**, **Manrope**, **JetBrains Mono**
 - Bez frameworków, bez build-stepu, bez npm
 - Hostowanie: GitHub + Cloudflare Pages (free tier)
 - Design: premium industrial, paleta **antique brass + warm cream + warm black** (pod

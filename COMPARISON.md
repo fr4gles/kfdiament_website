@@ -76,7 +76,7 @@ Zakładając 3 zdjęcia z realizacji (zalecane: WebP, ~80 KB każdy = 240 KB) + 
 
 | | **KFDIAMENT** | **DIAMTAR** |
 |---|---|---|
-| Hero h1 | „Cięcie precyzyjne jak diament." (Bricolage Grotesque 800, masywne, outline+italic) | „Specjaliści w cięciu i wierceniu techniką diamentową" (mniejsze, generyczne) |
+| Hero h1 | „Cięcie precyzyjne jak diament." (Big Shoulders Display 800, industrial, outline+gold accent) | „Specjaliści w cięciu i wierceniu techniką diamentową" (mniejsze, generyczne) |
 | Sub | 3-zdaniowy intro z USP | krótki claim |
 | Statystyki | 4 stat-itemy (Ø800mm, 100% Hilti, PL, ~0 wibracji) | brak |
 | CTA above fold | 2 (czerwony „o ofertę" + outline „zobacz usługi") | 1 („kontakt") |
@@ -131,7 +131,7 @@ Zakładając 3 zdjęcia z realizacji (zalecane: WebP, ~80 KB każdy = 240 KB) + 
 | | **KFDIAMENT** | **DIAMTAR** |
 |---|---|---|
 | Charakter | premium industrial / brutalist | klasyczny WordPress |
-| Typografia | **Bricolage Grotesque** (display, weights 500-800, full PL) + **Manrope** (body) + **JetBrains Mono** (techniczne etykiety) | systemowa |
+| Typografia | **Big Shoulders Display** (industrial variable, Chicago heritage, weights 500-900 + opsz axis, full PL) + **Manrope** (body) + **JetBrains Mono** (techniczne etykiety) | systemowa |
 | Paleta | antique brass + warm cream + warm black (brand-aligned do loga) | biały / czarny / niebieski |
 | Tekstura/atmosfera | subtelna ziarnistość (SVG noise) + grid pattern w hero | flat |
 | Animacje | fadeUp w hero, reveal on scroll (IntersectionObserver), slow-spin logo, scaleX line cards | typowe WP transitions |

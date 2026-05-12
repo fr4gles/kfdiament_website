@@ -34,7 +34,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,500;10..72,600;10..72,700;10..72,800;10..72,900&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="img/logo.png" fetchpriority="high">
 
   <script type="application/ld+json">
@@ -179,7 +179,7 @@
       --accent-2:     #c9a85a;   /* jaśniejszy gold do borderów/highlight */
       --accent-deep:  #5d4416;   /* darkest bronze, stamps/embossed */
 
-      --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+      --font-display: 'Big Shoulders', 'Arial Black', 'Impact', sans-serif;
       --font-body:    'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-mono:    'JetBrains Mono', 'Consolas', monospace;
 
@@ -277,15 +277,16 @@
       font-family: var(--font-display);
       font-weight: 700;
       font-size: clamp(2.2rem, 5.5vw, 4.2rem);
-      line-height: 1;
-      letter-spacing: -0.015em;
+      line-height: 0.98;
+      letter-spacing: 0;
       text-transform: uppercase;
       margin: 0;
       max-width: 18ch;
+      font-variation-settings: 'opsz' 48;
     }
     .section-title em {
-      font-weight: 600;
-      font-style: italic;
+      font-weight: 800;
+      font-style: normal;
       color: var(--accent);
     }
 
@@ -370,10 +371,11 @@
     .brand__text {
       font-family: var(--font-display);
       font-weight: 800;
-      font-size: 24px;
-      letter-spacing: -0.01em;
+      font-size: 26px;
+      letter-spacing: 0.01em;
       color: var(--fg);
       line-height: 1;
+      font-variation-settings: 'opsz' 24;
     }
     .footer .brand__mark { width: 46px; height: 46px; }
     .footer .brand__text { font-size: 28px; }
@@ -534,11 +536,12 @@
       font-family: var(--font-display);
       font-weight: 800;
       font-size: clamp(2.8rem, 9.5vw, 8.2rem);
-      line-height: 0.95;
-      letter-spacing: -0.025em;
+      line-height: 0.92;
+      letter-spacing: 0.005em;
       text-transform: uppercase;
       margin: 0 0 36px;
       max-width: 14ch;
+      font-variation-settings: 'opsz' 72;
     }
     .hero__title span {
       display: block;
@@ -552,13 +555,13 @@
     .hero__title .outline {
       color: transparent;
       -webkit-text-stroke: 2px var(--fg);
-      letter-spacing: -0.015em;
+      letter-spacing: 0.01em;
       font-weight: 700;
     }
     .hero__title .accent {
       color: var(--accent);
-      font-style: italic;
-      font-weight: 700;
+      font-weight: 900;
+      font-style: normal;
     }
 
     .hero__sub {
@@ -601,11 +604,12 @@
       font-family: var(--font-display);
       font-weight: 700;
       font-size: clamp(1.8rem, 3.2vw, 2.6rem);
-      line-height: 1.05;
-      letter-spacing: -0.02em;
+      line-height: 1.02;
+      letter-spacing: 0.005em;
       color: var(--fg);
       margin-bottom: 8px;
       display: block;
+      font-variation-settings: 'opsz' 36;
     }
     .stat__num em {
       font-style: normal;
@@ -687,8 +691,9 @@
       font-size: clamp(1.5rem, 2.1vw, 1.9rem);
       line-height: 1;
       text-transform: uppercase;
-      letter-spacing: -0.015em;
+      letter-spacing: 0.01em;
       margin: 0 0 28px;
+      font-variation-settings: 'opsz' 24;
     }
 
     .feature-list {
@@ -778,9 +783,10 @@
       font-weight: 700;
       font-size: clamp(1.7rem, 2.4vw, 2.1rem);
       line-height: 1;
-      letter-spacing: -0.018em;
+      letter-spacing: 0.005em;
       text-transform: uppercase;
       margin: 0;
+      font-variation-settings: 'opsz' 28;
     }
     .service__desc {
       font-size: 0.98rem;
@@ -931,11 +937,12 @@
       font-family: var(--font-display);
       font-weight: 700;
       font-size: clamp(1.35rem, 1.9vw, 1.75rem);
-      line-height: 1.02;
-      letter-spacing: -0.015em;
+      line-height: 1.05;
+      letter-spacing: 0.005em;
       text-transform: uppercase;
       margin: 0;
       color: var(--fg);
+      font-variation-settings: 'opsz' 24;
     }
     .gal-card__desc {
       font-size: 0.92rem;
@@ -967,16 +974,17 @@
       top: 50%;
       transform: translateY(-50%);
       font-family: var(--font-display);
-      font-weight: 800;
+      font-weight: 900;
       font-size: clamp(8rem, 22vw, 22rem);
       line-height: 0.85;
-      letter-spacing: -0.04em;
+      letter-spacing: -0.025em;
       color: var(--accent);
-      opacity: 0.08;
+      opacity: 0.09;
       pointer-events: none;
       user-select: none;
       white-space: nowrap;
       z-index: 0;
+      font-variation-settings: 'opsz' 72;
     }
     .hilti__grid {
       position: relative;
@@ -1023,7 +1031,8 @@
       font-size: clamp(1.15rem, 1.65vw, 1.4rem);
       line-height: 1.15;
       text-transform: uppercase;
-      letter-spacing: -0.01em;
+      letter-spacing: 0.01em;
+      font-variation-settings: 'opsz' 20;
     }
 
     /* ─── Contact ──────────────────────────────────────────────── */
@@ -1083,13 +1092,14 @@
       font-weight: 600;
       font-size: clamp(1.15rem, 1.8vw, 1.4rem);
       line-height: 1.2;
-      letter-spacing: -0.015em;
+      letter-spacing: 0.005em;
       text-transform: uppercase;
       color: var(--fg);
       margin: 0;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      font-variation-settings: 'opsz' 20;
     }
     .contact-block__value a {
       color: var(--fg);
@@ -1124,8 +1134,9 @@
       font-size: clamp(1.1rem, 1.55vw, 1.3rem);
       line-height: 1.1;
       text-transform: uppercase;
-      letter-spacing: -0.012em;
+      letter-spacing: 0.005em;
       margin: 0 0 6px;
+      font-variation-settings: 'opsz' 18;
     }
     .mailto-card__desc {
       font-size: 0.92rem;

@@ -16,7 +16,7 @@ To **NIE jest** projekt JS-framework. Świadomie:
 - **Vanilla JS** — bez React, Vue, frameworków. Skrypt ma <100 linii.
 - **Bez build-stepu** — `package.json` nie ma i nie powinno się pojawić.
 - **Bez npm/yarn/pnpm**.
-- **Google Fonts przez `<link>`** — Bricolage Grotesque (display, variable 500-800), Manrope (body), JetBrains Mono (etykiety techniczne).
+- **Google Fonts przez `<link>`** — Big Shoulders (display, variable wght 500-900 + opsz 10-72), Manrope (body), JetBrains Mono (etykiety techniczne).
 - **Bez CSS frameworków** (Tailwind, Bootstrap, etc.).
 - **Bez bibliotek JS** (lightbox, slider, animation library — wszystko vanilla).
 
@@ -68,11 +68,11 @@ Dark theme variant siedzi w komentarzu na początku `<style>` w `index.html` —
 
 ## Typografia
 
-- **Bricolage Grotesque** — display sans, weight 500-800, uppercase headlines. Wybrany świadomie zamiast Anton/Oswald/Antonio bo: pełne wsparcie PL z naturalnymi ogonkami, wariacja weight (Anton miał tylko 400 efektywnie bold; Bricolage daje kontrolę), distinctive rounded character, modern feel. Domyślnie `font-weight: 600` na display elementach, `700-800` na hero/brand.
-- **Manrope** — body. Geometryczny sans, świetne PL znaki.
+- **Big Shoulders** (Display, variable) — display sans, weight 500-900 + optical size axis 10-72. Industrial DNA: zaprojektowany przez Patric King z odwołaniem do Chicago "city of big shoulders" (Carl Sandburg) — fabryczne szyldy, railway signage, hot-rolled steel. **Dobrany świadomie** po analizie 3 alternatyw (Bricolage Grotesque, Hanken Grotesk): wygrywa scoringiem 53/60 vs 44 i 35 — perfect contrast z humanist Manrope body, autentyczne PL diakrytyki (Latin Extended-A coverage), industrial premium feel. Domyślnie `font-weight: 600` na display elementach, `700-800` na hero/brand, `900` na akcentach. **Brak italic w rodzinie** — używa się `color: var(--accent)` + heavier weight zamiast italic na `<em>`.
+- **Manrope** — body. Geometryczny humanist sans, świetne PL znaki, idealny kontrast z condensed Big Shoulders display.
 - **JetBrains Mono** — etykiety techniczne (`/ 01`, `01 — O nas`), spec lines, tagi mono. NIE używać do długich akapitów.
 
-**Hero h1**: trzy-linijkowy, `clamp(2.8rem, 9.5vw, 8.2rem)`, środkowe słowo `outline` (text-stroke 2px), trzecie `accent` (italic gold). Letter-spacing celowo ujemny (`-0.025em`) na Bricolage — to font który dobrze trzyma się ciasno przy wysokim weight.
+**Hero h1**: trzy-linijkowy, `clamp(2.8rem, 9.5vw, 8.2rem)`, środkowe słowo `outline` (text-stroke 2px), trzecie `accent` (gold weight 900, BEZ italic — brutalist purity). Letter-spacing minimalnie dodatnie (`0.005em`) bo Big Shoulders jest naturalnie condensed. Wszystkie display elementy używają `font-variation-settings: 'opsz' N` gdzie N matches actual font-size (72 dla hero, 48 dla section titles, 24 dla card titles).
 
 ## Struktura sekcji (nie zmieniać kolejności bez powodu)
 
