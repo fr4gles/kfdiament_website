@@ -279,6 +279,7 @@
       margin-bottom: clamp(40px, 6vw, 72px);
     }
 
+    a.section-label,
     .section-label {
       font-family: var(--font-mono);
       font-size: 12px;
@@ -289,6 +290,9 @@
       display: inline-flex;
       align-items: center;
       gap: 12px;
+      text-decoration: none;
+      transition: gap .25s ease, color .2s ease;
+      align-self: flex-start;
     }
     .section-label::before {
       content: '';
@@ -296,6 +300,19 @@
       width: 28px;
       height: 1px;
       background: var(--accent);
+      transition: width .3s cubic-bezier(.34, 1.56, .64, 1), background .2s ease;
+    }
+    a.section-label:hover {
+      color: var(--accent-hover);
+      gap: 14px;
+    }
+    a.section-label:hover::before {
+      width: 44px;
+      background: var(--accent-hover);
+    }
+    a.section-label:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 6px;
     }
 
     .section-title {
@@ -1679,7 +1696,7 @@
     <span class="section__num-bg section__num-bg--right" aria-hidden="true">01</span>
     <div class="container">
       <div class="section__head reveal">
-        <span class="section-label">01 — O nas</span>
+        <a class="section-label" href="#o-nas" aria-label="Sekcja 01 — O nas">01 — O nas</a>
         <h2 class="section-title">Twardy materiał<br>spotyka <em>precyzję.</em></h2>
       </div>
 
@@ -1733,7 +1750,7 @@
     <span class="section__num-bg section__num-bg--left" aria-hidden="true">02</span>
     <div class="container">
       <div class="section__head reveal">
-        <span class="section-label">02 — Usługi</span>
+        <a class="section-label" href="#uslugi" aria-label="Sekcja 02 — Usługi">02 — Usługi</a>
         <h2 class="section-title">Co <em>tniemy,</em><br>wiercimy, kotwimy.</h2>
       </div>
 
@@ -1842,7 +1859,7 @@
     <span class="section__num-bg section__num-bg--right" aria-hidden="true">03</span>
     <div class="container">
       <div class="section__head reveal">
-        <span class="section-label">03 — Realizacje</span>
+        <a class="section-label" href="#realizacje" aria-label="Sekcja 03 — Realizacje">03 — Realizacje</a>
         <h2 class="section-title">Galeria <em>prac.</em></h2>
       </div>
 
@@ -1889,7 +1906,7 @@
       <div class="hilti__grid">
         <div class="reveal">
           <div class="section__head">
-            <span class="section-label">04 — Sprzęt</span>
+            <a class="section-label" href="#sprzet" aria-label="Sekcja 04 — Sprzęt">04 — Sprzęt</a>
             <h2 class="section-title">Pracujemy<br>na sprzęcie <em>Hilti.</em></h2>
           </div>
           <div class="hilti__copy">
@@ -1924,7 +1941,7 @@
     <span class="section__num-bg section__num-bg--left" aria-hidden="true">05</span>
     <div class="container">
       <div class="section__head reveal">
-        <span class="section-label">05 — Kontakt</span>
+        <a class="section-label" href="#kontakt" aria-label="Sekcja 05 — Kontakt">05 — Kontakt</a>
         <h2 class="section-title">Powiedz nam,<br>co <em>wyciąć.</em></h2>
       </div>
 
