@@ -10,7 +10,7 @@
     img/favicon-32.png      — 32x32 PNG favicon
     img/apple-touch-icon.png — 180x180 PNG (iOS bookmark icon)
 
-  Skrypt PRÓBUJE kolejno: ImageMagick → cwebp + ffmpeg → npx sharp-cli.
+  Skrypt PRÓBUJE kolejno: ImageMagick → ffmpeg → npx sharp.
   Jeśli żadne narzędzie nie jest dostępne — wyświetla instrukcję instalacji.
 
 .EXAMPLE
@@ -18,12 +18,13 @@
   pwsh -File scripts/optimize-logo.ps1 -Source "C:\Downloads\moje-logo.png"
 
 .NOTES
-  Wymaga JEDNEGO Z poniższych narzędzi:
-    1. ImageMagick (zalecane)         — https://imagemagick.org/
+  Wymaga JEDNEGO Z poniższych narzędzi (zalecane: ffmpeg lub ImageMagick):
+    1. ImageMagick                    — https://imagemagick.org/
        Instalacja: winget install ImageMagick.ImageMagick
-    2. Node.js + sharp-cli            — https://nodejs.org/
-       Instalacja: nic, używa npx
-    3. cwebp (libwebp) + ffmpeg
+    2. ffmpeg (zwykle juz zainstalowane jako dependency innych narzedzi)
+       Instalacja: winget install Gyan.FFmpeg
+    3. Node.js + sharp (auto-install)
+       Instalacja Node.js: winget install OpenJS.NodeJS
 #>
 
 [CmdletBinding()]
@@ -95,40 +96,64 @@ function Convert-WithMagick {
   return $LASTEXITCODE -eq 0
 }
 
+function Convert-WithFfmpeg {
+  param($Src, $Dst, $Size, $Format, $Quality)
+  $scaleFilter = "scale=${Size}:${Size}:flags=lanczos"
+  if ($Format -eq "webp") {
+    & ffmpeg -y -loglevel error -i $Src -vf $scaleFilter -c:v libwebp -quality $Quality -compression_level 6 $Dst 2>$null
+  } else {
+    & ffmpeg -y -loglevel error -i $Src -vf $scaleFilter $Dst 2>$null
+  }
+  return $LASTEXITCODE -eq 0
+}
+
 function Convert-WithSharp {
   param($Src, $Dst, $Size, $Format, $Quality)
+  # Install sharp do tymczasowego katalogu (npx -p nie zawsze dziala z natywnymi modulami)
+  if (-not $script:sharpDir) {
+    $script:sharpDir = Join-Path $env:TEMP "kfd-sharp-pkg"
+    if (-not (Test-Path (Join-Path $script:sharpDir "node_modules/sharp"))) {
+      Write-Host "    (instaluje sharp jednorazowo do $script:sharpDir...)" -ForegroundColor DarkGray
+      New-Item -ItemType Directory -Force -Path $script:sharpDir | Out-Null
+      Push-Location $script:sharpDir
+      try { & npm install --silent --no-save sharp 2>&1 | Out-Null } finally { Pop-Location }
+    }
+  }
   $code = @"
-const sharp = require('sharp');
-sharp('$Src')
-  .resize($Size, $Size, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } })
-  .$Format({ quality: $Quality, effort: 6 })
-  .toFile('$Dst')
-  .then(() => process.exit(0))
-  .catch(e => { console.error(e); process.exit(1); });
+const sharp = require('$($script:sharpDir.Replace('\','/'))/node_modules/sharp');
+sharp('$($Src.Replace('\','/'))').
+  resize($Size, $Size, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } }).
+  $Format({ quality: $Quality, effort: 6 }).
+  toFile('$($Dst.Replace('\','/'))').
+  then(() => process.exit(0)).
+  catch(e => { console.error(e); process.exit(1); });
 "@
   $tmp = Join-Path $env:TEMP "kfd-sharp-$(Get-Random).js"
   Set-Content -Path $tmp -Value $code -Encoding UTF8
-  & npx --yes -p sharp node $tmp
+  & node $tmp
   $result = $LASTEXITCODE -eq 0
   Remove-Item $tmp -ErrorAction SilentlyContinue
   return $result
 }
 
-# Wybierz strategię konwersji
+# Wybierz strategię konwersji (kolejnosc preferencji: magick > ffmpeg > sharp)
 $converter = $null
 if ($haveMagick) {
   $converter = "magick"
   Write-Host "Using: ImageMagick" -ForegroundColor Green
+} elseif ($haveFfmpeg) {
+  $converter = "ffmpeg"
+  Write-Host "Using: ffmpeg (libwebp + scaler)" -ForegroundColor Green
 } elseif ($haveNpx) {
   $converter = "sharp"
-  Write-Host "Using: sharp (via npx, pierwsze uruchomienie pobierze ~30 MB)" -ForegroundColor Green
+  Write-Host "Using: sharp (pierwsze uruchomienie zainstaluje sharp do TEMP, ~30 MB)" -ForegroundColor Green
 } else {
   Write-Host "ERROR: Brak dostepnego narzedzia do konwersji obrazow." -ForegroundColor Red
   Write-Host ""
-  Write-Host "Zainstaluj jedno z (zalecam ImageMagick):"
-  Write-Host "  winget install ImageMagick.ImageMagick"
-  Write-Host "  -- lub --"
-  Write-Host "  Zainstaluj Node.js z https://nodejs.org/ (npx bedzie dostepne)"
+  Write-Host "Zainstaluj jedno z (kazda opcja dziala):"
+  Write-Host "  winget install ImageMagick.ImageMagick    (zalecane)"
+  Write-Host "  winget install Gyan.FFmpeg                 (lekkie)"
+  Write-Host "  winget install OpenJS.NodeJS               (ciezsze ale wszechstronne)"
   exit 1
 }
 
@@ -148,6 +173,8 @@ foreach ($t in $targets) {
   try {
     if ($converter -eq "magick") {
       $ok = Convert-WithMagick -Src $sourcePath -Dst $dst -Size $t.Size -Format $t.Format -Quality $t.Quality
+    } elseif ($converter -eq "ffmpeg") {
+      $ok = Convert-WithFfmpeg -Src $sourcePath -Dst $dst -Size $t.Size -Format $t.Format -Quality $t.Quality
     } elseif ($converter -eq "sharp") {
       $ok = Convert-WithSharp -Src $sourcePath -Dst $dst -Size $t.Size -Format $t.Format -Quality $t.Quality
     }
