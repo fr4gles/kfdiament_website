@@ -28,3 +28,12 @@ $RECYCLE.BIN/
 # Cloudflare Pages local previews (opcjonalnie)
 .wrangler/
 .dev.vars
+
+# Playwright (lokalne sesje testowe Claude Code)
+.playwright-mcp/
+
+# Lokalne screenshoty/artefakty z testów (NIE commituje się — tylko gdy explicite dodane)
+verify-*.png
+hero-desktop.png
+full-desktop.png
+*.tmp.png

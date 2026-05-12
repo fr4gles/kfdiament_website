@@ -26,17 +26,28 @@ To **NIE jest** projekt JS-framework. Świadomie:
 
 ```
 .
-├── index.html       — cała strona (jeden plik, ~62 KB)
-├── README.md        — dokumentacja dla człowieka (deploy, lokalny preview, SEO)
-├── COMPARISON.md    — raport porównawczy vs diamtar.pl (konkurencja)
-├── CLAUDE.md        — TEN PLIK (kontekst dla przyszłego Claude)
-├── robots.txt       — pozwala indeksować, wskazuje sitemapę
-├── sitemap.xml      — jeden URL (strona główna)
-├── .gitignore       — system files, edytory, Cloudflare local
-└── img/             — assety (poza repo do momentu wrzucenia loga)
-    ├── logo.png     — gold-on-black okrągłe logo z K&F monogramem
-    └── og.jpg       — Open Graph preview 1200×630 (do dorobienia)
+├── index.html                — cała strona (jeden plik, ~65 KB)
+├── README.md                 — dokumentacja dla człowieka
+├── COMPARISON.md             — raport porównawczy vs diamtar.pl
+├── CLAUDE.md                 — TEN PLIK
+├── robots.txt                — pozwala indeksować + sitemap reference
+├── sitemap.xml               — jeden URL (strona główna)
+├── .gitignore
+├── scripts/
+│   └── optimize-logo.ps1     — PowerShell: PNG → WebP w 3 rozmiarach + favicony
+└── img/
+    ├── README.md             — instrukcja workflow assetów
+    ├── logo.png              — ŹRÓDŁO: master 512×512 (user wrzuca)
+    ├── logo.webp             — wygenerowane: 512×512 WebP
+    ├── logo-1024.webp        — wygenerowane: 1024×1024 (hero LCP)
+    ├── logo-96.webp          — wygenerowane: 96×96 (nav, footer)
+    ├── favicon-32.png        — wygenerowane
+    ├── apple-touch-icon.png  — wygenerowane: 180×180
+    ├── og.jpg                — do dorobienia: social preview 1200×630
+    └── realizacja-XX.jpg     — opcjonalne: galeria
 ```
+
+**Workflow asetów**: user zapisuje `img/logo.png` z czatu, uruchamia `pwsh -File scripts/optimize-logo.ps1` (auto-detect ImageMagick / sharp via npx), skrypt generuje wszystkie warianty. HTML używa `<picture>` z WebP source + PNG fallback — jeśli skrypt nie został uruchomiony, strona dalej działa z PNG (tylko bez performance win).
 
 ## Branch strategy
 

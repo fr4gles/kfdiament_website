@@ -78,20 +78,32 @@ Bonus: automatyczne odświeżanie po każdym zapisie.
 
 ## 🚀 Pierwszy deploy w 3 krokach
 
-### 1) Wrzuć logo
+### 1) Wrzuć logo + uruchom skrypt optymalizacji
 
-Plik logo (gold-on-black piła z K&F monogramem) zapisz jako:
+**A)** Plik źródłowy zapisz jako `img/logo.png` (zalecane **512×512** lub większe,
+PNG z przezroczystym tłem).
 
+**B)** Uruchom skrypt optymalizacji — wygeneruje wszystkie warianty WebP + favicony
+za jednym kliknięciem:
+
+```powershell
+pwsh -File scripts/optimize-logo.ps1
 ```
-img/logo.png
-```
 
-Strona referuje go w nawigacji, hero, stopce, jako favicon i jako `logo` w danych
-strukturalnych Schema.org. Bez tego pliku pojawią się złamane obrazki — to jest
-**konieczne przed pierwszym pushem**.
+Skrypt auto-wykrywa narzędzia: **ImageMagick** (zalecane — `winget install ImageMagick.ImageMagick`)
+albo **sharp** przez `npx` (wymaga Node.js). Generuje:
 
-> **Rozmiar źródłowy:** najlepiej **512×512** lub większy (kwadrat). Logo jest okrągłe
-> więc tło PNG może być przezroczyste albo dopasowane do strony (cream `#f5f1e8`).
+- `img/logo.webp` (512×512, ~20-30 KB) — używane w nav/footer/JSON-LD
+- `img/logo-1024.webp` (1024×1024, ~50 KB) — hero LCP candidate, preload
+- `img/logo-96.webp` (96×96, ~5 KB) — nav/footer thumbnail (retina)
+- `img/favicon-32.png` — favicon
+- `img/apple-touch-icon.png` (180×180) — iOS bookmark
+
+HTML używa `<picture>` z WebP source + PNG fallback — jeśli **nie** uruchomisz
+skryptu, strona dalej działa (PNG fallback), tylko bez performance win.
+
+> **Dlaczego WebP**: ~5× mniejsze pliki niż PNG przy zachowaniu jakości. Wsparcie:
+> 97%+ przeglądarek od 2020 r.
 
 ### 2) Push do GitHuba
 

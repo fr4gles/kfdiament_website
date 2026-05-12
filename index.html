@@ -10,7 +10,9 @@
   <meta name="description" content="KFDIAMENT Obrębski Motyka — profesjonalne cięcie i wiercenie diamentowe betonu oraz żelbetu, osadzanie kotew chemicznych. Sprzęt Hilti. Realizacje na terenie całej Polski. Grybów, Małopolska.">
   <meta name="author" content="KFDIAMENT Obrębski Motyka Spółka jawna">
 
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
   <link rel="icon" type="image/png" href="img/logo.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
   <meta name="robots" content="index, follow">
 
   <meta property="og:type" content="website">
@@ -35,7 +37,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,500;10..72,600;10..72,700;10..72,800;10..72,900&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="img/logo.png" fetchpriority="high">
+  <link rel="preload" as="image" href="img/logo-1024.webp" type="image/webp" fetchpriority="high">
 
   <script type="application/ld+json">
   {
@@ -358,6 +360,8 @@
       gap: 14px;
       text-decoration: none;
     }
+    .brand picture { display: inline-flex; flex-shrink: 0; }
+    .hero picture { display: contents; }
     .brand__mark {
       width: 38px;
       height: 38px;
@@ -1416,7 +1420,10 @@
   <nav class="nav" aria-label="Główna nawigacja">
     <div class="nav__inner">
       <a href="#top" class="brand" aria-label="KFDIAMENT — strona główna">
-        <img src="img/logo.png" alt="" class="brand__mark" width="38" height="38" decoding="async">
+        <picture>
+          <source srcset="img/logo-96.webp" type="image/webp">
+          <img src="img/logo.png" alt="" class="brand__mark" width="38" height="38" decoding="async">
+        </picture>
         <span class="brand__text">KFDIAMENT</span>
       </a>
       <ul class="nav__links">
@@ -1437,7 +1444,10 @@
 
   <!-- ─── HERO ─────────────────────────────────────────────────── -->
   <header class="hero" id="top">
-    <img src="img/logo.png" alt="" class="hero__logo" aria-hidden="true" loading="eager" fetchpriority="high" decoding="async" width="240" height="240">
+    <picture>
+      <source srcset="img/logo-1024.webp" type="image/webp">
+      <img src="img/logo.png" alt="" class="hero__logo" aria-hidden="true" loading="eager" fetchpriority="high" decoding="async" width="720" height="720">
+    </picture>
     <div class="hero__inner">
       <p class="hero__tag">Technika diamentowa · Cała Polska</p>
 
@@ -1859,7 +1869,10 @@
       <div class="footer__grid">
         <div class="footer__col footer__brand">
           <a href="#top" class="brand">
-            <img src="img/logo.png" alt="" class="brand__mark" width="46" height="46" loading="lazy">
+            <picture>
+              <source srcset="img/logo-96.webp" type="image/webp">
+              <img src="img/logo.png" alt="" class="brand__mark" width="46" height="46" loading="lazy" decoding="async">
+            </picture>
             <span class="brand__text">KFDIAMENT</span>
           </a>
           <p>

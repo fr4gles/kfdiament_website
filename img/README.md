@@ -1,27 +1,47 @@
 # Folder na grafiki
 
-## Wymagane pliki
+## Wymagane pliki (po uruchomieniu skryptu optymalizacji)
 
-| Plik | Opis | Wymiary | Status |
+| Plik | Generowany przez | Wymiary | Status |
 |---|---|---|---|
-| `logo.png` | Główne logo firmy (gold-on-black piła tarczowa z K&F) | min. 512×512 (kwadrat) | **wymagane przed deployem** |
-| `og.jpg` | Open Graph preview do social media | dokładnie 1200×630 | wymagane (do dorobienia) |
-| `realizacja-01.jpg` | Zdjęcie z realizacji #1 (placeholder w gallerii) | zalecane 800×1000 (4:5) | opcjonalne |
-| `realizacja-02.jpg` | Zdjęcie z realizacji #2 | 800×1000 | opcjonalne |
-| `realizacja-03.jpg` | Zdjęcie z realizacji #3 | 800×1000 | opcjonalne |
+| `logo.png` | **Ty zapisujesz** | min. 512×512 | **źródło — wymagane** |
+| `logo.webp` | `scripts/optimize-logo.ps1` | 512×512 | wymagane (auto) |
+| `logo-1024.webp` | skrypt | 1024×1024 | wymagane (auto — hero LCP) |
+| `logo-96.webp` | skrypt | 96×96 | wymagane (auto — nav/footer) |
+| `favicon-32.png` | skrypt | 32×32 | wymagane (auto) |
+| `apple-touch-icon.png` | skrypt | 180×180 | wymagane (auto) |
+| `og.jpg` | **dorób ręcznie** | 1200×630 | do dorobienia (social preview) |
+| `realizacja-01.jpg` … | **ręcznie** | 800×1000 (4:5) | opcjonalne (galeria) |
 
-## Jak wrzucić logo
+## Workflow
 
-1. **W kliencie poczty / komunikatorze**: zapisz załącznik z logiem na dysk
-2. Zapisz plik jako `D:\kfdiament_webiste\img\logo.png` (dokładnie ta nazwa)
-3. Odśwież stronę w przeglądarce (Ctrl+F5)
+1. **Zapisz oryginał logo** (klient czatu → "Zapisz obraz jako…") jako:
+   ```
+   D:\kfdiament_webiste\img\logo.png
+   ```
+   Zalecane: 512×512 PNG, przezroczyste tło.
 
-## Format
+2. **Uruchom skrypt optymalizacji** z katalogu głównego repo:
+   ```powershell
+   pwsh -File scripts/optimize-logo.ps1
+   ```
+   Skrypt produkuje wszystkie WebP + favicony naraz. Auto-wykrywa
+   `ImageMagick` (zalecane) lub `sharp` przez `npx`. Jeśli żadnego
+   nie ma — wskazuje komendę instalacji.
 
-- **PNG z przezroczystością** zalecany (logo jest okrągłe, kwadratowy plik z czarnym tłem PNG też zadziała, ale wtedy nie zobaczysz cieniowania w hero)
-- **WebP** też zadziała — wystarczy nazwać `logo.webp` i zmienić ref w `index.html`
-- **SVG** byłby najlepszy (perfect scale, mała waga) — jeśli klient ma source vector
+3. **Odśwież stronę** (Ctrl+F5).
 
-## Jak podmienić placeholdery w galerii
+## Dlaczego WebP
+
+| Format | Wielkość (512×512 logo) | Wsparcie |
+|---|---|---|
+| PNG (oryginał) | ~80-150 KB | 100% |
+| **WebP** (q=85) | **~15-30 KB** | 97%+ przeglądarek (od 2020) |
+| AVIF | ~10-20 KB | 92%+ (od 2022) |
+
+HTML używa `<picture>` z WebP source + PNG fallback — więc nawet bez
+WebP strona działa, ale 97% userów dostanie ~5× mniejszy obrazek.
+
+## Galeria realizacji
 
 Patrz `README.md` w głównym katalogu repo, sekcja "Galeria realizacji".
