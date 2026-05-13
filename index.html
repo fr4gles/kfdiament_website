@@ -343,6 +343,13 @@
       outline-offset: 3px;
       border-radius: 1px;
     }
+    /* Skip-link target — main staje się focusable żeby skip-link przeniósł fokus,
+       ale outline wokół całego main wyglądałby źle. Wskazówką dla usera jest
+       sam scroll + następny Tab przejdzie do pierwszego focusable wewnątrz. */
+    main[tabindex="-1"]:focus,
+    main[tabindex="-1"]:focus-visible {
+      outline: none;
+    }
 
     /* Papierowa ziarnistość (SVG fractalNoise jako data URI) */
     body::before {
@@ -1859,7 +1866,7 @@
     </div>
   </nav>
 
-  <main id="main">
+  <main id="main" tabindex="-1">
 
   <!-- ─── HERO ─────────────────────────────────────────────────── -->
   <header class="hero" id="top">

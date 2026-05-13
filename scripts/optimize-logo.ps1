@@ -4,7 +4,7 @@
 
 .DESCRIPTION
   Bierze img/logo.png (źródło, zalecane 512x512 lub większe) i tworzy:
-    img/logo.webp           — 512x512 WebP (głowny używany w nav, footer)
+    img/logo.webp           — 512x512 WebP (główny używany w nav, footer)
     img/logo-1024.webp      — 1024x1024 WebP (hero, LCP candidate)
     img/logo-96.webp        — 96x96 WebP (nav thumbnail, retina-ready)
     img/favicon-32.png      — 32x32 PNG favicon
@@ -96,11 +96,14 @@ function Convert-WithMagick {
 
 function Convert-WithFfmpeg {
   param($Src, $Dst, $Size, $Format, $Quality)
-  $scaleFilter = "scale=${Size}:${Size}:flags=lanczos"
+  # Zachowaj proporcje (force_original_aspect_ratio=decrease), potem dopaduj do kwadratu
+  # przezroczystym tłem, żeby wynik mial dokladnie ${Size}x${Size} bez zniekształceń.
+  # format=rgba przed pad — pad domyślnie nie ma alpha-channel jeśli źródło jest RGB.
+  $filter = "scale=${Size}:${Size}:force_original_aspect_ratio=decrease:flags=lanczos,format=rgba,pad=${Size}:${Size}:(ow-iw)/2:(oh-ih)/2:color=black@0"
   if ($Format -eq "webp") {
-    & ffmpeg -y -loglevel error -i $Src -vf $scaleFilter -c:v libwebp -quality $Quality -compression_level 6 $Dst 2>$null
+    & ffmpeg -y -loglevel error -i $Src -vf $filter -c:v libwebp -quality $Quality -compression_level 6 $Dst 2>$null
   } else {
-    & ffmpeg -y -loglevel error -i $Src -vf $scaleFilter $Dst 2>$null
+    & ffmpeg -y -loglevel error -i $Src -vf $filter $Dst 2>$null
   }
   return $LASTEXITCODE -eq 0
 }
