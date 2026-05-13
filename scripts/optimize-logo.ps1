@@ -106,9 +106,9 @@ function Convert-WithFfmpeg {
   # format=rgba przed pad — pad domyślnie nie ma alpha-channel jeśli źródło jest RGB.
   $filter = "scale=${Size}:${Size}:force_original_aspect_ratio=decrease:flags=lanczos,format=rgba,pad=${Size}:${Size}:(ow-iw)/2:(oh-ih)/2:color=black@0"
   if ($Format -eq "webp") {
-    & ffmpeg -y -loglevel error -i $Src -vf $filter -c:v libwebp -quality $Quality -compression_level 6 $Dst 2>$null
+    & ffmpeg -y -loglevel error -i $Src -vf $filter -c:v libwebp -quality $Quality -compression_level 6 $Dst
   } else {
-    & ffmpeg -y -loglevel error -i $Src -vf $filter $Dst 2>$null
+    & ffmpeg -y -loglevel error -i $Src -vf $filter $Dst
   }
   return $LASTEXITCODE -eq 0
 }
@@ -128,7 +128,12 @@ function Convert-WithSharp {
       Write-Host "    (instaluje sharp jednorazowo do $script:sharpDir...)" -ForegroundColor DarkGray
       New-Item -ItemType Directory -Force -Path $script:sharpDir | Out-Null
       Push-Location $script:sharpDir
-      try { & npm install --silent --no-save sharp 2>&1 | Out-Null } finally { Pop-Location }
+      try {
+        & npm install --silent --no-save sharp 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+          throw "npm install sharp failed (exit code $LASTEXITCODE). Sprawdz polaczenie sieci / proxy / dostepnosc rejestru npm."
+        }
+      } finally { Pop-Location }
     }
   }
   # sharp options per format — webp ma `effort`, png ma `compressionLevel`.

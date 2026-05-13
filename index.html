@@ -267,6 +267,7 @@
          --line:         #3d3527;
          --line-strong:  #5d4f36;
          --accent:       #d4a84a;
+         --accent-rgb:   212, 168, 74;
          --accent-hover: #e8c46e;
          --accent-2:     #8a6f2a;
          --accent-deep:  #b89248;
@@ -283,6 +284,7 @@
       --line:         #c9bfa6;   /* hairline border */
       --line-strong:  #8a7d5e;   /* strong divider, ikony stroke */
       --accent:       #a8842c;   /* ANTIQUE BRASS — primary gold (logo) */
+      --accent-rgb:   168, 132, 44;   /* MUSI być w sync z --accent dla rgba() w shadows/glows */
       --accent-hover: #7d5f1c;   /* deeper bronze hover/active */
       --accent-2:     #c9a85a;   /* jaśniejszy gold do borderów/highlight */
       --accent-deep:  #5d4416;   /* darkest bronze, stamps/embossed */
@@ -584,7 +586,7 @@
       flex-shrink: 0;
       object-fit: contain;
       display: block;
-      filter: drop-shadow(0 2px 6px rgba(26, 22, 20, 0.18));
+      filter: drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.18));
       transition: transform .7s cubic-bezier(.2, .8, .2, 1);
     }
     @media (hover: hover) and (pointer: fine) {
@@ -655,7 +657,7 @@
       letter-spacing: 0.02em;
       line-height: 1;
       transition: background .2s ease, transform .15s ease;
-      box-shadow: 0 2px 10px rgba(168, 132, 44, 0.22);
+      box-shadow: 0 2px 10px rgba(var(--accent-rgb), 0.22);
       /* nowrap przez globalna regule a[href^="tel:"] u gory */
     }
     @media (hover: hover) and (pointer: fine) {
@@ -749,7 +751,7 @@
       -webkit-backdrop-filter: saturate(140%) blur(14px);
       border-bottom: 1px solid var(--line);
       border-top: 1px solid var(--line);
-      box-shadow: 0 24px 48px -16px rgba(26, 22, 20, 0.18);
+      box-shadow: 0 24px 48px -16px rgba(var(--fg-rgb), 0.18);
       padding: 8px clamp(16px, 4vw, 32px) 16px;
       transform: translateY(-12px);
       opacity: 0;
@@ -949,7 +951,7 @@
       opacity: 0.7;
       pointer-events: none;
     }
-    /* Red glow top-right */
+    /* Brass glow top-right (post-pivot z Hilti red, używa --accent-rgb) */
     .hero::after {
       content: '';
       position: absolute;
@@ -959,7 +961,7 @@
       height: 60vw;
       max-width: 800px;
       max-height: 800px;
-      background: radial-gradient(circle, rgba(168, 132, 44, 0.22) 0%, rgba(168, 132, 44, 0) 65%);
+      background: radial-gradient(circle, rgba(var(--accent-rgb), 0.22) 0%, rgba(var(--accent-rgb), 0) 65%);
       pointer-events: none;
     }
 
@@ -987,8 +989,8 @@
       pointer-events: none;
       z-index: 1;
       opacity: 0.18;
-      filter: drop-shadow(0 24px 64px rgba(26, 22, 20, 0.22))
-              drop-shadow(0 0 80px rgba(168, 132, 44, 0.28));
+      filter: drop-shadow(0 24px 64px rgba(var(--fg-rgb), 0.22))
+              drop-shadow(0 0 80px rgba(var(--accent-rgb), 0.28));
       animation: slow-spin 180s linear infinite;
       mix-blend-mode: multiply;
     }
@@ -1021,7 +1023,7 @@
       width: 0%;
       z-index: 100;
       transition: width 0.05s linear;
-      box-shadow: 0 0 12px rgba(168, 132, 44, 0.4);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.4);
     }
 
     /* Marquee ticker — scrolling gold strip */
@@ -1125,10 +1127,10 @@
       font-variation-settings: 'opsz' 72;
       /* Engraved brass-plate effect — multi-layer shadow */
       text-shadow:
-        1px 1px 0 rgba(168, 132, 44, 0.12),
-        2px 2px 0 rgba(168, 132, 44, 0.08),
-        3px 3px 0 rgba(168, 132, 44, 0.06),
-        4px 4px 24px rgba(26, 22, 20, 0.08);
+        1px 1px 0 rgba(var(--accent-rgb), 0.12),
+        2px 2px 0 rgba(var(--accent-rgb), 0.08),
+        3px 3px 0 rgba(var(--accent-rgb), 0.06),
+        4px 4px 24px rgba(var(--fg-rgb), 0.08);
     }
     .hero__title span {
       display: block;
@@ -1484,7 +1486,7 @@
       transition: transform .4s cubic-bezier(.34, 1.56, .64, 1);
       transform-origin: center;
       z-index: 2;
-      box-shadow: 0 0 14px rgba(168, 132, 44, 0.4);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.4);
     }
     @media (hover: hover) and (pointer: fine) {
       .service:hover {
@@ -1588,8 +1590,8 @@
       background:
         repeating-linear-gradient(
           135deg,
-          rgba(168, 132, 44, 0.08) 0px,
-          rgba(168, 132, 44, 0.08) 2px,
+          rgba(var(--accent-rgb), 0.08) 0px,
+          rgba(var(--accent-rgb), 0.08) 2px,
           transparent 2px,
           transparent 12px
         );
@@ -1697,8 +1699,8 @@
       background-image:
         repeating-linear-gradient(
           45deg,
-          rgba(168, 132, 44, 0.14) 0px,
-          rgba(168, 132, 44, 0.14) 2px,
+          rgba(var(--accent-rgb), 0.14) 0px,
+          rgba(var(--accent-rgb), 0.14) 2px,
           transparent 2px,
           transparent 22px
         ),
@@ -1738,7 +1740,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, transparent 40%, rgba(255, 255, 255, 0.88) 100%);
+      background: linear-gradient(180deg, transparent 40%, rgba(var(--bg-rgb), 0.88) 100%);
     }
     .gal-card__body {
       position: absolute;
@@ -2873,8 +2875,15 @@
       // ─── email obfuscation reveal ──────────────────────────────
       // HTML zawiera "kontakt [at] kfdiament [dot] pl" — bot widzi to,
       // user nigdy. JS po starcie strony assembluje prawdziwy adres.
+      // Defensive: if data attrs missing (authoring drift), log + skip
+      // zamiast wysylac "kontakt@undefined" do produkcji.
       document.querySelectorAll('a.email-obf').forEach(function (el) {
-        const addr = (el.dataset.u + '@' + el.dataset.d).toLowerCase();
+        const u = el.dataset.u, d = el.dataset.d;
+        if (!u || !d) {
+          console.error('[email-obf] missing data-u/data-d on element:', el);
+          return;
+        }
+        const addr = (u + '@' + d).toLowerCase();
         el.setAttribute('href', 'mailto:' + addr);
         el.textContent = addr;
         el.removeAttribute('rel');
@@ -2884,9 +2893,16 @@
       // Używamy `inert` zamiast `hidden`: inert blokuje fokus + AT NATYCHMIAST gdy ustawione,
       // ale element nadal renderuje (animacja opacity/transform dograć). Eliminuje 240ms okno
       // gdzie panel byl invisible (opacity:0) ale linki nadal tabowalne (focus into invisible content).
+      // Plus focus trap: gdy menu otwarte, `<main>` dostaje inert — Tab nie ucieka z menu w tło.
       const burger = document.querySelector('.nav__burger');
       const menu   = document.getElementById('mobile-menu');
       const scrim  = document.querySelector('.mobile-menu__scrim');
+      const main   = document.getElementById('main');
+      // Defensive: log konkretnie ktory element brakuje (latwiej zdiagnozowac
+      // jak future authoring drift zmieni id/class w HTML).
+      if (!burger) console.error('[nav] .nav__burger missing');
+      if (!menu)   console.error('[nav] #mobile-menu missing');
+      if (!scrim)  console.error('[nav] .mobile-menu__scrim missing');
       if (burger && menu && scrim) {
         const closeMenu = function () {
           if (burger.getAttribute('aria-expanded') !== 'true') return;
@@ -2896,11 +2912,15 @@
           scrim.removeAttribute('data-open');
           menu.setAttribute('inert', '');   // natychmiast blokuje Tab/AT
           scrim.setAttribute('inert', '');  // (animacja opacity nadal dograć)
+          if (main) main.removeAttribute('inert');  // przywracamy tlo do focusable
         };
         const openMenu = function () {
           menu.removeAttribute('inert');
           scrim.removeAttribute('inert');
+          if (main) main.setAttribute('inert', '');  // focus trap: tlo niedostepne dla Tab
           // Force reflow zeby transition data-open zalapal stan startowy
+          // (bez tego browser coalesce'uje inert→removeAttribute + data-open
+          // w jednym paincie, transition nie zalapie starting state)
           void menu.offsetWidth;
           burger.setAttribute('aria-expanded', 'true');
           burger.setAttribute('aria-label', 'Zamknij menu');
@@ -3003,8 +3023,13 @@
 
       document.querySelectorAll('[data-mailto]').forEach(function (el) {
         const key = el.dataset.mailto;
-        const q = queries[key];
-        if (!q) return;
+        // Defensive: gdy HTML uzyje klucza ktorego nie ma w queries (np. nazwa
+        // uslugi pivotuje a ktos zapomni updateu — patrz historia kotwy→wyburzenia),
+        // log + fallback do `ogolne` zamiast cichego dead-end na #kontakt.
+        const q = queries[key] || queries.ogolne;
+        if (!queries[key]) {
+          console.error('[mailto] unknown service key "' + key + '" on', el, '— falling back to ogolne');
+        }
         const href = 'mailto:' + EMAIL +
           '?subject=' + encodeURIComponent(q.subject) +
           '&body=' + encodeURIComponent(buildBody(q));

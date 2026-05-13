@@ -28,8 +28,8 @@ Hostowana na **Cloudflare Pages** (free tier), domena docelowa: **kfdiament.pl**
 
 To **NIE jest** projekt JS-framework. Świadomie:
 
-- **Jeden plik** `index.html` (HTML + CSS + JS inline, ~2400 linii, ~80 KB). Nie rozbijać na osobne pliki bez bardzo dobrego powodu.
-- **Vanilla JS** — bez React, Vue, frameworków. Skrypt ma <150 linii.
+- **Jeden plik** `index.html` (HTML + CSS + JS inline, ~3000 linii, ~100 KB). Nie rozbijać na osobne pliki bez bardzo dobrego powodu.
+- **Vanilla JS** — bez React, Vue, frameworków. Skrypt ma ~180 linii (mailto generator, email obfuscation, hamburger menu z focus trap, scroll progress, IntersectionObserver).
 - **Bez build-stepu** — `package.json` nie ma i nie powinno się pojawić.
 - **Bez npm/yarn/pnpm**.
 - **Self-hosted fonty (woff2)** w `/fonts/` — Big Shoulders + Manrope + JetBrains Mono (variable, latin + latin-ext, 6 plików, ~180 KB total). **NIE używamy Google Fonts CDN** — wszystko same-origin dla performance i GDPR.
@@ -122,14 +122,14 @@ Z 4px gold gradient bar `::before`. Architektoniczna tabliczka znamionowa.
 
 ## Struktura sekcji
 
-1. **Nav** — fixed top, blur, 72px wysokości. **2 osobne klikalne przyciski telefonów obok siebie** (`.nav__phones > .nav__phone × 2`), nie jeden CTA. Responsive z 4 breakpointami (640/540/440/380px) żeby się mieściło na iPhone 14 Pro Max bez overflow.
-2. **Hero** — full vh, slow-spin logo absolute (~52vw, opacity 0.18, blend mode multiply). Engraved h1 + brand byline + hero__sub (z bold otwarciem "Jesteśmy specjalistami w cięciu i wierceniu techniką diamentową.") + 2 CTA + 3 stats (Ø800mm / 100% Hilti / PL).
-3. **Marquee ticker** — czarny pas między hero a o-nas, gold-accented scrolling text "CIĘCIE · WIERCENIE · KOTWY · CAŁA POLSKA · BEZ KUCIA". 38s linear infinite, pauza on hover.
-4. `#o-nas` — bg-2 + background "01" numeral, 5 akapitów + corner-card "Dlaczego my?"
+1. **Nav** — fixed top, blur, 72px wysokości. **2 osobne klikalne przyciski telefonów obok siebie** (`.nav__phones > .nav__phone × 2`), nie jeden CTA. Responsive z breakpointami nav-specific 1080px (linki znikają → hamburger), 820/640/540/460/400/360px (graceful degradacja phones: 2 → 1 → 0). **Mobile menu** (≤1080px): hamburger toggle, slide-down panel z `.mobile-menu__phones` (2 gold pill buttons z pełnymi numerami) + 5 section links. Pattern `inert` (nie `hidden`) blokuje fokus/AT natychmiast, animacja opacity/transform dograć. Plus focus trap: gdy menu open, `<main>` dostaje `inert`.
+2. **Hero** — full vh, slow-spin logo absolute clamp(360px, 52vw, 720px) anchor do `--maxw` container (nie viewport), opacity 0.18, blend mode multiply. h1 trzy-linijkowy `clamp(2.8rem, 9.5vw, 8.2rem)` z `outline` (text-stroke `max(1.4px, 0.018em)` żeby na mobile nie było sub-pixel jagged) + brand byline (link do #kontakt) + hero__sub (z bold otwarciem "Jesteśmy specjalistami w cięciu i wierceniu techniką diamentową.") + 2 CTA + **5 stats** (Ø800mm / PL / 3 lata / 2. gen. DST 20-CA / Beton+Żelbet), grid 5→3→2 columns responsive, center-aligned content (bez border-right separatorów — gap robi separator).
+3. **Marquee ticker** — czarny pas między hero a o-nas, gold-accented scrolling text **"Cięcie diamentowe · Wiercenie do ⌀800mm · Wyburzenia · Sprzęt Hilti · Cała Polska"** (5 items + duplikat dla seamless loop). 38s linear infinite, pauza on hover.
+4. `#o-nas` — bg-2 + background "01" numeral, 5 akapitów + corner-card "Dlaczego my?". Para 2 mówi "3 lata doświadczenia" (z PDF klienta), nie "wieloletnie".
 5. `#uslugi` — bg + "02" numeral, 3 service cards (Cięcie betonu, Wiercenie otworów, **Wyburzenia**) + **banner "Inne zapytanie"** (full-width dark CTA pod kartami, mailto query `ogolne`)
 6. `#realizacje` — bg-2 + "03" numeral, 3 gal-card z placeholderami
-7. `#sprzet` — bg-3 gradient, ogromny "HILTI" w tle
-8. `#kontakt` — bg + "05" numeral, 4 contact-blocks + 4 mailto-cards + iframe Google Maps. **Blok Zasięg** ma 3-kolumnowy grid: ikona | 2 pary label/value (Zasięg/Cała Polska + Baza/Grybów, Małopolska) | **mini-mapa Polski** (real outline z Natural Earth 110m, 45 punktów, CC0).
+7. `#sprzet` — bg-3 gradient, ogromny "HILTI" w tle, **2 spec-items** (DST 20-CA piła ścienna 2. gen., DD500-CA wiertnica do ⌀800mm)
+8. `#kontakt` — bg + "05" numeral. `section__head--kontakt` to 2-kolumnowy grid `1fr 1.3fr` (matchuje contact__grid poniżej): h2 z lewej, brand byline (`hero__byline--static`) z prawej (justify-self: start, align-self: end). Niżej 4 contact-blocks (Telefon, E-mail, Siedziba z **"Otwórz w Mapach Google" pill button**, Zasięg) + 4 mailto-cards (czwarty `mailto-card--inverted` dark bg matching service-other) + iframe Google Maps. **Blok Zasięg** ma **4-kolumnowy** grid: `52px auto auto 1fr` — ikona | text pair | mini-mapa | buffer 1fr (zapobiega drift mapy na prawą krawędź viewport). **Mini-mapa Polski** real outline z Natural Earth 110m (45 punktów, CC0), width `clamp(78px, 14vw, 110px)` — skaluje się na mobile, znika dopiero ≤380px.
 9. **Footer** — bg-2, brand+dane+kontakt
 
 **Persistent UI**:
@@ -198,7 +198,7 @@ Te dane są w **wielu miejscach**: nav 2 phone buttons, footer, contact-blocks, 
 
 Real outline kartograficzny z **Natural Earth 110m admin_0_countries** (CC0, public domain). Source: `github.com/martynafford/natural-earth-geojson`. 45 punktów, Mercator-projected (lon_scale = cos(lat_mid) dla ~52°N Poland). ViewBox 0 0 24 24, stroke-width 0.55. Path zaczyna się od `M 21.35 5.25 L 21.44 6.76 ...`. **NIE rysować ręcznie** — Polak rozpozna fake'a.
 
-Generator (jeśli trzeba update): Python script z `ne_110m_admin_0_countries.json`, w komentarzu w README dla `scripts/`.
+Generator (jeśli kiedyś trzeba update mapy): pobrać `ne_110m_admin_0_countries.json` z [martynafford/natural-earth-geojson](https://github.com/martynafford/natural-earth-geojson), w Pythonie (np. ad-hoc skrypt — nie commitowany w repo) wyekstrahować MultiPolygon dla Polski, sprojektować Mercatorem (`lon_scale = cos(lat_mid)`), zaokrąglić do 2 miejsc po przecinku, złożyć SVG path. Aktualny path siedzi inline w `index.html` w bloku Zasięg — wystarczy podmienić.
 
 ## SEO setup
 
@@ -574,7 +574,7 @@ Trzy niezależne warstwy. Nawet jeśli przyszły edytor wpisze "Kontakt@..." w d
 
 Spójność wizualna: gdziekolwiek "inne zapytanie" pojawia się, ma ten sam dark+gold akcent. Implementacja przez `.mailto-card--inverted` modifier (sekcja 5) lub `.service-other` banner (sekcja 2).
 
-## 34. Mobile hamburger menu — phones-section pattern
+## 34. Mobile hamburger menu — phones-section pattern (HTML/CSS struktura)
 
 **Project-specific HTML/CSS structure** dla `.mobile-menu`:
 
@@ -588,12 +588,7 @@ Spójność wizualna: gdziekolwiek "inne zapytanie" pojawia się, ma ten sam dar
     └── li.a → <span class="mobile-menu__num">01</span><span>O nas</span>
 ```
 
-JS toggle pattern:
-- `aria-expanded` na burger
-- `data-open` attribute na panel + scrim (CSS transition opacity/translateY)
-- `hidden` attribute removed BEFORE animating + `void el.offsetWidth` żeby transition zalapal
-- Close on: Escape (+ refocus burger), scrim click, link click, resize >=1081
-- `setTimeout(240ms)` przed `hidden = true` żeby fade-out animation dograł
+JS toggle pattern (close, scrim click, Escape, link click, resize ≥1081 → close) — **patrz pattern #41 dla aktualnego `inert`-based wzorca + focus trap**. (Wcześniejsza wersja oparta o `hidden` + `setTimeout(240ms)` została superseded — `inert` blokuje fokus/AT natychmiast bez czekania na koniec animacji.)
 
 ## 35. JS reflow trick dla transition po `hidden`
 
