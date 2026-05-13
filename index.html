@@ -1269,18 +1269,27 @@
     .hero__stats {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 0;
+      gap: 0 clamp(12px, 1.6vw, 24px);  /* równy odstęp między statami */
       border-top: 1px solid var(--line-strong);
       padding-top: 28px;
       opacity: 0;
       animation: fadeUp 1.1s ease forwards;
       animation-delay: .9s;
+      list-style: none;
+      margin: 0;
     }
+    /* Content statów wycentrowany w 1fr komórce — odstępy do sąsiadów
+       są wizualnie równe niezależnie od szerokości treści (Ø800mm szerokie
+       vs PL krótkie). Wcześniejsze border-right tworzyło sztuczne podziały
+       które uwypuklały nierówność treści. */
     .stat {
-      padding-right: 20px;
-      border-right: 1px solid var(--line);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
     }
-    .stat:last-child { border-right: none; }
     .stat__num {
       font-family: var(--font-display);
       font-weight: 800;
@@ -1288,13 +1297,32 @@
       line-height: 0.95;
       letter-spacing: -0.005em;
       color: var(--fg);
-      margin-bottom: 10px;
       display: block;
       font-variation-settings: 'opsz' 48;
+      /* gap odstąpu do label przez flex gap na .stat (10px) — nie margin-bottom */
     }
     .stat__num em {
       font-style: normal;
       color: var(--accent);
+    }
+    /* Znak średnicy (ic-diameter) — adaptywny SVG zamiast Unicode Ø (Big Shoulders
+       renderuje go jak przekreślone zero, elongated). Symbol w body, użyty przez
+       <use>, kolor przez currentColor — dziedziczy z kontekstu (em → accent w hero
+       stat, plain → muted w mailto-desc, etc.). Sizing w em żeby skalował się
+       z font-size każdego miejsca uzycia. */
+    .ic-diameter {
+      display: inline-block;
+      width: 0.78em;
+      height: 0.78em;
+      vertical-align: -0.08em;
+    }
+    /* Wrapper <em> wokół ikony w hero stat — daje gold akcent przez .stat__num em rule.
+       White-space: nowrap zapobiega lamaniu "Ø 800mm" na 2 linie. */
+    .ic-diameter-wrap {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 0.06em;
+      white-space: nowrap;
     }
     /* Wariant tekstowy dla statow ktorych "num" to slowo a nie cyfra
        (np. "Beton + Żelbet"). Skali sie bliska big nums — łamie się
@@ -1316,13 +1344,9 @@
       text-transform: uppercase;
       color: var(--muted);
     }
-    /* 5 statów: średnie ekrany (≤1080px) → 3 kolumny, małe (≤600px) → 2.
-       Na zwiniętych layoutach borderów dotted nie liczymy — gap między
-       rzedami daje wizualny separator bez calc gymnastyki dla 5-items
-       wrapowanych w 2/3 kolumnach. */
+    /* 5 statów: średnie ekrany (≤1080px) → 3 kolumny, małe (≤600px) → 2. */
     @media (max-width: 1080px) {
       .hero__stats { grid-template-columns: repeat(3, 1fr); gap: 28px 16px; }
-      .stat { border-right: none; padding-right: 0; padding-bottom: 0; }
     }
     @media (max-width: 600px) {
       .hero__stats { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
@@ -2291,6 +2315,16 @@
   </nav>
   <div class="mobile-menu__scrim" inert aria-hidden="true"></div>
 
+  <!-- SVG icon sprite — symbols zdefiniowane raz, używane przez <use> wielokrotnie.
+       ic-diameter zastępuje Latin Ø (wygląda jak przekreślone zero w display fontach)
+       i Unicode ⌀ (brak w większości fontów display) idealnie okrągłym znakiem. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="ic-diameter" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="11"/>
+      <line x1="22" y1="78" x2="78" y2="22" stroke="currentColor" stroke-width="11" stroke-linecap="round"/>
+    </symbol>
+  </svg>
+
   <main id="main" tabindex="-1">
 
   <!-- ─── HERO ─────────────────────────────────────────────────── -->
@@ -2338,7 +2372,7 @@
 
       <ul class="hero__stats">
         <li class="stat">
-          <span class="stat__num"><em>Ø</em>800<em>mm</em></span>
+          <span class="stat__num"><em class="ic-diameter-wrap" aria-label="średnica"><svg class="ic-diameter" aria-hidden="true"><use href="#ic-diameter"/></svg></em>800<em>mm</em></span>
           <span class="stat__label">Maks. średnica wiercenia</span>
         </li>
         <li class="stat">
@@ -2365,13 +2399,13 @@
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
       <div class="marquee__item"><span>Cięcie diamentowe</span></div>
-      <div class="marquee__item"><span>Wiercenie do Ø800mm</span></div>
+      <div class="marquee__item"><span>Wiercenie do <svg class="ic-diameter" aria-hidden="true"><use href="#ic-diameter"/></svg>800mm</span></div>
       <div class="marquee__item"><span>Wyburzenia</span></div>
       <div class="marquee__item"><span>Sprzęt Hilti</span></div>
       <div class="marquee__item"><span>Cała Polska</span></div>
       <!-- duplikat dla seamless loop -->
       <div class="marquee__item"><span>Cięcie diamentowe</span></div>
-      <div class="marquee__item"><span>Wiercenie do Ø800mm</span></div>
+      <div class="marquee__item"><span>Wiercenie do <svg class="ic-diameter" aria-hidden="true"><use href="#ic-diameter"/></svg>800mm</span></div>
       <div class="marquee__item"><span>Wyburzenia</span></div>
       <div class="marquee__item"><span>Sprzęt Hilti</span></div>
       <div class="marquee__item"><span>Cała Polska</span></div>
@@ -2488,7 +2522,7 @@
             Wiercenie w żelbecie i betonie pod różnymi kątami o średnicy nawet 800 mm.
             Idealne pod instalacje elektryczne, hydrauliczne i wentylacyjne.
           </p>
-          <p class="service__spec">Wiertnica Hilti DD500-CA · do Ø800mm</p>
+          <p class="service__spec">Wiertnica Hilti DD500-CA · do <svg class="ic-diameter" aria-hidden="true"><use href="#ic-diameter"/></svg>800mm</p>
           <a class="service__cta" href="#kontakt" data-mailto="wiercenie">
             Zapytaj o tę usługę
             <span aria-hidden="true">→</span>
@@ -2576,7 +2610,7 @@
         <article class="gal-card placeholder placeholder-pattern-2 reveal">
           <div class="gal-card__body">
             <span class="gal-card__num">/ 02</span>
-            <h3 class="gal-card__title">Wiercenie Ø250</h3>
+            <h3 class="gal-card__title">Wiercenie <svg class="ic-diameter" aria-hidden="true"><use href="#ic-diameter"/></svg>250</h3>
             <p class="gal-card__desc">Otwór pod wentylację · obiekt przemysłowy</p>
           </div>
         </article>
@@ -2619,7 +2653,7 @@
             <span class="spec-item__name">Piła ścienna 2. generacji</span>
           </div>
           <div class="spec-item">
-            <span class="spec-item__code">DD500-CA · do Ø800mm</span>
+            <span class="spec-item__code">DD500-CA · do <svg class="ic-diameter" aria-hidden="true"><use href="#ic-diameter"/></svg>800mm</span>
             <span class="spec-item__name">Wiertnica diamentowa</span>
           </div>
         </div>
@@ -2743,7 +2777,7 @@
             <a class="mailto-card" href="#kontakt" data-mailto="wiercenie">
               <div>
                 <h3 class="mailto-card__title">Wiercenie otworów</h3>
-                <p class="mailto-card__desc">Otwory do Ø800mm w żelbecie i betonie</p>
+                <p class="mailto-card__desc">Otwory do <svg class="ic-diameter" aria-hidden="true"><use href="#ic-diameter"/></svg>800mm w żelbecie i betonie</p>
               </div>
               <span class="mailto-card__arrow" aria-hidden="true">→</span>
             </a>
