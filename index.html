@@ -566,6 +566,86 @@
       --accent-rgb:    200, 51, 110;
     }
 
+    /* E — palety konkurencji (~75% polskiej niszy ciecia/wyburzen uzywa
+       jednego z trzech archetypow: Hilti red, safety orange + navy, albo
+       corporate blue). Czwarta — Arcad — jedyny outlier ciepły, najblizszy
+       wizualnie KFDIAMENT (warm taupe + gold + steel blue). Wlaczone do
+       paneli testowych do porownania z klientem, NIE do produkcji.
+       Zrodla hex: RAB, PROFIDIAM, DW BETA, KBS Diament, Polska Grupa
+       Wyburzeniowa, Arcad — scraped z CSS / oszacowane wizualnie. */
+
+    /* 1. Hilti red — RAB, DiamRing, agresywny industrial BHP */
+    :root[data-theme="comp-hilti-red"] {
+      --bg:            #f7f5f1;
+      --bg-2:          #ebe7df;
+      --bg-3:          #d9d3c7;
+      --fg:            #161616;
+      --muted:         #555048;
+      --line:          #c7bfb0;
+      --line-strong:   #6b6258;
+      --accent:        #ea2700;
+      --accent-hover:  #b81f00;
+      --accent-2:      #f7b403;
+      --accent-deep:   #8a1600;
+      --bg-rgb:        247, 245, 241;
+      --fg-rgb:        22, 22, 22;
+      --accent-rgb:    234, 39, 0;
+    }
+
+    /* 2. Safety orange + navy — DW BETA, Konkret, BHP korporacyjne */
+    :root[data-theme="comp-safety-orange"] {
+      --bg:            #f5f3ee;
+      --bg-2:          #e6e1d4;
+      --bg-3:          #d2cab8;
+      --fg:            #1a3a52;
+      --muted:         #466078;
+      --line:          #bdb5a1;
+      --line-strong:   #6a7888;
+      --accent:        #ff6b35;
+      --accent-hover:  #d04a18;
+      --accent-2:      #ff8c5a;
+      --accent-deep:   #8a2e0a;
+      --bg-rgb:        245, 243, 238;
+      --fg-rgb:        26, 58, 82;
+      --accent-rgb:    255, 107, 53;
+    }
+
+    /* 3. Corporate blue — KBS Diament, Polska Grupa Wyburzeniowa, B2B trust */
+    :root[data-theme="comp-corp-blue"] {
+      --bg:            #ffffff;
+      --bg-2:          #f1f4f8;
+      --bg-3:          #dde3ec;
+      --fg:            #1f2937;
+      --muted:         #54616f;
+      --line:          #cdd4de;
+      --line-strong:   #6e7886;
+      --accent:        #006b9e;
+      --accent-hover:  #004d72;
+      --accent-2:      #2b8cc4;
+      --accent-deep:   #002f48;
+      --bg-rgb:        255, 255, 255;
+      --fg-rgb:        31, 41, 55;
+      --accent-rgb:    0, 107, 158;
+    }
+
+    /* 4. Arcad — taupe + deep gold + steel blue, premium, najblizszy KFDIAMENT */
+    :root[data-theme="comp-arcad"] {
+      --bg:            #e8e2d3;
+      --bg-2:          #dcd4c0;
+      --bg-3:          #c9bfa6;
+      --fg:            #2a2620;
+      --muted:         #6a5e4a;
+      --line:          #b6a574;
+      --line-strong:   #806f44;
+      --accent:        #d99000;
+      --accent-hover:  #a86a00;
+      --accent-2:      #56809c;
+      --accent-deep:   #5a3e00;
+      --bg-rgb:        232, 226, 211;
+      --fg-rgb:        42, 38, 32;
+      --accent-rgb:    217, 144, 0;
+    }
+
     /* === KONIEC PALET TESTOWYCH ======================================= */
 
     *,
@@ -2809,6 +2889,12 @@
       <optgroup label="D — nieoczywiste">
         <option value="moss-brass">Mech i mosiądz</option>
         <option value="concrete-plasma">Beton + magenta</option>
+      </optgroup>
+      <optgroup label="E — palety konkurencji (porównanie)">
+        <option value="comp-hilti-red">Hilti red (RAB-style)</option>
+        <option value="comp-safety-orange">Safety orange + navy (DW BETA)</option>
+        <option value="comp-corp-blue">Corporate blue (KBS Diament)</option>
+        <option value="comp-arcad">Arcad — taupe + gold + steel</option>
       </optgroup>
     </select>
     <button type="button" class="theme-panel__btn" data-theme-action="reset" aria-label="Przywróć paletę domyślną">Reset</button>
