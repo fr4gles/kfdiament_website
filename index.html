@@ -1896,10 +1896,15 @@
       outline: 2px solid var(--accent-hover);
       outline-offset: 3px;
     }
-    /* Zasieg block — 3 kolumny (override .contact-block base): ikona | text | mapa Polski */
+    /* Zasieg block — 4 kolumny (override .contact-block base):
+       ikona (52px) | text (auto) | mapa (auto) | buffer (1fr).
+       Wczesniejsza wersja miala 'text:1fr' — to rozpychalo text na cala szerokosc
+       i pchalo mape na prawa krawedz. Teraz tekst i mapa sa side-by-side z fixed
+       gap; reszta przestrzeni siedzi po prawej jako pusty buffer (1fr). */
     .contact-block.contact-block--zasieg {
-      grid-template-columns: 52px 1fr auto;
+      grid-template-columns: 52px auto auto 1fr;
       align-items: center;
+      column-gap: clamp(20px, 3vw, 36px);
     }
     .contact-block.contact-block--zasieg .contact-icon {
       align-self: flex-start;
@@ -1918,7 +1923,7 @@
       stroke-linecap: round;
     }
     @media (max-width: 540px) {
-      .contact-block.contact-block--zasieg { grid-template-columns: 52px 1fr; }
+      .contact-block.contact-block--zasieg { grid-template-columns: 52px 1fr; column-gap: 18px; }
       .zasieg-map { display: none; }
     }
     .contact-icon {
