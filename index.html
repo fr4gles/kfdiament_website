@@ -653,9 +653,163 @@
       height: 14px;
       flex-shrink: 0;
     }
+    /* Domyslnie pokaz pelny numer, krotki ukryty. Aria-label na <a> trzyma
+       pelna wartosc dla AT niezaleznie od tego co jest widoczne. */
+    .nav__phone-short { display: none; }
+    .nav__phone-full  { display: inline; }
 
     @media (max-width: 900px) {
       .nav__links { display: none; }
+    }
+
+    /* === Hamburger button — widoczny tylko gdy .nav__links ukryte === */
+    .nav__burger {
+      display: none;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid var(--line-strong);
+      background: transparent;
+      border-radius: 999px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+    }
+    .nav__burger-lines {
+      position: relative;
+      width: 18px;
+      height: 14px;
+      display: block;
+    }
+    .nav__burger-lines span {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--fg);
+      border-radius: 2px;
+      transition: transform 240ms ease, opacity 200ms ease, top 240ms ease;
+    }
+    .nav__burger-lines span:nth-child(1) { top: 0; }
+    .nav__burger-lines span:nth-child(2) { top: 6px; }
+    .nav__burger-lines span:nth-child(3) { top: 12px; }
+    @media (hover: hover) and (pointer: fine) {
+      .nav__burger:hover { background: var(--accent); border-color: var(--accent); }
+      .nav__burger:hover .nav__burger-lines span { background: var(--bg); }
+    }
+    .nav__burger:focus-visible {
+      outline: 2px solid var(--accent-hover);
+      outline-offset: 3px;
+    }
+    /* Open state: morph hamburger -> X */
+    .nav__burger[aria-expanded="true"] .nav__burger-lines span:nth-child(1) {
+      top: 6px;
+      transform: rotate(45deg);
+    }
+    .nav__burger[aria-expanded="true"] .nav__burger-lines span:nth-child(2) {
+      opacity: 0;
+    }
+    .nav__burger[aria-expanded="true"] .nav__burger-lines span:nth-child(3) {
+      top: 6px;
+      transform: rotate(-45deg);
+    }
+    @media (max-width: 900px) {
+      .nav__burger { display: inline-flex; }
+    }
+
+    /* === Mobile menu panel === */
+    .mobile-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: rgba(245, 241, 232, 0.98);
+      backdrop-filter: saturate(140%) blur(14px);
+      -webkit-backdrop-filter: saturate(140%) blur(14px);
+      border-bottom: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      box-shadow: 0 24px 48px -16px rgba(26, 22, 20, 0.18);
+      padding: 8px clamp(16px, 4vw, 32px) 16px;
+      transform: translateY(-12px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+    .mobile-menu[data-open="true"] {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    @supports not (backdrop-filter: blur(1px)) {
+      .mobile-menu { background: rgba(245, 241, 232, 1); }
+    }
+    .mobile-menu__links {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .mobile-menu__links li + li {
+      border-top: 1px solid var(--line);
+    }
+    .mobile-menu__links a {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 16px 6px;
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--fg);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: color 180ms ease, padding-left 180ms ease;
+    }
+    .mobile-menu__num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      flex-shrink: 0;
+      min-width: 22px;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .mobile-menu__links a:hover {
+        color: var(--accent-hover);
+        padding-left: 12px;
+      }
+    }
+    .mobile-menu__links a:focus-visible {
+      outline: 2px solid var(--accent-hover);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+    /* Scrim — dimmed background pod panelem, lapie clicks na zamkniecie */
+    .mobile-menu__scrim {
+      position: fixed;
+      inset: var(--nav-h) 0 0 0;
+      background: rgba(26, 22, 20, 0.32);
+      z-index: 49;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease;
+    }
+    .mobile-menu__scrim[data-open="true"] {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    /* Desktop: panel + scrim nigdy widoczne */
+    @media (min-width: 901px) {
+      .mobile-menu, .mobile-menu__scrim { display: none !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mobile-menu, .mobile-menu__scrim { transition: none; }
+      .nav__burger-lines span { transition: none; }
     }
     /* No-mans-land: między 900px (linki znikają) a 640px (kompaktowy phone padding).
        Przy ~700-820px brand + 2 phones bez tego breakpointu wypycha prawy
@@ -701,15 +855,34 @@
       .brand__mark { width: 30px; height: 30px; }
       .brand { gap: 9px; }
     }
+    /* Ciasno (iPhone SE / Mini / display zoom): pokaz krotki suffix "..232/..182",
+       zmniejsz hamburger, zwiń brand wordmark — żeby nic nie wyciekło poza viewport. */
+    @media (max-width: 420px) {
+      .nav__phone-full  { display: none; }
+      .nav__phone-short { display: inline; }
+      .nav__phone svg { display: none; }
+      .nav__phone { padding: 8px 10px; font-size: 12.5px; gap: 0; letter-spacing: 0.02em; }
+      .nav__phones { gap: 4px; }
+      .nav__burger { width: 38px; height: 38px; }
+      .nav__burger-lines { width: 16px; height: 12px; }
+      .nav__burger-lines span:nth-child(2) { top: 5px; }
+      .nav__burger-lines span:nth-child(3) { top: 10px; }
+      .nav__burger[aria-expanded="true"] .nav__burger-lines span:nth-child(1),
+      .nav__burger[aria-expanded="true"] .nav__burger-lines span:nth-child(3) { top: 5px; }
+    }
     @media (max-width: 380px) {
       .nav__inner {
         padding-inline-start: max(12px, env(safe-area-inset-left));
         padding-inline-end: max(12px, env(safe-area-inset-right));
+        gap: 6px;
       }
-      .nav__phones { gap: 4px; }
-      .nav__phone { padding: 9px 9px; font-size: 11.5px; }
-      .nav__phone svg { display: none; }
-      .brand__text { font-size: 17px; }
+      .nav__phone { padding: 8px 9px; font-size: 12px; }
+      .brand__text { font-size: 16px; }
+      .brand__mark { width: 28px; height: 28px; }
+      .brand { gap: 7px; }
+    }
+    @media (max-width: 340px) {
+      .brand__text { display: none; }
     }
 
     /* ─── Hero ─────────────────────────────────────────────────── */
@@ -990,8 +1163,27 @@
     .hero__byline--static {
       animation: none;
       opacity: 1;
-      margin-top: 32px;
+      margin-top: 0;
       margin-bottom: 0;
+    }
+    /* Wariant prawokolumnowy w #kontakt: dosuniety do prawej krawedzi
+       prawej kolumny grida, marginesem nizej oddziela od pierwszej mailto-card.
+       display: grid (zamiast inline-grid z bazy) + width: max-content +
+       margin-left: auto = block-level + sized-to-content + push-right. */
+    .hero__byline--right {
+      display: grid;
+      width: max-content;
+      max-width: 100%;
+      margin-left: auto;
+      margin-bottom: 32px;
+    }
+    /* Na waskich ekranach grid kolapsuje do 1fr — byline ma byc po lewej
+       (z spojnym wyrównaniem z mailto-cards ponizej) i z mniejszym marginem. */
+    @media (max-width: 900px) {
+      .hero__byline--right {
+        margin-left: 0;
+        margin-bottom: 24px;
+      }
     }
     .hero__byline-text {
       display: flex;
@@ -1797,6 +1989,29 @@
       margin: 0 0 6px;
       font-variation-settings: 'opsz' 18;
     }
+    /* Wariant inverted — analogicznie do banneru "Inne zapytanie" w sekcji 2 (#uslugi).
+       Spojny system: 4. CTA z ogolnym zapytaniem zawsze ma dark bg / gold accent. */
+    .mailto-card--inverted {
+      background: var(--fg);
+      border-color: var(--fg);
+      color: var(--bg);
+    }
+    .mailto-card--inverted .mailto-card__desc {
+      color: rgba(245, 241, 232, 0.72);
+    }
+    .mailto-card--inverted .mailto-card__arrow {
+      color: var(--accent-2);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .mailto-card--inverted:hover {
+        background: var(--accent-deep);
+        border-color: var(--accent-deep);
+        color: var(--bg);
+      }
+      .mailto-card--inverted:hover .mailto-card__desc {
+        color: rgba(245, 241, 232, 0.88);
+      }
+    }
     .mailto-card__desc {
       font-size: 0.92rem;
       line-height: 1.4;
@@ -1986,17 +2201,37 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/>
           </svg>
-          <span>511 478 232</span>
+          <span class="nav__phone-full">511 478 232</span>
+          <span class="nav__phone-short" aria-hidden="true">·232</span>
         </a>
         <a class="nav__phone" href="tel:+48511478182" aria-label="Biuro — zadzwoń: +48 511 478 182">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/>
           </svg>
-          <span>511 478 182</span>
+          <span class="nav__phone-full">511 478 182</span>
+          <span class="nav__phone-short" aria-hidden="true">·182</span>
         </a>
       </div>
+      <button class="nav__burger" type="button"
+              aria-label="Otwórz menu"
+              aria-expanded="false"
+              aria-controls="mobile-menu">
+        <span class="nav__burger-lines" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu" hidden>
+      <ul class="mobile-menu__links" role="list">
+        <li><a href="#o-nas"><span class="mobile-menu__num">01</span><span>O nas</span></a></li>
+        <li><a href="#uslugi"><span class="mobile-menu__num">02</span><span>Usługi</span></a></li>
+        <li><a href="#realizacje"><span class="mobile-menu__num">03</span><span>Realizacje</span></a></li>
+        <li><a href="#sprzet"><span class="mobile-menu__num">04</span><span>Sprzęt</span></a></li>
+        <li><a href="#kontakt"><span class="mobile-menu__num">05</span><span>Kontakt</span></a></li>
+      </ul>
     </div>
   </nav>
+  <div class="mobile-menu__scrim" hidden aria-hidden="true"></div>
 
   <main id="main" tabindex="-1">
 
@@ -2329,18 +2564,9 @@
   <section class="section section--with-num" id="kontakt">
     <span class="section__num-bg section__num-bg--left" aria-hidden="true">05</span>
     <div class="container">
-      <div class="section__head section__head--kontakt reveal">
-        <div class="section__head-titles">
-          <a class="section-label" href="#kontakt" aria-label="Sekcja 05 — Kontakt">05 — Kontakt</a>
-          <h2 class="section-title">Powiedz nam,<br>co <em>wyciąć.</em></h2>
-        </div>
-        <p class="hero__byline hero__byline--static" aria-label="Realizuje KFDIAMENT Obrębski Motyka Spółka jawna">
-          <span class="hero__byline-text">
-            <span class="hero__byline-key">Realizuje</span>
-            <span class="hero__byline-brand">KFDIAMENT</span>
-            <span class="hero__byline-sub">Obrębski · Motyka <em>Sp. j.</em></span>
-          </span>
-        </p>
+      <div class="section__head reveal">
+        <a class="section-label" href="#kontakt" aria-label="Sekcja 05 — Kontakt">05 — Kontakt</a>
+        <h2 class="section-title">Powiedz nam,<br>co <em>wyciąć.</em></h2>
       </div>
 
       <div class="contact__grid">
@@ -2430,6 +2656,13 @@
         </div>
 
         <div class="reveal">
+          <p class="hero__byline hero__byline--static hero__byline--right" aria-label="Realizuje KFDIAMENT Obrębski Motyka Spółka jawna">
+            <span class="hero__byline-text">
+              <span class="hero__byline-key">Realizuje</span>
+              <span class="hero__byline-brand">KFDIAMENT</span>
+              <span class="hero__byline-sub">Obrębski · Motyka <em>Sp. j.</em></span>
+            </span>
+          </p>
           <div class="mailto-stack">
             <a class="mailto-card" href="#kontakt" data-mailto="ciecie">
               <div>
@@ -2452,7 +2685,7 @@
               </div>
               <span class="mailto-card__arrow" aria-hidden="true">→</span>
             </a>
-            <a class="mailto-card" href="#kontakt" data-mailto="ogolne">
+            <a class="mailto-card mailto-card--inverted" href="#kontakt" data-mailto="ogolne">
               <div>
                 <h3 class="mailto-card__title">Inne zapytanie</h3>
                 <p class="mailto-card__desc">Konsultacja, niestandardowy zakres prac</p>
@@ -2555,6 +2788,57 @@
         el.textContent = addr;
         el.removeAttribute('rel');
       });
+
+      // ─── mobile hamburger menu ──────────────────────────────────
+      const burger = document.querySelector('.nav__burger');
+      const menu   = document.getElementById('mobile-menu');
+      const scrim  = document.querySelector('.mobile-menu__scrim');
+      if (burger && menu && scrim) {
+        const closeMenu = function () {
+          if (burger.getAttribute('aria-expanded') !== 'true') return;
+          burger.setAttribute('aria-expanded', 'false');
+          burger.setAttribute('aria-label', 'Otwórz menu');
+          menu.removeAttribute('data-open');
+          scrim.removeAttribute('data-open');
+          // Pozwol animacji opacity dograć, potem hidden żeby AT/Tab nie wchodzilo
+          setTimeout(function () {
+            if (burger.getAttribute('aria-expanded') !== 'true') {
+              menu.hidden = true;
+              scrim.hidden = true;
+            }
+          }, 240);
+        };
+        const openMenu = function () {
+          menu.hidden = false;
+          scrim.hidden = false;
+          // Force reflow przed data-open, zeby transition zalapal
+          void menu.offsetWidth;
+          burger.setAttribute('aria-expanded', 'true');
+          burger.setAttribute('aria-label', 'Zamknij menu');
+          menu.setAttribute('data-open', 'true');
+          scrim.setAttribute('data-open', 'true');
+        };
+        burger.addEventListener('click', function () {
+          if (burger.getAttribute('aria-expanded') === 'true') closeMenu();
+          else openMenu();
+        });
+        scrim.addEventListener('click', closeMenu);
+        menu.querySelectorAll('a').forEach(function (a) {
+          a.addEventListener('click', closeMenu);
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') {
+            closeMenu();
+            burger.focus();
+          }
+        });
+        // Gdy resize na desktop, zamknij menu zeby stan byl czysty
+        window.addEventListener('resize', function () {
+          if (window.innerWidth >= 901 && burger.getAttribute('aria-expanded') === 'true') {
+            closeMenu();
+          }
+        });
+      }
 
       // ─── mailto generator ──────────────────────────────────────
       const EMAIL = 'kontakt' + '@' + 'kfdiament.pl';
