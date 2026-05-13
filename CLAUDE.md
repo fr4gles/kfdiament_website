@@ -1,58 +1,42 @@
 # CLAUDE.md — kontekst projektu dla przyszłych sesji
 
-Ten plik jest dla **przyszłych iteracji Claude Code** pracujących nad tym repozytorium. Zawiera kluczowe decyzje, konwencje, **patterns z poprzednich sesji**, i pułapki — żeby nie odkrywać tego samego za każdym razem.
+Plik dla przyszłych iteracji Claude Code w tym repo. Kluczowe decyzje, konwencje, patterns z poprzednich sesji.
 
-## 🎓 Samouczenie — ZAWSZE na koniec sesji (META-REGUŁA)
+## Samouczenie — meta-reguła
 
-**Pod koniec każdej sesji rozkminić, czego można było się nauczyć**, i wpisać to do tego pliku jako nową regułę/pattern. Bez tego za miesiąc te same błędy popełnimy od nowa.
-
-Co konkretnie wyciągać:
-1. **Każdy znajdź Copilota** — co kazał poprawić, dlaczego, co była przyczyna źródłowa
-2. **Własne obserwacje** — zauważone anty-patterny, decyzje projektowe, świadome wybory technologiczne
-3. **UX feedback od klienta** — co kazał zmienić, dlaczego, jaki to wzorzec percepcyjny (np. "wypierdek" → drop short suffix, "brzydko wygląda" → hard pivot)
-4. **Proces — co poszło źle/dobrze** — np. że Copilot powtarza stare wątki gdy nierozwiązane, że trzeba `resolve all` po fixie, że PR description rotuje
-
-Format: nowy `## NN. Tytuł` w sekcji "Patterns & lessons learned" niżej. Lead z **anty-patternem**, potem **wzorcem**, potem **kiedy stosować**. Konkretnie i krótko — bez wody.
-
-Po dopisaniu reguł — `commit` + `push`, żeby było w pamięci git.
+Pod koniec każdej sesji wyciągnij wnioski i dopisz jako nowy `## NN. Tytuł` w sekcji Patterns niżej. Co wyciągać: findy Copilota, własne obserwacje, UX feedback klienta, observations o procesie. Format: anty-pattern → wzorzec → kiedy. Po dopisaniu commit + push.
 
 ---
 
 ## Czym jest projekt
 
-Statyczna **strona-wizytówka** firmy **KFDIAMENT Obrębski Motyka Spółka jawna** (cięcie i wiercenie diamentowe betonu, wyburzenia konstrukcji — działają na terenie całej Polski, siedziba: Grybów, Grunwaldzka 9).
-
-Hostowana na **Cloudflare Pages** (free tier), domena docelowa: **kfdiament.pl**. GitHub remote: `fr4gles/kfdiament_website`.
+Statyczna strona-wizytówka firmy KFDIAMENT Obrębski Motyka Spółka jawna (cięcie i wiercenie diamentowe betonu, wyburzenia konstrukcji, cała Polska, siedziba: Grybów, Grunwaldzka 9). Hosting: Cloudflare Pages (free tier), domena: kfdiament.pl. Remote: `fr4gles/kfdiament_website`.
 
 ## Stack — świadome ograniczenia
 
-To **NIE jest** projekt JS-framework. Świadomie:
+NIE jest to JS-framework. Świadomie:
 
-- **Jeden plik** `index.html` (HTML + CSS + JS inline, ~3000 linii, ~100 KB). Nie rozbijać na osobne pliki bez bardzo dobrego powodu.
-- **Vanilla JS** — bez React, Vue, frameworków. Skrypt ma ~180 linii (mailto generator, email obfuscation, hamburger menu z focus trap, scroll progress, IntersectionObserver).
-- **Bez build-stepu** — `package.json` nie ma i nie powinno się pojawić.
-- **Bez npm/yarn/pnpm**.
-- **Self-hosted fonty (woff2)** w `/fonts/` — Big Shoulders + Manrope + JetBrains Mono (variable, latin + latin-ext, 6 plików, ~180 KB total). **NIE używamy Google Fonts CDN** — wszystko same-origin dla performance i GDPR.
-- **Bez CSS frameworków** (Tailwind, Bootstrap, etc.).
-- **Bez bibliotek JS** (lightbox, slider, animation library — wszystko vanilla).
+- Jeden plik `index.html` (HTML+CSS+JS inline, ~3000 linii, ~100 KB). Nie rozbijać bez dobrego powodu.
+- Vanilla JS (~180 linii: mailto generator, email obfuscation, hamburger z focus trap, scroll progress, IntersectionObserver).
+- Bez build-stepu, bez `package.json`, bez npm/yarn/pnpm.
+- Self-hosted woff2 w `/fonts/` — Big Shoulders + Manrope + JetBrains Mono (variable, latin + latin-ext, 6 plików, ~180 KB). NIE Google Fonts CDN (perf + GDPR).
+- Bez CSS frameworków, bez bibliotek JS.
 
-**Powód:** Cloudflare Pages preset = `None`, build command pusty, output `/`. Cała wartość tego setupu pochodzi z prostoty.
+Powód: Cloudflare Pages preset = `None`, build pusty, output `/`. Wartość setupu = prostota.
 
 ## Struktura plików
 
 ```
 .
-├── index.html                — cała strona (jeden plik, ~80 KB)
+├── index.html                — cała strona (~80 KB)
 ├── _headers                  — Cloudflare HTTP headers (security + cache)
-├── README.md                 — dokumentacja dla człowieka (deploy, post-deploy, edycja)
-├── COMPARISON.md             — raport porównawczy vs diamtar.pl
-├── CLAUDE.md                 — TEN PLIK (kontekst dla przyszłego Claude)
-├── robots.txt                — pozwala indeksować + sitemap reference
-├── sitemap.xml               — jeden URL (strona główna)
+├── README.md                 — dokumentacja dla człowieka
+├── COMPARISON.md             — raport vs diamtar.pl
+├── CLAUDE.md                 — TEN PLIK
+├── robots.txt, sitemap.xml
 ├── .gitignore
 ├── scripts/
-│   └── optimize-logo.ps1     — PowerShell: PNG → WebP w 3 rozmiarach + favicony
-│                                (auto-detect: magick → ffmpeg → sharp)
+│   └── optimize-logo.ps1     — PNG → WebP w 3 rozmiarach (magick → ffmpeg → sharp)
 ├── fonts/                    — self-hosted variable woff2
 │   ├── big-shoulders-latin.woff2          57 KB
 │   ├── big-shoulders-latin-ext.woff2      44 KB
@@ -61,26 +45,25 @@ To **NIE jest** projekt JS-framework. Świadomie:
 │   ├── jetbrains-mono-latin.woff2         31 KB
 │   └── jetbrains-mono-latin-ext.woff2     11 KB
 └── img/
-    ├── README.md             — instrukcja workflow assetów
-    ├── logo.png              — ŹRÓDŁO master (obecnie 500×500, zalecane min. 512×512 dla nowych źródeł)
-    ├── logo.webp             — 512×512 WebP (nav/footer via <picture> WebP source)
-    ├── logo-1024.webp        — 1024×1024 (hero LCP, preload)
-    ├── logo-96.webp          — 96×96 (nav/footer thumbnail)
-    ├── favicon-32.png        — favicon
-    ├── apple-touch-icon.png  — 180×180 (iOS bookmark)
-    ├── og.jpg                — 1200×630 social preview (wygenerowane przez ffmpeg)
-    └── realizacja-XX.jpg     — opcjonalne: galeria
+    ├── README.md             — workflow assetów
+    ├── logo.png              — master (500×500, nowe min. 512×512)
+    ├── logo.webp             — 512×512 (nav/footer via <picture>)
+    ├── logo-1024.webp        — hero LCP, preload
+    ├── logo-96.webp          — nav/footer thumbnail
+    ├── favicon-32.png
+    ├── apple-touch-icon.png  — 180×180
+    ├── og.jpg                — 1200×630 social (ffmpeg)
+    └── realizacja-XX.jpg     — opcjonalnie: galeria
 ```
 
 ## Branch strategy
 
-- **Główny branch nazywa się `master`** (NIE `main`). Nie zmieniać.
-- Praca na branchach `feat/...`, `fix/...`, PR-y do `master`.
-- Pierwszy branch: `feat/landing-page`.
+- Główny branch to `master` (NIE `main`). Nie zmieniać.
+- Praca na `feat/...`, `fix/...`, PR-y do `master`. Pierwszy branch: `feat/landing-page`.
 
 ## Paleta kolorów
 
-**Wszystkie kolory siedzą w CSS custom properties w `:root`** w `<style>` w `index.html`. **Nigdy nie hardkodować hex codes w komponentach** — używać `var(--accent)` itd.
+Wszystkie kolory w CSS custom properties w `:root` w `<style>` w `index.html`. Nie hardkodować hex w komponentach — używać `var(--accent)` itd.
 
 | zmienna | hex | rola |
 |---|---|---|
@@ -91,30 +74,28 @@ To **NIE jest** projekt JS-framework. Świadomie:
 | `--muted` | `#5c5346` | warm graphite — drugorzędny tekst |
 | `--line` | `#c9bfa6` | hairline border |
 | `--line-strong` | `#8a7d5e` | strong divider, stroke SVG ikon |
-| `--accent` | `#a8842c` | **antique brass** — primary gold (kontrast 4.6:1 na bg = AA) |
+| `--accent` | `#a8842c` | antique brass — primary gold (kontrast 4.6:1 = AA) |
 | `--accent-hover` | `#7d5f1c` | deeper bronze, hover/active |
 | `--accent-2` | `#c9a85a` | jaśniejszy gold (borders, highlights) |
 | `--accent-deep` | `#5d4416` | darkest bronze (stamps, embossed) |
 
-**Kluczowa decyzja:** **NIE jest to Hilti red.** Wcześniejsza wersja była, ale klient pokazał logo (gold-on-black piła z K&F monogramem) i paleta została zpivotowana pod **brand identity logo**.
-
-Dark theme variant siedzi w komentarzu na początku `<style>` w `index.html`.
+Decyzja: NIE Hilti red. Klient pokazał logo (gold-on-black piła z K&F monogramem), paleta zpivotowana pod brand identity. Dark theme wariant w komentarzu na początku `<style>`.
 
 ## Typografia (self-hosted)
 
-- **Big Shoulders Display** (variable wght 500-900 + opsz 10-72) — display sans, industrial DNA (Chicago "city of big shoulders"). Dobrany świadomie po porównaniu 3 alternatyw (Bricolage Grotesque, Hanken Grotesk). Latin Extended-A coverage z naturalnymi polskimi ogonkami (ą, ę, ł, ń, ó, ś, ź, ż). **BRAK italic w rodzinie** — używamy `color: var(--accent)` + heavier weight zamiast italic na `<em>`.
-- **Manrope** — body. Geometryczny humanist sans, perfect contrast z condensed Big Shoulders display.
-- **JetBrains Mono** — etykiety techniczne (`/ 01`, `01 — O nas`, spec lines). NIE używać do długich akapitów.
+- Big Shoulders Display (variable wght 500-900 + opsz 10-72) — display sans, industrial DNA. Dobrane po porównaniu z Bricolage Grotesque i Hanken Grotesk. Latin Extended-A z polskimi ogonkami (ą, ę, ł, ń, ó, ś, ź, ż). BRAK italic — używamy `color: var(--accent)` + heavier weight na `<em>`.
+- Manrope — body. Geometryczny humanist sans, kontrast z condensed Big Shoulders.
+- JetBrains Mono — etykiety techniczne (`/ 01`, spec lines). NIE do długich akapitów.
 
-**Hero h1**: trzy-linijkowy, `clamp(2.8rem, 9.5vw, 8.2rem)`. Środkowe słowo `outline` (text-stroke jako **em-units** `0.018em` — skaluje z font-size proporcjonalnie, **bez** per-breakpoint stroke-width overrides; em-unit zapewnia że proporcja stroke/font jest spójna desktop↔mobile). Outline aktywny na wszystkich rozmiarach przez `@supports (-webkit-text-stroke)`. Trzecie `accent` (gold weight 900, BEZ italic — brutalist purity).
+Hero h1: trzy-linijkowy, `clamp(2.8rem, 9.5vw, 8.2rem)`. Środkowe słowo `outline` (text-stroke jako em-units `0.018em` — skaluje proporcjonalnie, bez per-breakpoint overrides). Aktywne na wszystkich rozmiarach przez `@supports (-webkit-text-stroke)`. Trzecie `accent` (gold weight 900, BEZ italic).
 
-**Hero brand byline** (między h1 a sub):
+Hero brand byline (między h1 a sub):
 ```html
 <p class="hero__byline">
   <span class="hero__byline-text">
-    <span class="hero__byline-key">Realizuje</span>           <!-- mono small -->
-    <span class="hero__byline-brand">KFDIAMENT</span>          <!-- Big Shoulders 800, gold, big -->
-    <span class="hero__byline-sub">Obrębski · Motyka Sp. j.</span>  <!-- Big Shoulders 600 -->
+    <span class="hero__byline-key">Realizuje</span>
+    <span class="hero__byline-brand">KFDIAMENT</span>
+    <span class="hero__byline-sub">Obrębski · Motyka Sp. j.</span>
   </span>
 </p>
 ```
@@ -122,29 +103,29 @@ Z 4px gold gradient bar `::before`. Architektoniczna tabliczka znamionowa.
 
 ## Struktura sekcji
 
-1. **Nav** — fixed top, blur, 72px wysokości. **2 osobne klikalne przyciski telefonów obok siebie** (`.nav__phones > .nav__phone × 2`), nie jeden CTA. Responsive z breakpointami nav-specific 1080px (linki znikają → hamburger), 820/640/540/460/400/360px (graceful degradacja phones: 2 → 1 → 0). **Mobile menu** (≤1080px): hamburger toggle, slide-down panel z `.mobile-menu__phones` (2 gold pill buttons z pełnymi numerami) + 5 section links. Pattern `inert` (nie `hidden`) blokuje fokus/AT natychmiast, animacja opacity/transform dograć. Plus focus trap: gdy menu open, `<main>` dostaje `inert`.
-2. **Hero** — full vh, slow-spin logo absolute clamp(360px, 52vw, 720px) anchor do `--maxw` container (nie viewport), opacity 0.18, blend mode multiply. h1 trzy-linijkowy `clamp(2.8rem, 9.5vw, 8.2rem)` z `outline` (text-stroke `max(1.4px, 0.018em)` żeby na mobile nie było sub-pixel jagged) + brand byline (link do #kontakt) + hero__sub (z bold otwarciem "Jesteśmy specjalistami w cięciu i wierceniu techniką diamentową.") + 2 CTA + **5 stats** (Ø800mm / PL / 3 lata / 2. gen. DST 20-CA / Beton+Żelbet), grid 5→3→2 columns responsive, center-aligned content (bez border-right separatorów — gap robi separator).
-3. **Marquee ticker** — czarny pas między hero a o-nas, gold-accented scrolling text **"Cięcie diamentowe · Wiercenie do ⌀800mm · Wyburzenia · Sprzęt Hilti · Cała Polska"** (5 items + duplikat dla seamless loop). 38s linear infinite, pauza on hover.
-4. `#o-nas` — bg-2 + background "01" numeral, 5 akapitów + corner-card "Dlaczego my?". Para 2 mówi "3 lata doświadczenia" (z PDF klienta), nie "wieloletnie".
-5. `#uslugi` — bg + "02" numeral, 3 service cards (Cięcie betonu, Wiercenie otworów, **Wyburzenia**) + **banner "Inne zapytanie"** (full-width dark CTA pod kartami, mailto query `ogolne`)
-6. `#realizacje` — bg-2 + "03" numeral, 3 gal-card z placeholderami
-7. `#sprzet` — bg-3 gradient, ogromny "HILTI" w tle, **2 spec-items** (DST 20-CA piła ścienna 2. gen., DD500-CA wiertnica do ⌀800mm)
-8. `#kontakt` — bg + "05" numeral. `section__head--kontakt` to 2-kolumnowy grid `1fr 1.3fr` (matchuje contact__grid poniżej): h2 z lewej, brand byline (`hero__byline--static`) z prawej (justify-self: start, align-self: end). Niżej 4 contact-blocks (Telefon, E-mail, Siedziba z **"Otwórz w Mapach Google" pill button**, Zasięg) + 4 mailto-cards (czwarty `mailto-card--inverted` dark bg matching service-other) + iframe Google Maps. **Blok Zasięg** ma **4-kolumnowy** grid: `52px auto auto 1fr` — ikona | text pair | mini-mapa | buffer 1fr (zapobiega drift mapy na prawą krawędź viewport). **Mini-mapa Polski** real outline z Natural Earth 110m (45 punktów, CC0), width `clamp(78px, 14vw, 110px)` — skaluje się na mobile, znika dopiero ≤380px.
-9. **Footer** — bg-2, brand+dane+kontakt
+1. Nav — fixed top, blur, 72px wysokości. 2 osobne klikalne phone buttons (`.nav__phones > .nav__phone × 2`). Breakpointy nav-specific: 1080px (linki znikają → hamburger), 820/640/540/460/400/360px (degradacja phones: 2 → 1 → 0). Mobile menu (≤1080px): hamburger toggle, slide-down z `.mobile-menu__phones` (2 gold pill buttons z pełnymi numerami) + 5 section links. `inert` (nie `hidden`) blokuje fokus/AT natychmiast. Focus trap: gdy menu open, `<main>` dostaje `inert`.
+2. Hero — full vh, slow-spin logo absolute clamp(360px, 52vw, 720px), anchor do `--maxw` container, opacity 0.18, blend mode multiply. h1 z `outline` (text-stroke `max(1.4px, 0.018em)`) + brand byline (link do #kontakt) + hero__sub (bold otwarcie "Jesteśmy specjalistami w cięciu i wierceniu techniką diamentową.") + 2 CTA + 5 stats (Ø800mm / PL / 3 lata / 2. gen. DST 20-CA / Beton+Żelbet), grid 5→3→2 responsive, center-aligned (gap robi separator).
+3. Marquee ticker — czarny pas między hero a o-nas, gold-accented "Cięcie diamentowe · Wiercenie do ⌀800mm · Wyburzenia · Sprzęt Hilti · Cała Polska" (5 items + duplikat dla seamless loop). 38s linear infinite, pauza on hover.
+4. `#o-nas` — bg-2 + background "01", 5 akapitów + corner-card "Dlaczego my?". Para 2 mówi "3 lata doświadczenia" (z PDF klienta), nie "wieloletnie".
+5. `#uslugi` — bg + "02", 3 service cards (Cięcie betonu, Wiercenie otworów, Wyburzenia) + banner "Inne zapytanie" (full-width dark CTA, mailto query `ogolne`).
+6. `#realizacje` — bg-2 + "03", 3 gal-card z placeholderami.
+7. `#sprzet` — bg-3 gradient, "HILTI" w tle, 2 spec-items (DST 20-CA piła ścienna 2. gen., DD500-CA wiertnica do ⌀800mm).
+8. `#kontakt` — bg + "05". `section__head--kontakt` to 2-kolumnowy grid `1fr 1.3fr`: h2 z lewej, brand byline (`hero__byline--static`) z prawej. Niżej 4 contact-blocks (Telefon, E-mail, Siedziba z "Otwórz w Mapach Google" pill button, Zasięg) + 4 mailto-cards (czwarty `mailto-card--inverted`) + iframe Google Maps. Blok Zasięg ma 4-kolumnowy grid `52px auto auto 1fr` — ikona | text pair | mini-mapa | buffer 1fr. Mini-mapa Polski z Natural Earth 110m (45 punktów, CC0), `clamp(78px, 14vw, 110px)`, znika ≤380px.
+9. Footer — bg-2, brand+dane+kontakt.
 
-**Persistent UI**:
-- **Scroll progress bar** — `<div id="scrollProgress">` na samej górze, 3px gold gradient, JS animuje width na scroll (requestAnimationFrame, passive)
-- **Klikalne section labels** — `<a class="section-label" href="#sekcja">01 — Nazwa</a>` — każda etykieta to anchor link do swojej sekcji (URL hash updates, shareable deep-links). Hover: indicator line rozszerza się 36→56px + accent-hover color.
+Persistent UI:
+- Scroll progress bar — `<div id="scrollProgress">`, 3px gold gradient, requestAnimationFrame na scroll (passive).
+- Klikalne section labels — `<a class="section-label" href="#sekcja">01 — Nazwa</a>`. Hover: indicator line 36→56px + accent-hover.
 
 ## Mailto-cards — pattern
 
-Sekcja kontakt **NIE ma `<form>`**. Zamiast tego 4 karty `<a class="mailto-card" data-mailto="KEY">`.
+Sekcja kontakt NIE ma `<form>`. 4 karty `<a class="mailto-card" data-mailto="KEY">`.
 
-**Kluczowy detal**: fallback `href="#kontakt"` (NIE `mailto:...`) — żeby HTML nie zawierał literalnego mailto: dla botów. JS na końcu pliku replace'uje href na pełny `mailto:?subject=...&body=...` z `encodeURIComponent`.
+Kluczowy detal: fallback `href="#kontakt"` (NIE `mailto:...`) — żeby HTML nie zawierał literalnego mailto: dla botów. JS replace'uje na pełny `mailto:?subject=...&body=...` z `encodeURIComponent`.
 
-**Klucze obecnie:** `ciecie`, `wiercenie`, `wyburzenia`, `ogolne`. Karta `ogolne` ma tytuł **"Inne zapytanie"** w kontekście Kontakt, ale w sekcji Usługi ten sam klucz triggeruje banner "Skontaktuj się z nami / Niestandardowy zakres prac".
+Klucze: `ciecie`, `wiercenie`, `wyburzenia`, `ogolne`. `ogolne` ma tytuł "Inne zapytanie" w Kontakt, ale w Usługach triggeruje banner "Skontaktuj się z nami / Niestandardowy zakres prac".
 
-**Subjects** — bez nawiasów/symboli technicznych:
+Subjects (bez nawiasów/symboli):
 - `Wycena - Cięcie betonu - zapytanie ze strony`
 - `Wycena - Wiercenie otworów - zapytanie ze strony`
 - `Wycena - Wyburzenia - zapytanie ze strony`
@@ -154,7 +135,7 @@ Body kończy się stopką `Wiadomość wysłana ze strony kfdiament.pl`.
 
 ## Email obfuscation — pattern
 
-Maile NIE są w plain text w body HTML. Pattern w 3 miejscach (contact-block, mailto note, footer):
+Maile NIE w plain text w HTML. Pattern w 3 miejscach (contact-block, mailto note, footer):
 
 ```html
 <a class="email-obf" data-u="kontakt" data-d="kfdiament.pl"
@@ -171,17 +152,17 @@ document.querySelectorAll('a.email-obf').forEach(el => {
 });
 ```
 
-**JSON-LD email zostaje plain** (SEO LocalBusiness wymaga). Cloudflare Email Obfuscation (włączane w Dashboard → Scrape Shield) to dodatkowa warstwa 2 — pokrywa też JSON-LD.
+JSON-LD email zostaje plain (SEO LocalBusiness wymaga). Cloudflare Email Obfuscation (Dashboard → Scrape Shield) jako warstwa 2 — pokrywa też JSON-LD.
 
 ## `_headers` (Cloudflare Pages)
 
-Plik w root repo automatycznie czytany przez Cloudflare Pages. Definiuje:
-- **Security**: HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy (blokuje camera/mic/geolocation + FLoC opt-out)
-- **Long cache 1 rok immutable**: `/fonts/*`, `/img/*` (CORS allow-origin też dla fontów)
-- **Short cache 600s must-revalidate**: HTML root + `*.html`
-- **Medium cache 3600s**: `robots.txt`, `sitemap.xml`
+Plik w root automatycznie czytany. Definiuje:
+- Security: HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy (blokuje camera/mic/geolocation + FLoC opt-out)
+- Long cache 1 rok immutable: `/fonts/*`, `/img/*` (CORS dla fontów)
+- Short cache 600s must-revalidate: HTML root + `*.html`
+- Medium cache 3600s: `robots.txt`, `sitemap.xml`
 
-Reguły aplikowane od góry — **pierwsza pasująca wygrywa**. Specific paths PRZED `/*` wildcard.
+Semantyka: reguły mergeowane per żądanie (nie first-match — patrz pattern #37).
 
 ## Dane firmy (hardkodowane — NIE zmieniać bez prośby klienta)
 
@@ -190,171 +171,152 @@ Reguły aplikowane od góry — **pierwsza pasująca wygrywa**. Specific paths P
 - REGON: `54455908000000`
 - Adres: Grunwaldzka 9, 33-330 Grybów
 - Telefony: `+48 511 478 232`, `+48 511 478 182`
-- E-mail: `kontakt@kfdiament.pl` (**zawsze małą literą**)
+- E-mail: `kontakt@kfdiament.pl` (zawsze małą literą)
 
-Te dane są w **wielu miejscach**: nav 2 phone buttons, footer, contact-blocks, JSON-LD `LocalBusiness`, hero stats, opisy. Gdy klient prosi o zmianę — `grep` po starej wartości i podmieniaj **wszędzie**.
+Dane w wielu miejscach: nav 2 phone buttons, footer, contact-blocks, JSON-LD `LocalBusiness`, hero stats. Przy zmianie — `grep` po starej wartości i podmieniaj wszędzie.
 
 ## Mapa Polski (Zasięg block)
 
-Real outline kartograficzny z **Natural Earth 110m admin_0_countries** (CC0, public domain). Source: `github.com/martynafford/natural-earth-geojson`. 45 punktów, Mercator-projected (lon_scale = cos(lat_mid) dla ~52°N Poland). ViewBox 0 0 24 24, stroke-width 0.55. Path zaczyna się od `M 21.35 5.25 L 21.44 6.76 ...`. **NIE rysować ręcznie** — Polak rozpozna fake'a.
+Real outline z Natural Earth 110m admin_0_countries (CC0). Source: `github.com/martynafford/natural-earth-geojson`. 45 punktów, Mercator-projected (lon_scale = cos(lat_mid) dla ~52°N). ViewBox 0 0 24 24, stroke-width 0.55. Path: `M 21.35 5.25 L 21.44 6.76 ...`. NIE rysować ręcznie — Polak rozpozna fake.
 
-Generator (jeśli kiedyś trzeba update mapy): pobrać `ne_110m_admin_0_countries.json` z [martynafford/natural-earth-geojson](https://github.com/martynafford/natural-earth-geojson), w Pythonie (np. ad-hoc skrypt — nie commitowany w repo) wyekstrahować MultiPolygon dla Polski, sprojektować Mercatorem (`lon_scale = cos(lat_mid)`), zaokrąglić do 2 miejsc po przecinku, złożyć SVG path. Aktualny path siedzi inline w `index.html` w bloku Zasięg — wystarczy podmienić.
+Generator (jeśli update): pobrać `ne_110m_admin_0_countries.json` z [martynafford/natural-earth-geojson](https://github.com/martynafford/natural-earth-geojson), Pythonem wyekstrahować MultiPolygon Polski, sprojektować Mercatorem, zaokrąglić do 2 miejsc, złożyć SVG path. Aktualny path inline w `index.html` w bloku Zasięg.
 
 ## SEO setup
 
 - 3 schematy JSON-LD: `LocalBusiness` z `hasOfferCatalog` (3 `Service`), `Organization`, `WebSite`
-- Open Graph + Twitter Card (z `og:image` 1200×630 — plik DO DOROBIENIA)
+- Open Graph + Twitter Card (`og:image` 1200×630 — plik do dorobienia)
 - `<title>` + `<meta description>` + canonical + hreflang `pl` + `x-default`
 - `robots.txt` + `sitemap.xml`
 - Semantic HTML5, hierarchia h1 → h2 → h3, alt texts WCAG
-- `prefers-reduced-motion` obsługiwane (animacje hero, marquee, slow-spin logo)
+- `prefers-reduced-motion` obsługiwane (hero, marquee, slow-spin)
 
-## Performance — micro-optymalizacje na miejscu
+## Performance — micro-optymalizacje
 
-- **CSS inline** (0 zewnętrznych stylesheets)
-- **JS inline na końcu body** (nie blokuje render)
-- **Self-hosted fonts** + preload (`big-shoulders-latin`, `big-shoulders-latin-ext`, `manrope-latin`)
-- **`<link rel="preload" as="image">` na logo-1024.webp** (LCP candidate)
-- **`fetchpriority="high"` + `decoding="async"`** na hero logu
-- **`loading="lazy"`** na footer img + map iframe + off-fold images
-- **`<picture>` z WebP + PNG fallback** w 3 miejscach (nav, hero, footer)
-- **`prefers-reduced-motion`** wycina animacje (marquee, slow-spin, fade-ins)
-- **SVG noise** jako data URI (zero requestów na grain texture)
-- **`_headers` długi cache** dla fontów/images, krótki dla HTML
+- CSS inline (0 external stylesheets)
+- JS inline na końcu body (nie blokuje render)
+- Self-hosted fonts + preload (`big-shoulders-latin`, `big-shoulders-latin-ext`, `manrope-latin`)
+- `<link rel="preload" as="image">` na logo-1024.webp (LCP candidate)
+- `fetchpriority="high"` + `decoding="async"` na hero logu
+- `loading="lazy"` na footer img + map iframe + off-fold
+- `<picture>` WebP + PNG fallback (nav, hero, footer)
+- `prefers-reduced-motion` wycina animacje
+- SVG noise jako data URI (zero requestów na grain)
+- `_headers` długi cache dla fontów/images, krótki dla HTML
 
-**Po deployu spodziewany Lighthouse**: 95-100 / 95-100 / 95-100 / 100.
+Po deployu spodziewany Lighthouse: 95-100 / 95-100 / 95-100 / 100.
 
 ## Czego NIE robić
 
-- **NIE dodawać `<form>` kontaktowego** — świadoma decyzja: mailto-cards są szybsze (pre-fill), tańsze (zero backendu), bezpieczniejsze (brak XSS/spam vector).
-- **NIE dodawać Google Maps JavaScript API** — używamy **darmowego embed iframe** (`maps.google.com/maps?q=...&output=embed`).
-- **NIE używać emoji jako ikon** — wszystkie ikony to SVG inline (Lucide-style, stroke style).
-- **NIE dodawać stockowych obrazków** — placeholdery CSS na razie.
-- **NIE dodawać cookies bannera ani Google Analytics** — Cloudflare Web Analytics (bez cookies, bez RODO).
-- **NIE używać czerni `#000` i bieli `#fff`** — używać `var(--fg)` i `var(--bg)` (warm tones).
-- **NIE rozbijać `index.html` na komponenty**.
-- **NIE wracać do Google Fonts CDN** — self-hosting jest świadomy (performance + GDPR).
-- **NIE rysować mapy Polski ręcznie** — używać Natural Earth path z `index.html`.
+- NIE dodawać `<form>` kontaktowego — mailto-cards są szybsze (pre-fill), tańsze (zero backendu), bezpieczniejsze (brak XSS/spam vector).
+- NIE Google Maps JS API — używamy darmowego embed iframe (`maps.google.com/maps?q=...&output=embed`).
+- NIE emoji jako ikony — wszystkie ikony to SVG inline (Lucide-style, stroke).
+- NIE stockowe obrazki — placeholdery CSS.
+- NIE cookies banner / Google Analytics — Cloudflare Web Analytics (bez cookies, bez RODO).
+- NIE `#000`/`#fff` — używać `var(--fg)` i `var(--bg)`.
+- NIE rozbijać `index.html` na komponenty.
+- NIE wracać do Google Fonts CDN — self-hosting świadomy (perf + GDPR).
+- NIE rysować mapy Polski ręcznie — używać Natural Earth path.
 
 ---
 
-# Patterns & lessons learned (z sesji)
+# Patterns & lessons learned
 
-## 1. CSS Cascade Order — pułapka same-specificity
+## 1. CSS Cascade Order — same-specificity pułapka
 
-**Anti-pattern**: pisanie override `.foo--variant` z założeniem że "to override więc zadziała", bez sprawdzenia gdzie w pliku jest base `.foo`. W tym projekcie zdarzyło się: `.contact-block--zasieg { grid-template-columns: 3 cols }` był w linii 754, base `.contact-block { 2 cols }` w 1428. **Same specificity (1 klasa), later wins** → base nadpisywał override.
+Anty: pisać override `.foo--variant` bez sprawdzenia gdzie w pliku jest base `.foo`. W tym projekcie: `.contact-block--zasieg` w linii 754, base `.contact-block` w 1428 — same specificity (1 klasa), later wins → base nadpisywał override.
 
-**Wzorzec**:
-- Sprawdź gdzie jest base CSS (Grep), umieszczaj override PO base
-- Albo bumpuj specificity (`.foo.foo--variant` = 2 klasy = wygrywa)
+Pattern: sprawdź gdzie jest base (Grep), umieszczaj override PO base. Albo bumpuj specificity (`.foo.foo--variant` = 2 klasy = wygrywa). Stosować przy każdym `.block--modifier` w CSS > 500 linii.
 
-**Kiedy stosować**: każdy `.block--modifier` w pliku CSS > 500 linii.
+## 2. Font self-hosting — anti-FOUT
 
-## 2. Font self-hosting — strategia anti-FOUT
+Anty: `font-display: optional` z Google CDN (100ms za mało cross-origin, fallback permanent). `font-display: swap` z Google CDN — visible FOUT.
 
-**Anti-pattern**:
-- `font-display: optional` z Google CDN — 100ms za mało dla cross-origin, fallback PERMANENT
-- `font-display: swap` z Google CDN — visible flash (FOUT)
-
-**Wzorzec**:
-- Self-host woff2 (`<link rel="preload">` + same-origin)
-- `font-display: swap` w @font-face
-- Plus fallback @font-face z `size-adjust` + `ascent-override` (BigShouldersFallback z Arial Narrow / Bahnschrift Condensed)
-
-Variable woff2 = jeden plik per `unicode-range`, wszystkie wagi w środku, `font-weight: 100 900` w @font-face.
+Pattern: self-host woff2 (`<link rel="preload">` + same-origin) + `font-display: swap` w @font-face + fallback @font-face z `size-adjust` + `ascent-override` (BigShouldersFallback z Arial Narrow / Bahnschrift Condensed). Variable woff2 = jeden plik per `unicode-range`, `font-weight: 100 900` w @font-face.
 
 ## 3. Pobieranie woff2 z Google Fonts
 
-**Anti-pattern**: `curl fonts.googleapis.com/css2?...` → domyślnie dostajesz TTF URLs.
+Anty: `curl fonts.googleapis.com/css2?...` → domyślnie TTF.
 
-**Wzorzec**:
+Pattern:
 ```bash
 curl -H "User-Agent: Mozilla/5.0 ... Chrome/120" -H "Accept: text/css" \
   "https://fonts.googleapis.com/css2?family=..." | grep woff2
 ```
-
-Z headerami Chrome dostajesz woff2 URLs + osobne pliki per unicode-range. Pobierz tylko `latin` i `latin-ext` (skip cyrillic/greek/vietnamese — Polski to ę/ą/ł).
+Z headerami Chrome dostajesz woff2 per unicode-range. Pobierz tylko `latin` i `latin-ext` (skip cyrillic/greek/vietnamese).
 
 ## 4. Image optimization — ffmpeg jako ImageMagick fallback
 
-**Anti-pattern**: zatrzymanie się gdy `magick` nie zainstalowany.
+Anty: zatrzymanie gdy `magick` nieobecny.
 
-**Wzorzec**: check co JEST dostępne — ffmpeg często jest (jako dep innych narzędzi). `ffmpeg -i in.png -vf scale=W:H:flags=lanczos -c:v libwebp -quality 85 out.webp` = 84% redukcja vs PNG. Skrypt `scripts/optimize-logo.ps1` ma 3 paths: magick → ffmpeg → sharp.
+Pattern: ffmpeg często JEST (dep innych narzędzi). `ffmpeg -i in.png -vf scale=W:H:flags=lanczos -c:v libwebp -quality 85 out.webp` = ~84% redukcja vs PNG. `scripts/optimize-logo.ps1` ma 3 paths: magick → ffmpeg → sharp.
 
 ## 5. `<picture>` z WebP + PNG fallback
 
-**Anti-pattern**: sam `<img src="x.webp">` — brak fallback dla starych browserów.
+Anty: sam `<img src="x.webp">` — brak fallback.
 
-**Wzorzec**:
+Pattern:
 ```html
 <picture>
   <source srcset="img/logo-1024.webp" type="image/webp">
   <img src="img/logo.png" alt="" class="hero__logo">
 </picture>
 ```
-
-Plus `loading="lazy"` off-fold + `fetchpriority="high"` na LCP candidate + `decoding="async"`.
+Plus `loading="lazy"` off-fold + `fetchpriority="high"` na LCP + `decoding="async"`.
 
 ## 6. Email obfuscation — 3 warstwy
 
-**Anti-pattern**: literalny `mailto:foo@bar.pl` w HTML (bot food) ALBO JS-only obfuscation (łamie SEO).
+Anty: literalny `mailto:foo@bar.pl` (bot food) ALBO JS-only (łamie SEO).
 
-**Wzorzec**:
-1. Human-readable "foo [at] bar [dot] pl" w HTML body, `data-u`/`data-d` attrs
+Pattern:
+1. Human-readable "foo [at] bar [dot] pl" w HTML + `data-u`/`data-d` attrs
 2. JS po DOMContentLoaded rebuduje href + textContent
-3. JSON-LD email zostaje plain (Google wymaga)
-4. Cloudflare Email Obfuscation jako warstwa 2 (włączana w Dashboard)
+3. JSON-LD email plain (Google wymaga)
+4. Cloudflare Email Obfuscation jako warstwa 2 (Dashboard)
 
 ## 7. Real geographic data > hand-drawn
 
-**Anti-pattern**: SVG kraju rysowany z głowy / aproksymowany — wygląda fake.
+Anty: SVG kraju rysowany z głowy — wygląda fake.
 
-**Wzorzec**: Natural Earth (CC0) `admin_0_countries` 110m + Python ekstrakcja MultiPolygon → Mercator projection (`lon_scale = cos(lat_mid)`) → SVG path. Repo: `martynafford/natural-earth-geojson`. ~5 KB SVG, real shape, public domain.
+Pattern: Natural Earth (CC0) `admin_0_countries` 110m + Python ekstrakcja MultiPolygon → Mercator (`lon_scale = cos(lat_mid)`) → SVG path. Repo: `martynafford/natural-earth-geojson`. ~5 KB SVG, real shape, public domain.
 
 ## 8. Visual verification loop
 
-**Anti-pattern**: commit + push CSS/font changes bez sprawdzenia że faktycznie renderuje się dobrze.
+Anty: commit + push CSS/font changes bez sprawdzenia renderu.
 
-**Wzorzec**: Playwright MCP `browser_navigate` + `browser_take_screenshot` po każdej znaczącej zmianie wizualnej. Szczególnie dla font swaps, layout changes, image replacements. Dla `.reveal` elementów: `browser_evaluate` z `forEach(el => el.classList.add('is-visible'))` przed screenshot (fullPage screenshot nie triggeruje IntersectionObserver).
+Pattern: Playwright MCP `browser_navigate` + `browser_take_screenshot` po każdej znaczącej zmianie wizualnej. Dla `.reveal`: `browser_evaluate` z `forEach(el => el.classList.add('is-visible'))` przed screenshot (fullPage screenshot nie triggeruje IntersectionObserver).
 
 ## 9. Decisive pivot on aesthetic failure
 
-**Anti-pattern**: bronienie wyboru fontu/koloru "bo jest competent" gdy user mówi "nudne", "brzydka", "wystaje".
+Anty: bronienie wyboru fontu/koloru "bo competent" gdy user mówi "nudne", "brzydka".
 
-**Wzorzec**: subjective design rejections to **hard signal** — wywal cały kierunek, nie tweakuj. Iteracja Anton→Antonio→Oswald→Bricolage→Big Shoulders była tańsza niż obrona Antonio. Jeśli klient pisze "kompetentne ale nudne" — natychmiast pivot.
+Pattern: subjective design rejections to hard signal — wywal kierunek, nie tweakuj. Iteracja Anton→Antonio→Oswald→Bricolage→Big Shoulders była tańsza niż obrona Antonio.
 
 ## 10. Mobile responsive — viewport-specific tuning
 
-**Anti-pattern**: jeden mobile breakpoint (np. 600px).
+Anty: jeden mobile breakpoint (np. 600px).
 
-**Wzorzec**: kilka breakpointów dla różnych iPhone'ów:
-- 640px (general mobile)
-- 540px (compact)
-- 440px (iPhone 14 Pro Max 430px CSS width)
-- 380px (small phones)
-
-Specifically dla `text-stroke` na hero h1: em-units (0.018em) skalują się, plus media query overrides dla problematic sizes (0.8px <768, 0.6px <480).
+Pattern: kilka dla różnych iPhone'ów — 640px (general), 540px (compact), 440px (iPhone 14 Pro Max 430px CSS), 380px (small). Dla text-stroke na hero h1: em-units (0.018em) skalują, plus media query overrides dla problematic sizes (0.8px <768, 0.6px <480).
 
 ## 11. PR target branch verification
 
-**Anti-pattern**: założenie że default branch = `main`.
+Anty: założenie że default = `main`.
 
-**Wzorzec**: `git ls-remote --heads origin` lub `gh repo view --json defaultBranchRef` przed PR. Repos sprzed 2020 (jak ten) często `master`.
+Pattern: `git ls-remote --heads origin` lub `gh repo view --json defaultBranchRef` przed PR. Repos sprzed 2020 (jak ten) często `master`.
 
 ## 12. Galeria realizacji — placeholdery vs zdjęcia
 
-Galeria ma 3 karty `.gal-card.placeholder` z CSS-owym patternem industrialnym (3 warianty). **Aby podmienić na zdjęcie:**
-1. Wrzucić plik do `img/realizacja-XX.jpg` (zalecane WebP, 800×1000px, aspect 4:5)
+Galeria ma 3 karty `.gal-card.placeholder` z CSS-owym patternem (3 warianty). Aby podmienić na zdjęcie:
+1. Wrzucić do `img/realizacja-XX.jpg` (WebP, 800×1000px, aspect 4:5)
 2. Usunąć klasę `placeholder` + opcjonalnie `placeholder-pattern-N`
 3. Dodać inline `style="background-image: url('img/realizacja-XX.jpg')"`
 
-Komentarz HTML w pliku zawiera instrukcję — szukaj `=== EDYCJA GALERII ===`.
+Komentarz HTML w pliku — szukaj `=== EDYCJA GALERII ===`.
 
-## 13. Reduced-motion completeness — KAŻDA animacja ma override
+## 13. Reduced-motion completeness — każda animacja ma override
 
-**Anti-pattern**: `scroll-behavior: smooth` (lub `transition`, `animation`) ustawione globalnie, brak override'a w `@media (prefers-reduced-motion: reduce)`. To WCAG fail i Copilot to wyłapuje.
+Anty: `scroll-behavior: smooth` (lub `transition`, `animation`) globalnie bez override w `@media (prefers-reduced-motion: reduce)`. WCAG fail i Copilot to wyłapuje.
 
-**Wzorzec**: każda dyrektywa ruchowa (`animation`, `transition`, `scroll-behavior: smooth`, `transform` na hover) ma zerujący odpowiednik w bloku `prefers-reduced-motion: reduce`. Audyt: grep `scroll-behavior|animation:|transition:` i sprawdź czy każde wystąpienie ma reduced-motion counter-rule.
+Pattern: każda dyrektywa ruchowa ma zerujący odpowiednik. Audyt: grep `scroll-behavior|animation:|transition:` i sprawdź czy każde ma reduced-motion counter-rule.
 
 ```css
 @media (prefers-reduced-motion: reduce) {
@@ -366,31 +328,28 @@ Komentarz HTML w pliku zawiera instrukcję — szukaj `=== EDYCJA GALERII ===`.
 
 ## 14. Fixed nav wymaga scroll-padding-top
 
-**Anti-pattern**: fixed top nav (`.nav { position: fixed; height: 72px }`) + `<a href="#section">` → anchor scroll przewija tak, że nagłówek sekcji chowa się pod navem. Klikalność słaba, UX zły.
+Anty: fixed top nav 72px + `<a href="#section">` → anchor scroll chowa nagłówek pod navem.
 
-**Wzorzec**: `html { scroll-padding-top: calc(var(--nav-h) + 12px); }` — buffer 12px nad nagłówkiem po skoku. Wszystkie anchor links automatycznie respektują nav height bez per-section `scroll-margin-top`.
+Pattern: `html { scroll-padding-top: calc(var(--nav-h) + 12px); }` — 12px buffer. Wszystkie anchor links respektują nav height bez per-section `scroll-margin-top`.
 
 ## 15. Skip-link target + focus visibility (WCAG 2.4.7)
 
-**Anti-pattern A**: `<a class="skip-link" href="#main">` celuje w `<main>` bez `tabindex` — fokus klawiatury zostaje na linku, scroll się zmienia ale Tab dalej nawiguje od zaraz po skip-linku zamiast w treści.
+Anty A: `<a class="skip-link" href="#main">` celuje w `<main>` bez `tabindex` — fokus zostaje na linku, Tab nawiguje od skip-linku zamiast w treści.
+Anty B: `<main tabindex="-1">` + `outline: none` → fokus niewidoczny (WCAG fail).
 
-**Anti-pattern B**: `<main tabindex="-1">` + `outline: none` na focus → fokus niewidoczny = WCAG 2.4.7 fail.
-
-**Wzorzec**: `<main id="main" tabindex="-1">` + outline zastąpiony subtelnym indykatorem (inset box-shadow band u góry, nie outline wokół ogromnego elementu):
-
+Pattern: `<main id="main" tabindex="-1">` + outline zastąpiony subtelnym inset box-shadow band u góry (nie outline wokół ogromnego elementu):
 ```css
 main[tabindex="-1"]:focus-visible {
   outline: none;
-  box-shadow: inset 0 4px 0 0 var(--accent);  /* 4px gold band u gory main */
+  box-shadow: inset 0 4px 0 0 var(--accent);
 }
 ```
 
 ## 16. Touch hover prevention z feature query
 
-**Anti-pattern**: `:hover { transform: scale(1.05) }` triggeruje sticky hover na touch devices — long-press = trzymanie stylu hover do kolejnego tapa.
+Anty: `:hover { transform: scale(1.05) }` → sticky hover na touch (long-press trzyma styl do kolejnego tapa).
 
-**Wzorzec**: każdy transform-based hover owinięty w `@media (hover: hover) and (pointer: fine) { ... }`. Mouse users dostają hover affordances, touch users nie mają sticky.
-
+Pattern: każdy transform-based hover w `@media (hover: hover) and (pointer: fine) { ... }`.
 ```css
 @media (hover: hover) and (pointer: fine) {
   .btn:hover { transform: translateY(-2px); background: var(--accent-hover); }
@@ -399,26 +358,21 @@ main[tabindex="-1"]:focus-visible {
 
 ## 17. Symmetric safe-area-inset w landscape z notchem
 
-**Anti-pattern**: `padding-inline: max(20px, env(safe-area-inset-left))` — tylko lewy notch honored. iPhone w landscape z prawym notchem nakłada content na okrągły kąt ekranu.
+Anty: `padding-inline: max(20px, env(safe-area-inset-left))` — tylko lewy notch. iPhone landscape z prawym notchem → content na okrągłym kącie.
 
-**Wzorzec**: rozdzielić start/end:
+Pattern: rozdziel start/end (logical properties, bonus dla RTL):
 ```css
 padding-inline-start: max(20px, env(safe-area-inset-left));
 padding-inline-end:   max(20px, env(safe-area-inset-right));
 ```
 
-Działa też dla RTL languages w przyszłości (logical properties).
-
 ## 18. Progressive enhancement > `@supports not`
 
-**Anti-pattern**: `@supports not (-webkit-text-stroke: 1px black) { /* tylko re-set text-stroke */ }` — fallback nadal używa nie-wspieranej property. Z `color: transparent` dla stroke text, przeglądarki bez wsparcia renderują niewidoczny tekst.
+Anty: `@supports not (-webkit-text-stroke: 1px black)` — fallback nadal używa nie-wspieranej property; z `color: transparent` przeglądarki bez wsparcia renderują niewidoczny tekst.
 
-**Wzorzec**: default rule = uniwersalnie wspierana wersja. Efekt zaawansowany w POZYTYWNEJ feature query:
-
+Pattern: default rule = uniwersalnie wspierana wersja. Efekt zaawansowany w pozytywnej feature query:
 ```css
-.hero__title .outline {
-  color: var(--fg);  /* default visible */
-}
+.hero__title .outline { color: var(--fg); }
 @supports (-webkit-text-stroke: 1px black) {
   .hero__title .outline {
     color: transparent;
@@ -426,51 +380,45 @@ Działa też dla RTL languages w przyszłości (logical properties).
   }
 }
 ```
-
-Plus gating na ekrany ≥769px dla efektów które na mobile wyglądają źle (artefakty antialiasingu thin stroke przy małych font-size).
+Plus gating ≥769px dla efektów które na mobile wyglądają źle (antialiasing thin stroke).
 
 ## 19. Format-specific image library options
 
-**Anti-pattern**: `sharp.$Format({ quality: 85, effort: 6 })` dynamicznie — działa dla webp, throws/ignoruje dla png (PNG nie ma `effort`).
+Anty: `sharp.$Format({ quality: 85, effort: 6 })` dynamicznie — działa dla webp, throws/ignoruje dla png (PNG nie ma `effort`).
 
-**Wzorzec**: branch options per format:
+Pattern: branch options per format:
 ```powershell
-$opts = if ($Format -eq 'webp') {
-  "{ quality: $Quality, effort: 6 }"
-} else {
-  "{ compressionLevel: 9 }"  # PNG lossless
-}
+$opts = if ($Format -eq 'webp') { "{ quality: $Quality, effort: 6 }" }
+       else { "{ compressionLevel: 9 }" }
 ```
 
 ## 20. ffmpeg aspect-ratio preservation
 
-**Anti-pattern**: `scale=W:H` wymusza dokładne wymiary → stretching dla nie-kwadratowych źródeł.
+Anty: `scale=W:H` wymusza wymiary → stretching dla nie-kwadratowych źródeł.
 
-**Wzorzec**: `scale=W:H:force_original_aspect_ratio=decrease,format=rgba,pad=W:H:(ow-iw)/2:(oh-ih)/2:color=black@0`. Zachowuje proporcje, dopaduje do kwadratu z transparentnym tłem (format=rgba przed pad — pad domyślnie nie ma alpha jeśli źródło jest RGB).
+Pattern: `scale=W:H:force_original_aspect_ratio=decrease,format=rgba,pad=W:H:(ow-iw)/2:(oh-ih)/2:color=black@0`. Zachowuje proporcje, dopaduje do kwadratu z transparentnym tłem (`format=rgba` przed `pad` — pad domyślnie bez alpha jeśli źródło RGB).
 
 ## 21. Cross-platform PowerShell temp dir
 
-**Anti-pattern**: `$env:TEMP` — Windows-only. macOS/Linux pwsh: `TEMP` jest unset, `Join-Path` daje śmieci.
+Anty: `$env:TEMP` — Windows-only. macOS/Linux pwsh: TEMP unset.
 
-**Wzorzec**: `[System.IO.Path]::GetTempPath()` — respektuje `TMPDIR` (Unix), `$env:TEMP/$env:TMP` (Windows). Helper `Get-TempDir` w skrypcie.
+Pattern: `[System.IO.Path]::GetTempPath()` — respektuje `TMPDIR` (Unix), `$env:TEMP/$env:TMP` (Windows). Helper `Get-TempDir`.
 
 ## 22. HTML entity encoding w atrybutach
 
-**Anti-pattern**: `<iframe src="...?a=1&b=2">` — surowe `&` w wartości atrybutu. Walidator HTML protestuje; niektóre parsery interpretują `&b` jako entity reference.
+Anty: `<iframe src="...?a=1&b=2">` — surowe `&` w atrybucie. Walidator protestuje; niektóre parsery interpretują `&b` jako entity.
 
-**Wzorzec**: zawsze `&amp;` w atrybutach (`src`, `href`, `value`):
+Pattern: zawsze `&amp;` w atrybutach (`src`, `href`, `value`):
 ```html
 <iframe src="https://maps.google.com/maps?q=X&amp;t=&amp;z=15&amp;output=embed">
 ```
-
-W JS template stringach `&` jest OK (to nie HTML), tylko w atrybutach. URL-encode wartości (`%20`, `%C3%B3`) niezależnie.
+W JS template stringach `&` OK (to nie HTML). URL-encode wartości (`%20`, `%C3%B3`) niezależnie.
 
 ## 23. Detect every binary actually invoked
 
-**Anti-pattern**: gate `sharp` ścieżki na `$haveNpx`, potem w środku wywołać `npm install` i `node script.js`. Volta / nvm-windows mogą shimnąć jeden bez drugiego.
+Anty: gate `sharp` na `$haveNpx`, potem wewnątrz wywołać `npm install` i `node`. Volta / nvm-windows może shimnąć jeden bez drugiego.
 
-**Wzorzec**: wykryj każdy binary który kod naprawdę wywołuje. Dla sharp: `$haveNode -and $haveNpm`. W komunikacie błędu **nazwij** brakujący binary precyzyjnie:
-
+Pattern: wykryj każdy binary który kod realnie wywołuje. Dla sharp: `$haveNode -and $haveNpm`. W błędzie nazwij brakujący precyzyjnie:
 ```powershell
 $missing = if (-not $haveNode) { 'node' } else { 'npm' }
 Write-Host "ERROR: Brakuje: $missing"
@@ -478,21 +426,21 @@ Write-Host "ERROR: Brakuje: $missing"
 
 ## 24. PR description rotuje — sync z kodem przy pivotach
 
-**Anti-pattern**: PR description pisany na branch creation, nieupdate'owany gdy implementacja pivotuje (font, paleta, architektura). Mylące dla reviewerów.
+Anty: PR description pisany na branch creation, nieupdate'owany gdy implementacja pivotuje. Myli reviewerów.
 
-**Wzorzec**: po każdym dużym pivocie — `gh pr edit <N> --body "$(cat <<'EOF' ... EOF)"` z aktualnym opisem. Lista checkboxów "Pending" → odznaczać po ukończeniu.
+Pattern: po każdym dużym pivocie `gh pr edit <N> --body "$(cat <<'EOF' ... EOF)"` z aktualnym opisem. Checkboxy "Pending" → odznaczać po ukończeniu.
 
 ## 25. Copilot review cycle workflow
 
-**Pattern (operacyjny)**: każdy push triggeruje review Copilota na nowym commicie (1-3 min). Reviews często powtarzają stare findings ZE STAREMI ID — są attached do nowego commitu, ale underlying issues już naprawione.
+Pattern (operacyjny): każdy push triggeruje review Copilota na nowym commicie (1-3 min). Reviews często powtarzają stare findings ze starymi ID — attached do nowego commitu, ale issues już naprawione.
 
-Cykl pracy:
+Cykl:
 1. Push commit z fixem
-2. Wait for new review: `until COMMIT=$(gh pr view 1 --json reviews --jq '... .commit.oid[0:7]') && [ "$COMMIT" = "<latest>" ]; do sleep 20; done` (Bash run_in_background z timeout 420s)
-3. `gh api .../pulls/N/comments` — filtruj po **najnowszych ID** (numerycznie wyższe = nowe) vs powtórki starych
-4. Fix + commit + push **tylko realnie nowe**
-5. **`resolve all` przez GraphQL** po fixie żeby UI był czysty (one-liner: query + foreach `resolveReviewThread`)
-6. Repeat aż review jest pusty
+2. Wait for new review: `until COMMIT=$(gh pr view 1 --json reviews --jq '... .commit.oid[0:7]') && [ "$COMMIT" = "<latest>" ]; do sleep 20; done` (run_in_background, timeout 420s)
+3. `gh api .../pulls/N/comments` — filtruj po najnowszych ID
+4. Fix + commit + push tylko realnie nowe
+5. `resolve all` przez GraphQL po fixie żeby UI był czysty
+6. Repeat aż review pusty
 
 ```bash
 UNRESOLVED=$(gh api graphql -f query='{ repository(owner:"X",name:"Y") { pullRequest(number:1) { reviewThreads(first:50) { nodes { id isResolved } } } } }' --jq '.data.repository.pullRequest.reviewThreads.nodes | map(select(.isResolved == false)) | .[].id')
@@ -501,119 +449,116 @@ for tid in $UNRESOLVED; do gh api graphql -f query="mutation { resolveReviewThre
 
 ## 26. Trust but verify Copilot — hallucinated occurrences
 
-**Anti-pattern**: Copilot mówi "ten typo pojawia się na linii X i Y" → ślepo poprawiasz oba. Czasem druga lokalizacja to halucynacja.
+Anty: Copilot mówi "typo na liniach X i Y" → poprawiasz ślepo oba. Czasem druga to halucynacja.
 
-**Wzorzec**: zawsze `grep` przed fixem. Match actual count vs claimed count. Jeśli się nie zgadza — fix tylko realne, ignoruj phantomy. Przykład tej sesji: Copilot twierdził że "głowny" jest w 2 miejscach, było 1.
+Pattern: zawsze `grep` przed fixem. Match actual count vs claimed. Fix tylko realne, ignoruj phantomy.
 
 ## 27. User aesthetic feedback = HARD PIVOT (wzmocnienie #9)
 
-**Wzorzec (rozszerzony)**: subjective rejections to NIE feedback do tweakowania, to sygnał do wywalenia kierunku w całości.
+Pattern (rozszerzony): subjective rejections to NIE feedback do tweakowania, to sygnał do wywalenia kierunku.
 
-Konkretne przykłady z tej sesji:
-- "wypierdek" o `·232/·182` shorthand → drop entirely, nie próbuj go upiększyć
-- "tytuł brzydki" o text-stroke na mobile → gate całkowicie behind `min-width: 769px`
-- "tak nie może być" o byline pchającym cards w dół → relokuj entirely, nie tweakuj marginów
-- "nudne / kompetentne" o Antonio fonts → pivot to Big Shoulders Display
+Przykłady tej sesji:
+- "wypierdek" o shorthand → drop entirely
+- "tytuł brzydki" o text-stroke mobile → gate behind `min-width: 769px`
+- "tak nie może być" o byline pchającym cards → relokuj entirely
+- "nudne / kompetentne" o Antonio → pivot na Big Shoulders Display
 
-Cena iteracji "Anton→Antonio→Oswald→Bricolage→Big Shoulders" była niższa niż obrona Antonio. Subiektywne odrzucenie = ROZSZERZ SEARCH SPACE, nie kompromisuj w wąskim.
+Subiektywne odrzucenie = rozszerz search space, nie kompromisuj w wąskim.
 
 ## 28. Nav hierarchy pod presją szerokości — brand-first, phones-degrade
 
-**Project-specific rule (KFDIAMENT)**: w tym site'cie hierarchia ważności nav elementów przy szerokości malejącej:
-
-1. **Brand wordmark + mark** — ZAWSZE widoczne, ZAWSZE 26px (default), nigdy nie shrinkowane w nav scope. To identity anchor.
-2. **Hamburger** — zawsze widoczny gdy links hidden (≤1080px).
-3. **Phones** — degradują pierwsze: 2 → 1 (≤640px) → 0 (≤460px). Hidden phones zostają dostępne w `.mobile-menu__phones` na górze panelu.
-4. **Section links** — hidden ≤1080px (replaced by hamburger).
+Project-specific (KFDIAMENT) hierarchia ważności nav elementów przy malejącej szerokości:
+1. Brand wordmark + mark — zawsze widoczne, zawsze 26px, identity anchor.
+2. Hamburger — widoczny gdy links hidden (≤1080px).
+3. Phones — degradują pierwsze: 2 → 1 (≤640px) → 0 (≤460px). Hidden phones dostępne w `.mobile-menu__phones`.
+4. Section links — hidden ≤1080px.
 
 Footer brand ma osobny scoping (38-46px `.footer .brand__mark`); nav scope zachowuje stały rozmiar.
 
 ## 29. Phone digits never wrap
 
-**Anti-pattern**: numer "511 478 232" pęka na 2 linie ("511 478" / "232") przy tight widths.
+Anty: numer "511 478 232" pęka na 2 linie przy tight widths.
 
-**Wzorzec**: globalna reguła `a[href^="tel:"] { white-space: nowrap; }` łapie wszystkie miejsca jednym fixem. Plus defensive `white-space: nowrap` na `.nav__phone` i `.mobile-menu__phone` — cyferki siedzą w `<span>` wewnątrz `<a>`, reguła globalna łapie parent, defensive na child gdyby style się przemieszały.
+Pattern: globalna reguła `a[href^="tel:"] { white-space: nowrap; }` łapie wszystkie miejsca. Plus defensive `white-space: nowrap` na `.nav__phone` i `.mobile-menu__phone` (cyferki w `<span>` wewnątrz `<a>`).
 
 ## 30. Nav breakpoint niezależny od section grid
 
-**Wzorzec**: ten projekt używa 900px jako universal mobile/desktop dla sekcji (hero stats, about, gallery, contact grid, footer). NAV potrzebuje **wyższego** breakpointa (1080px) — desktop nav z 5 linkami + 2 phones + brand + maxw padding wymaga ~1100px breathing room.
+Pattern: projekt używa 900px jako universal mobile/desktop dla sekcji. NAV potrzebuje wyższego (1080px) — 5 linków + 2 phones + brand + maxw padding wymaga ~1100px breathing room.
 
-Reguła: media query 1080 dla rzeczy nav-only (`.nav__links display: none`, `.nav__burger display: inline-flex`, mobile-menu desktop-hide guard, JS resize-close logic). Sekcji NIE bumpować na 1080 — tylko nav.
+Reguła: media query 1080 dla nav-only (`.nav__links display: none`, `.nav__burger display: inline-flex`, mobile-menu desktop-hide guard, JS resize-close). Sekcji nie bumpować na 1080 — tylko nav.
 
 ## 31. Anchor decorative element na max-width, nie na viewport
 
-**Anti-pattern**: `right: -8vw` na decorative element (slow-spin logo) — na 4K (3840px) viewport `-8vw = -307px`, element drifuje w no-man's-land daleko poza content column.
+Anty: `right: -8vw` na slow-spin logo — na 4K (3840px) viewport `-8vw = -307px`, element drifuje daleko poza content column.
 
-**Wzorzec**: anchor right edge do `--maxw` container's right edge:
+Pattern: anchor do `--maxw` container's right edge:
 ```css
 .hero__logo {
   right: calc(max(0px, (100vw - var(--maxw)) / 2) - 8vw);
 }
 ```
-
-Na viewport ≤ `--maxw` zachowuje stare `-8vw` (element extending poza viewport). Na szerszych ekranach prawa krawędź docisnięta do prawej krawędzi container, element zostaje w obrebie content width.
+Na viewport ≤ `--maxw` zachowuje stare `-8vw`. Na szerszych ekranach prawa krawędź docisnięta do container, element zostaje w content width.
 
 ## 32. Belt-and-suspenders dla user requirements
 
-**Wzorzec**: gdy klient mówi "X ZAWSZE musi być w stanie Y" → enforce go w >1 warstwie żeby nie złamało się przez accidentalną edycję.
+Pattern: gdy klient mówi "X zawsze musi być w stanie Y" → enforce w >1 warstwie.
 
-Przykład email lowercase (z tej sesji):
-1. **HTML**: `data-u="kontakt" data-d="kfdiament.pl"` (lowercase obfuscation)
-2. **CSS**: `a.email-obf { text-transform: lowercase; }`
-3. **JS**: `(el.dataset.u + '@' + el.dataset.d).toLowerCase()`
+Przykład email lowercase:
+1. HTML: `data-u="kontakt" data-d="kfdiament.pl"` (lowercase obfuscation)
+2. CSS: `a.email-obf { text-transform: lowercase; }`
+3. JS: `(el.dataset.u + '@' + el.dataset.d).toLowerCase()`
 
-Trzy niezależne warstwy. Nawet jeśli przyszły edytor wpisze "Kontakt@..." w data attrs, output zostaje lowercase.
+Trzy niezależne warstwy — nawet jeśli edytor wpisze "Kontakt@...", output zostaje lowercase.
 
-## 33. Inverted CTA = section 2 banner consistency
+## 33. Inverted CTA = section banner consistency
 
-**Project-specific rule**: każde "Inne zapytanie" / general inquiry CTA na stronie (mailto-card, banner, button) używa inverted treatment:
+Project-specific: każde "Inne zapytanie" / general inquiry CTA (mailto-card, banner, button) używa inverted:
 - `background: var(--fg)` (dark)
 - `color: var(--bg)` (cream)
-- arrow / accent: `var(--accent-2)` (jasny gold, kontrast na ciemnym)
+- arrow / accent: `var(--accent-2)`
 - hover: `background: var(--accent-deep)`
 
-Spójność wizualna: gdziekolwiek "inne zapytanie" pojawia się, ma ten sam dark+gold akcent. Implementacja przez `.mailto-card--inverted` modifier (sekcja 5) lub `.service-other` banner (sekcja 2).
+Implementacja przez `.mailto-card--inverted` (sekcja 5) lub `.service-other` banner (sekcja 2).
 
-## 34. Mobile hamburger menu — phones-section pattern (HTML/CSS struktura)
+## 34. Mobile hamburger menu — phones-section pattern (struktura)
 
-**Project-specific HTML/CSS structure** dla `.mobile-menu`:
-
+Project-specific HTML/CSS dla `.mobile-menu`:
 ```
 .mobile-menu (absolute top: 100%, slides down)
-├── .mobile-menu__phones (sekcja telefonow u gory, 2-col grid >420px, stack ≤420px)
-│   ├── .mobile-menu__phone (gold pill button, full number "+48 511 478 232")
+├── .mobile-menu__phones (2-col grid >420px, stack ≤420px)
+│   ├── .mobile-menu__phone (gold pill, full "+48 511 478 232")
 │   └── .mobile-menu__phone
-├── (hairline divider via border-bottom na __phones)
+├── (hairline divider via border-bottom)
 └── .mobile-menu__links (ul z 5 section links)
     └── li.a → <span class="mobile-menu__num">01</span><span>O nas</span>
 ```
 
-JS toggle pattern (close, scrim click, Escape, link click, resize ≥1081 → close) — **patrz pattern #41 dla aktualnego `inert`-based wzorca + focus trap**. (Wcześniejsza wersja oparta o `hidden` + `setTimeout(240ms)` została superseded — `inert` blokuje fokus/AT natychmiast bez czekania na koniec animacji.)
+JS toggle (close, scrim click, Escape, link click, resize ≥1081 → close) — patrz #41 dla aktualnego `inert`-based wzorca + focus trap. Wcześniejsza wersja `hidden` + `setTimeout(240ms)` superseded.
 
 ## 35. JS reflow trick dla transition po `hidden`
 
-**Anti-pattern**: `element.hidden = false; element.classList.add('open');` — `hidden=false` i klasa stosowane w tym samym frame, transition nie triggeruje (browser nie widzi initial state).
+Anty: `element.hidden = false; element.classList.add('open');` w tym samym frame — transition nie triggeruje (browser nie widzi initial state).
 
-**Wzorzec**: force reflow między display change a state change:
+Pattern: force reflow między display change a state change:
 ```js
 menu.hidden = false;
-void menu.offsetWidth;  // reflow — czyta layout, force commit
+void menu.offsetWidth;
 menu.setAttribute('data-open', 'true');
 ```
 
 ## 36. PR description sync via `gh pr edit`
 
-**Wzorzec (operacyjny)**: `gh pr edit <N> --body "$(cat <<'EOF' ... EOF)"` przy każdym pivocie. HEREDOC single-quoted (`'EOF'`) chroni przed expansion zmiennych shell w opisie. Zostawia jeden "source of truth" w PR body.
+Pattern (operacyjny): `gh pr edit <N> --body "$(cat <<'EOF' ... EOF)"` przy każdym pivocie. HEREDOC single-quoted (`'EOF'`) chroni przed shell expansion. Jeden source of truth w PR body.
 
 ## 37. Cloudflare _headers — semantics merge, nie first-match
 
-**Wzorzec (dokumentacyjny)**: w `_headers` reguły z pasującymi globami są **mergeowane** dla danego żądania. Konflikt nazwy header (np. `Cache-Control`) — wygrywa **bardziej specyficzny glob** (`/fonts/*` nadpisuje `/*`). Security headers z `/*` (HSTS itp.) **przechodzą** do `/fonts/*` i `/img/*`, bo te bardziej specyficzne reguły ustawiają tylko Cache-Control + CORS, nie security.
+Pattern: reguły z pasującymi globami są mergeowane per żądanie. Konflikt nazwy headera (np. `Cache-Control`) — wygrywa bardziej specyficzny glob (`/fonts/*` nadpisuje `/*`). Security headers z `/*` (HSTS itp.) przechodzą do `/fonts/*` i `/img/*`, bo te bardziej specyficzne ustawiają tylko Cache-Control + CORS.
 
-Mit "first-match wins" jest błędny — nie kopiuj security headers do każdego bloku, wystarczą w `/*`.
+Mit "first-match wins" błędny — nie kopiuj security headers do każdego bloku, wystarczą w `/*`.
 
 ## 38. iframe sandbox — minimum necessary
 
-**Wzorzec**: dla third-party iframe (Google Maps embed):
+Pattern dla third-party iframe (Google Maps):
 ```html
 <iframe
   src="..."
@@ -623,108 +568,85 @@ Mit "first-match wins" jest błędny — nie kopiuj security headers do każdego
   title="...">
 </iframe>
 ```
+NIE `allow-popups-to-escape-sandbox` (redundant + ryzyko). NIE `allow-forms allow-top-navigation` chyba że potrzebne. `referrerpolicy` chroni privacy.
 
-NIE dodawać `allow-popups-to-escape-sandbox` (redundant + ryzyko). NIE używać `allow-forms allow-top-navigation` chyba że konkretnie potrzebne. `referrerpolicy` chroni privacy.
+## 39. PDF/dokument od klienta = source of truth — check w obie strony
 
-## 39. PDF/dokument od klienta = source of truth, ale CHECK W OBIE STRONY
+Anty: dostajesz PDF, sprawdzasz tylko "czy wszystko z PDF jest na stronie". Albo odwrotnie — bierzesz stronę i nie weryfikujesz z PDF.
 
-**Anti-pattern**: dostajesz PDF z treścią od klienta i tylko sprawdzasz "czy wszystko z PDF jest na stronie". Albo odwrotnie — bierzesz to co już jest na stronie i nie weryfikujesz z PDF.
+Pattern: cross-check w obie strony:
+1. PDF → site: czy claims/teksty/dane są reflektowane? (oczywiste)
+2. Site → PDF: każdy claim na stronie bez odpowiednika w PDF jest podejrzany — mógł być wymyślony przez Claude w iteracji, zostać ze starej oferty, lub być copywritingiem do potwierdzenia.
 
-**Wzorzec**: cross-check W OBIE STRONY:
+Sprawdź: dane firmy (NIP, REGON, adres, telefony, email — exact), lista usług (nazwy i kolejność), statystyki/claims marketingowe (każda liczba ma źródło), spec sprzętu (modele, średnice), mottos/tagline'y (exact phrasing), stylistyczne wymyślenia copywritera.
 
-1. **PDF → site**: czy wszystkie claims/teksty/dane firmy z PDF są reflektowane na stronie? (oczywiste)
-2. **Site → PDF**: czy wszystko co jest na stronie pojawia się w PDF? Każdy claim na stronie który NIE ma odpowiednika w PDF jest podejrzany — mógł być wymyślony przez Claude'a w trakcie iteracji, zostać z poprzedniej wersji oferty, albo być copywritingiem do potwierdzenia.
-
-**Konkretnie sprawdź**:
-- Dane firmy (NIP, REGON, adres, telefony, email) — exact match
-- Lista usług — szczególnie nazwy i kolejność. Jedna usługa "wymyślona" może być po prostu nieaktualna oferta
-- Statystyki/claims marketingowe — "~0 wibracji", "3 lata vs wieloletnie doświadczenie", "100% Hilti" — każda liczba musi mieć źródło
-- Specyfikacja sprzętu — modele, średnice
-- Mottos / tagline'y — exact phrasing matters
-- Stylistyczne wymyślenia copywritera (Claude) — zgadzaj się tylko jeśli klient potwierdzi
-
-**Format raportu po cross-checku**:
+Format raportu:
 ```
-🔴 KRYTYCZNE ROZBIEŻNOŚCI — wymagają decyzji klienta
-🟡 BRAKUJĄCE NA STRONIE (z PDF) — drobne
-🟢 NA STRONIE — claims spoza PDF (sprawdzić u klienta)
-✅ ZGODNE
+KRYTYCZNE ROZBIEŻNOŚCI — decyzja klienta
+BRAKUJĄCE NA STRONIE (z PDF) — drobne
+NA STRONIE — claims spoza PDF (sprawdzić u klienta)
+ZGODNE
 ```
+Z linijkami i propozycją per item. NIE wprowadzaj zmian automatycznie — klient decyduje.
 
-Z konkretnymi linijkami i propozycją działania per item. NIE wprowadzaj zmian automatycznie — klient decyduje per rozbieżność.
-
-**Tej sesji konkretnie**: PDF od klienta miał "Wyburzenia" jako 3. usługę, a strona miała "Osadzanie kotew chemicznych" (wymyślone wcześniej przez Claude'a). PDF miał "3 lata doświadczenia", strona "wieloletnie". PDF nie wspomniał "bezwibracyjne cięcie" ani "Akcesoria oryginalne Hilti" — strona miała. Wszystkie te 4 rzeczy wyleciały po klient-decyzji.
+Tej sesji: PDF miał "Wyburzenia" jako 3. usługę, strona "Osadzanie kotew chemicznych". PDF "3 lata", strona "wieloletnie". PDF bez "bezwibracyjne cięcie" ani "Akcesoria oryginalne Hilti". Wszystkie wyleciały po decyzji klienta.
 
 ## 40. Mailto template fields w nawiasach, nie po em-dash
 
-**Anti-pattern**: w mailto-card body fields wpisać "Rodzaj materiału — beton lub żelbet". Em-dash + przykłady wyglądają jak część NAZWY pola, idą do każdego maila i klient ich nie chce widzieć w każdym message.
+Anty: "Rodzaj materiału — beton lub żelbet" w mailto body. Em-dash + przykłady wyglądają jak część nazwy pola.
 
-**Wzorzec**: przykłady w nawiasach okrągłych, krótkie i jednoznaczne:
+Pattern: przykłady w nawiasach okrągłych, krótkie:
 - "Rodzaj materiału (beton, żelbet, mur)"
 - "Sposób wywozu gruzu (w naszym zakresie czy klienta)"
 
-Nawiasy wyraźnie sygnalizują "to są podpowiedzi, nie część nazwy pola". W mailu wyglądają lepiej, łatwiejsze do skasowania jeśli klient nie chce ich w final message.
+Nawiasy sygnalizują "podpowiedzi, nie część nazwy". Łatwiejsze do skasowania jeśli klient nie chce w final message.
 
-## 41. `inert` zamiast `hidden` dla animowanych paneli (a11y + animacja razem)
+## 41. `inert` zamiast `hidden` dla animowanych paneli
 
-**Anti-pattern**: `hidden` attribute toggled przez `setTimeout` po fade-out — w oknie ~240ms między startem animacji (data-open removed → opacity 0) a `hidden=true` panel jest **wizualnie niewidoczny ale tabbable**: focus into invisible content (WCAG 2.4.3 Focus Order fail).
+Anty: `hidden` toggled przez `setTimeout` po fade-out → ~240ms okienko gdzie panel jest visually invisible ale tabbable (WCAG 2.4.3 Focus Order fail).
 
-**Wzorzec**: `inert` attribute zamiast `hidden`. `inert` **natychmiast** blokuje Tab + AT (screen reader), ale element nadal renderuje — animacja opacity/transform dograć normalnie:
-
+Pattern: `inert` blokuje Tab + AT natychmiast, element nadal renderuje — animacja gra normalnie.
 ```js
 const closeMenu = () => {
-  menu.setAttribute('inert', '');         // natychmiast blokuje fokus + AT
-  menu.removeAttribute('data-open');      // triggeruje CSS transition out
-  // bez setTimeout! animacja sie sama doegra.
+  menu.setAttribute('inert', '');
+  menu.removeAttribute('data-open');
 };
 const openMenu = () => {
   menu.removeAttribute('inert');
-  void menu.offsetWidth;                  // reflow zeby transition zalapal stan startowy
+  void menu.offsetWidth;
   menu.setAttribute('data-open', 'true');
 };
 ```
-
-Browser support: Chrome 102+, Firefox 112+, Safari 15.5+ (2022+). Dla starszych browserów `inert` po prostu nie zrobi nic → fokus dziala jak normalnie, animacja nadal działa — graceful degradation.
+Browser support: Chrome 102+, Firefox 112+, Safari 15.5+. Starsze: graceful degradation (`inert` ignored, fokus normalnie, animacja działa).
 
 ## 42. CSS RGB-triplet variable dla theme-aware rgba()
 
-**Anti-pattern**: hardkodowanie `rgba(245, 241, 232, 0.92)` w komponentach gdy paleta siedzi w CSS variables. Theme switch (dark mode, rebranding) wymaga search-replace przez cały plik.
+Anty: hardkodowanie `rgba(245, 241, 232, 0.92)` w komponentach gdy paleta w CSS variables. Theme switch wymaga search-replace.
 
-**Wzorzec**: definiuj parę `--bg` (hex) + `--bg-rgb` (RGB triplet) w `:root`, używaj `rgba(var(--bg-rgb), 0.92)` w komponentach. Komentarz "MUSI być w sync" jako safety net.
-
+Pattern: para `--bg` (hex) + `--bg-rgb` (RGB triplet), używaj `rgba(var(--bg-rgb), 0.92)`. Komentarz "MUSI być w sync" jako safety net.
 ```css
 :root {
   --bg:     #f5f1e8;
-  --bg-rgb: 245, 241, 232;  /* MUSI być w sync z --bg dla theme-aware rgba() */
+  --bg-rgb: 245, 241, 232;
   --fg:     #1a1614;
   --fg-rgb: 26, 22, 20;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg:     #14110d;
-    --bg-rgb: 20, 17, 13;
-    /* ... */
-  }
 }
 .nav { background: rgba(var(--bg-rgb), 0.92); }
 .scrim { background: rgba(var(--fg-rgb), 0.32); }
 ```
 
-Wszystkie rgba() automatycznie przerendują się przy theme switch.
+Modern alt (Chrome 111+/FF 113+/Safari 16.2+): `color-mix(in srgb, var(--bg) 92%, transparent)` — bez RGB duplikatu. Wymaga `@supports` fallback dla starszych.
 
-**Modern alternative** (Chrome 111+/Firefox 113+/Safari 16.2+): `background: color-mix(in srgb, var(--bg) 92%, transparent)` — bez RGB-triplet duplikatu. Wymaga `@supports (color: color-mix(in srgb, white, white))` fallback dla starszych.
+## 43. Unicode special chars wymagają explicit font-family chain
 
-## 43. Unicode special chars wymagają explicit font-family fallback chain
+Anty: Unicode special char (`⌀` U+2300, math operators, arrows) bez font-family chain. Self-hosted woff2 subsety często pokrywają Basic Latin + Latin-Ext, NIE Misc Technical / Math Operators. Browser fallback → losowy default serif (Times New Roman), wygląda obco.
 
-**Anti-pattern**: użyć Unicode special char (`⌀` U+2300 DIAMETER SIGN, math operators, technical symbols, arrows) bez font-family chain. Self-hosted woff2 subsety często pokrywają tylko Basic Latin + Latin-Ext, **NIE** zawierają blocków Misc Technical / Mathematical Operators / Arrows. Browser fallback → losowy default serif (Times New Roman) — wygląda obco.
-
-**Wzorzec**: dla niestandardowych Unicode znaków daj explicit font-family chain do fontów które rzeczywiście mają glyph:
-
+Pattern: chain do fontów które realnie mają glyph:
 ```css
 .ic-diameter {
   font-family:
     'Cambria Math',        /* Windows */
-    'STIX Two Math',       /* cross-platform math, often macOS */
+    'STIX Two Math',       /* cross-platform math */
     'Lucida Sans Unicode', /* Windows legacy */
     'Segoe UI Symbol',     /* Windows */
     'DejaVu Sans',         /* Linux */
@@ -732,92 +654,81 @@ Wszystkie rgba() automatycznie przerendują się przy theme switch.
 }
 ```
 
-Chain trafia w fonty z dobrym pokryciem technical/math blocks na każdym major OS. Browser użyje pierwszego dostępnego.
-
-**Alternative**: dodać dodatkowy subset (np. `unicode-range: U+2300-23FF`) do self-hosted woff2 z brakującymi glyphami. Koszt: ~5-10 KB woff2 file. Korzyść: jednolite renderowanie cross-platform, bez visual mismatch z resztą fontu (patrz pattern #44).
+Alternative: dodać `unicode-range: U+2300-23FF` subset do self-hosted woff2 (~5-10 KB), jednolite cross-platform rendering.
 
 ## 44. Symbol z math fontu w caps context — bump font-size 1.4-1.5em
 
-**Anti-pattern**: Cambria Math / STIX renderują symbole technical na **x-height** (jak małe litery). W kontekście ALL-CAPS lub digit-heavy ("WIERCENIE DO ⌀800MM"), symbol wygląda subscripted — wizualnie ~70% wysokości sąsiadów. Wynik: znak czytelny, ale optycznie "lewy", "obcy".
+Anty: Cambria Math / STIX renderują technical symbols na x-height (jak małe litery). W ALL-CAPS lub digit-heavy ("WIERCENIE DO ⌀800MM") symbol wygląda subscripted — ~70% wysokości sąsiadów.
 
-**Wzorzec**: bump `font-size: 1.4-1.5em` żeby symbol matched visual cap-height. Stosunek x-height/cap-height w typowych fontach ~0.7, więc `1/0.7 ≈ 1.43`. Plus `line-height: 1` zapobiega rozciąganiu line-box. `vertical-align` baseline tweak po skali.
-
+Pattern: `font-size: 1.4-1.5em` żeby match cap-height (stosunek x-height/cap-height ~0.7, więc 1/0.7 ≈ 1.43). Plus `line-height: 1`, `vertical-align` tweak.
 ```css
 .ic-diameter {
   font-family: 'Cambria Math', /* ... */;
-  font-size: 1.5em;             /* match cap-height of caps siblings */
-  line-height: 1;               /* nie ciągnij wyzej */
-  vertical-align: -0.05em;      /* fine-tune baseline po skali */
-  margin-inline: 0.02em;        /* 1-2px breathing room */
+  font-size: 1.5em;
+  line-height: 1;
+  vertical-align: -0.05em;
+  margin-inline: 0.02em;
 }
 ```
+Em-unit utrzymuje proporcję spójną przez konteksty (hero stat, marquee, mailto desc) — jedna reguła, działa wszędzie.
 
-Em-unit utrzymuje proporcję spójną przez wszystkie konteksty (hero stat 3.8rem, marquee 1.6rem, mailto desc 0.92rem) — jedna reguła, działa wszędzie.
+## 45. Grid 1fr cells dają nierówne odstępy przy różnej szerokości treści
 
-## 45. Grid 1fr cells dają nierówne wizualne odstępy przy różnej szerokości treści
+Anty: `grid-template-columns: repeat(N, 1fr)` na liście gdzie content się waha (krótkie "PL" obok długiego "Ø800mm"). Każda komórka równa, content at start of cell — empty space różnej szerokości po prawej = wizualny chaos. `border-right` jako separator pogłębia (border at cell edge, daleko od treści).
 
-**Anti-pattern**: `grid-template-columns: repeat(N, 1fr)` na liście stats/items gdzie content szerokość waha się (krótkie "PL" obok długiego "Ø800mm"). Każda komórka ma równą szerokość, content sit at start of cell — empty space po prawej różnej szerokości tworzy wizualny chaos. Dodanie `border-right` jako separator pogłębia problem (border siedzi at cell edge daleko od treści).
+Pattern — 2 opcje:
 
-**Wzorzec — 2 opcje**:
-
-**A. Flex-column z `align-items: center`** — content każdego itemu wycentrowany w 1fr komórce, optycznie spaced równo niezależnie od długości:
+A. Flex-column z `align-items: center` — content wycentrowany w 1fr, optycznie spaced równo:
 ```css
 .hero__stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0 clamp(12px, 1.6vw, 24px); }
 .stat { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
 ```
 
-**B. `auto` cols + `justify-content: space-between`** — komórki packed tight do treści, browser distributes leftover jako equal gaps:
+B. `auto` cols + `justify-content: space-between` — komórki tight do treści, browser distributes leftover jako equal gaps:
 ```css
 .list { display: flex; justify-content: space-between; align-items: baseline; }
 ```
 
-A = symetryczne kolumny niezależnie od treści (responsive grid 5→3→2 wrap działa).
-B = gaps są equal, kolumny różnej szerokości (płaska linia bez wrappingu).
+A = symetryczne kolumny (responsive grid 5→3→2 wrap działa). B = equal gaps, kolumny różnej szerokości (flat line, no wrapping). NIE używać border-right jako separator z 1fr + variable content — gap jest lepszy.
 
-**Pułapka**: NIE używać border-right jako separator z 1fr cells + variable content. Gap (white space) jest lepszym separatorem niż border przy heterogenicznych treściach.
+## 46. Strukturuj kod żeby revert był łatwy
 
-## 46. Strukturuj kod tak, żeby user mind change → revert był łatwy
+Pattern: user może zmienić zdanie po feedback rounds. Przykład:
+- R1: "outline brzydki na mobile" → dodaj `@media (min-width: 769px)` gate
+- R5: "daj outline wszędzie" → revert media query (3 deleted lines)
 
-**Wzorzec**: user może zmienić zdanie po feedback runds. Przykład tej sesji:
-- Round 1: "outline na PRECYZYJNE brzydki na mobile" → dodałem `@media (min-width: 769px)` gate
-- Round 5: "nie, daj outline wszędzie" → revert media query (3 deleted lines)
+Code structured well (em-based stroke + jeden `@supports` + jeden `@media` wrapper) = one-line revert. Code structured badly (hardkodowane px, wiele media queries, per-element overrides) = godzinny refactor.
 
-Code structured well (em-based stroke + jeden `@supports` + jeden `@media` wrapper) pozwala one-line revert. Code structured badly (hardkodowane px breakpointy, wiele media queries po niu pixele, per-element overrides) wymagałby godzinnego refactoru.
+Zasady:
+- em/rem/% zamiast px gdy proporcje skalują z context
+- jedna `@supports`/`@media` zamiast warstw warunków
+- progressive enhancement default = uniwersalnie wspierane, feature query opt-in (#18)
+- mobile-specific overrides oddzielne od enhancement layer
 
-**Zasady**:
-- em/rem/% zamiast px gdy proporcje muszą skalować z context
-- jedna `@supports` lub `@media` zamiast warstw warunków
-- progressive enhancement default = uniwersalnie wspierany rendering, feature query opt-in (nie odwrotnie — patrz pattern #18)
-- mobile-specific overrides oddzielne od enhancement layer (nie wmieszane)
+## 47. Unicode + font fallback vs inline SVG
 
-Wtedy "wycofaj jak było" = commit z 3 deleted lines, nie 50-linijkowy refactor.
+Saga ze znakiem ⌀:
+1. Latin Ø (U+00D8) w Big Shoulders → wygląda jak przekreślone zero
+2. Inline SVG per użycie → pixel-perfect, ale duplikat HTML 6×
+3. SVG sprite + `<use href="#id"/>` → DRY, ale kreska wewnątrz koła (nie engineering convention)
+4. Unicode ⌀ (U+2300) + font fallback → system math font renderuje prawdziwy diameter sign. ALE x-height → bump 1.5em
 
-## 47. Unicode + font fallback vs inline SVG — DIY-vs-trust-the-platform
-
-**Tej sesji konkretnie — saga ze znakiem ⌀**:
-1. **Latin Ø (U+00D8)** w Big Shoulders → wygląda jak przekreślone zero (elongated condensed display font)
-2. **Inline SVG per użycie** → pixel-perfect, ale duplikat HTML 6 razy
-3. **SVG sprite + `<use href="#id"/>`** → DRY, ale moja kreska była **wewnątrz** koła (nie engineering convention "linia wychodzi poza")
-4. **Unicode ⌀ (U+2300) + font fallback chain** → system math font renderuje prawdziwy diameter sign z linią wychodzącą poza koło. ALE x-height rendered → bumped font-size: 1.5em
-
-**Final lesson**: dla typografii/symboli **prefer Unicode + font fallback OVER inline SVG**, gdy:
-- Symbol jest standardowy Unicode (math/technical/punctuation blocks)
+Final lesson: dla typografii/symboli prefer Unicode + font fallback OVER inline SVG, gdy:
+- Symbol standardowy Unicode (math/technical/punctuation)
 - System fonty często go mają (Cambria Math, STIX, Segoe UI Symbol)
-- Pattern używany w wielu kontekstach o różnych font-size (Unicode skaluje się jak każda inna litera)
+- Wiele kontekstów o różnych font-size (Unicode skaluje jak litera)
 
-**SVG wybierz gdy**:
-- Symbol nie jest standardowy Unicode (custom brand glyph, niestandardowy projekt)
-- Visual MUST be pixel-perfect identical cross-platform (różne system fonty rysują ten sam Unicode codepoint inaczej)
-- Animacja / interakcja na symbolu (CSS transform na SVG inline)
+SVG wybierz gdy:
+- Symbol nie-standardowy (custom brand glyph)
+- Visual MUST be pixel-perfect cross-platform
+- Animacja/interakcja na symbolu
 
-**Unicode + font fallback wymaga 2 dodatkowych rzeczy**:
-1. Explicit font-family chain z fontami które mają glyph (patrz #43)
-2. Czasem font-size bump (math fonty renderują w x-height — visual mismatch w caps context, patrz #44)
+Unicode + font fallback wymaga: (1) explicit font-family chain (#43), (2) czasem font-size bump w caps context (#44).
 
-## Skróty / przyspieszacze pracy
+## Skróty / przyspieszacze
 
 - Lokalny preview: `python -m http.server 8000` → `http://localhost:8000`
 - Walidacja schema: [validator.schema.org](https://validator.schema.org/)
 - Rich results test: [search.google.com/test/rich-results](https://search.google.com/test/rich-results)
 - Lighthouse: Chrome DevTools → Lighthouse → Analyze
-- Playwright MCP (jeśli dostępne) do regression testing po zmianach
+- Playwright MCP do regression testing po zmianach
