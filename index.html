@@ -654,6 +654,9 @@
 
     @media (max-width: 900px) {
       .nav__links { display: none; }
+      /* Bez nav__links flex space-between rozsypywal phones do srodka.
+         margin-left: auto sklasta phones do prawej krawedzi (do hamburgera). */
+      .nav__phones { margin-left: auto; }
     }
 
     /* === Hamburger button — widoczny tylko gdy .nav__links ukryte === */
