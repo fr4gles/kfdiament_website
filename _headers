@@ -1,0 +1,42 @@
+# Cloudflare Pages HTTP headers
+# https://developers.cloudflare.com/pages/configuration/headers/
+#
+# Wszystkie reguły z pasującymi globami są stosowane do danego żądania.
+# Gdy ta sama nazwa nagłówka pojawi się w wielu pasujących regułach,
+# wygrywa wartość z REGUŁY BARDZIEJ SPECYFICZNEJ (np. `/fonts/*` nadpisze
+# `Cache-Control` z `/*`). Nagłówki z `/*` (security: HSTS, X-Frame-Options
+# itp.) NIE zostają zastąpione przez `/fonts/*` ani `/img/*` — te bardziej
+# specyficzne reguły ustawiają tylko Cache-Control i CORS, więc security
+# headers dostają wszyscy.
+
+# === Security headers (cala strona) ===
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+# === Long cache dla immutable assets ===
+# Fonty i obrazki nie zmieniaja sie — agresywne cache 1 rok + immutable
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/img/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# === HTML — krotki cache, must-revalidate ===
+# Zeby zmiany na stronie byly widoczne szybko po nowym deployu
+/
+  Cache-Control: public, max-age=600, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=600, must-revalidate
+
+# === robots/sitemap — kilkugodzinny cache ===
+/robots.txt
+  Cache-Control: public, max-age=3600
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
