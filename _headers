@@ -10,7 +10,6 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  X-XSS-Protection: 1; mode=block
 
 # === Long cache dla immutable assets ===
 # Fonty i obrazki nie zmieniaja sie — agresywne cache 1 rok + immutable

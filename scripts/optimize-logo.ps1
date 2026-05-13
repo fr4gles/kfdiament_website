@@ -63,15 +63,13 @@ if (-not (Test-Path $outDir)) {
   New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 }
 
-# Wykryj dostępne narzędzia
+# Wykryj dostępne narzędzia (kolejność preferencji: magick → ffmpeg → sharp przez npx)
 $haveMagick = $null -ne (Get-Command magick -ErrorAction SilentlyContinue)
-$haveCwebp  = $null -ne (Get-Command cwebp  -ErrorAction SilentlyContinue)
 $haveFfmpeg = $null -ne (Get-Command ffmpeg -ErrorAction SilentlyContinue)
 $haveNpx    = $null -ne (Get-Command npx    -ErrorAction SilentlyContinue)
 
 Write-Host "Available tools:"
 Write-Host "  ImageMagick (magick): $haveMagick"
-Write-Host "  cwebp:                $haveCwebp"
 Write-Host "  ffmpeg:               $haveFfmpeg"
 Write-Host "  npx (Node.js):        $haveNpx"
 Write-Host ""

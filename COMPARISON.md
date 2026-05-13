@@ -35,8 +35,8 @@
 | HTML gzipped | **~13 KB** | ~25-40 KB |
 | Zewnętrzne CSS pliki | **0** (inline) | 5-15 (WP, theme, pluginy) |
 | Zewnętrzne JS pliki | **0** (inline) | 10-20 (jQuery, WP, slider, analytics…) |
-| Fonty | Google Fonts (3 rodziny, preconnect) | systemowe (0 fontów własnych) |
-| Liczba HTTP requestów (initial) | **~6** (HTML + 3 fonty + CSS fontów + 1 image) | 40-80+ |
+| Fonty | **self-hosted woff2** (3 rodziny, latin + latin-ext, same-origin, preload) | systemowe (0 fontów własnych) |
+| Liczba HTTP requestów (initial) | **~5** (HTML + 3 preload-fonty + 1 image, **zero third-party**) | 40-80+ |
 | Suma transferu przed obrazkami | **~80-150 KB** | **800 KB – 2 MB** |
 
 ### Czas do first paint (oszacowanie na 4G)
@@ -54,7 +54,7 @@
 2. **CSS inline** — przeglądarka nie czeka na kolejny request po HTML
 3. **JS inline na końcu body** — nie blokuje renderowania DOM
 4. **Brak jQuery** — oszczędność ~90 KB minified + parsing time
-5. **Google Fonts preconnected** — DNS lookup + TLS handshake zaczynają się równolegle z parsowaniem HTML
+5. **Self-hosted fonty woff2** preloadowane (same-origin) — brak DNS lookup + TLS handshake do third-party CDN, zero third-party requestów dla GDPR
 6. **`fetchpriority="high"` na hero logu** — przeglądarka priorytetyzuje LCP candidate
 7. **`prefers-reduced-motion`** wycina animacje (nie wymusza, ale uprzejmie obsługuje)
 

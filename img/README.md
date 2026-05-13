@@ -10,25 +10,20 @@
 | `logo-96.webp` | skrypt | 96×96 | wymagane (auto — nav/footer) |
 | `favicon-32.png` | skrypt | 32×32 | wymagane (auto) |
 | `apple-touch-icon.png` | skrypt | 180×180 | wymagane (auto) |
-| `og.jpg` | **dorób ręcznie** | 1200×630 | do dorobienia (social preview) |
+| `og.jpg` | **ręcznie / ffmpeg** | 1200×630 | wygenerowane (social preview) |
 | `realizacja-01.jpg` … | **ręcznie** | 800×1000 (4:5) | opcjonalne (galeria) |
-
-> Pamiętaj: nazwa repo to `kfdiament_website` (nie `kfdiament_webiste`). Lokalna ścieżka projektu zawiera literówkę `D:\kfdiament_webiste\` ale GitHub remote ma poprawną nazwę.
 
 ## Workflow
 
-1. **Zapisz oryginał logo** (klient czatu → "Zapisz obraz jako…") jako:
-   ```
-   D:\kfdiament_webiste\img\logo.png
-   ```
-   Zalecane: 512×512 PNG, przezroczyste tło.
+1. **Zapisz oryginał logo** jako `img/logo.png` w katalogu repo (zalecane:
+   512×512 PNG, przezroczyste tło).
 
 2. **Uruchom skrypt optymalizacji** z katalogu głównego repo:
    ```powershell
    pwsh -File scripts/optimize-logo.ps1
    ```
    Skrypt produkuje wszystkie WebP + favicony naraz. Auto-wykrywa
-   `ImageMagick` (zalecane) lub `sharp` przez `npx`. Jeśli żadnego
+   `ImageMagick` → `ffmpeg` → `sharp` (przez `npx`/`npm`). Jeśli żadnego
    nie ma — wskazuje komendę instalacji.
 
 3. **Odśwież stronę** (Ctrl+F5).

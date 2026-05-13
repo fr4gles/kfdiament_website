@@ -6,7 +6,7 @@ Statyczna jednoplikowa strona-wizytówka firmy **KFDIAMENT Obrębski Motyka Spó
 ## Stack i charakter
 
 - Czysty HTML5 + CSS + vanilla JS (jeden plik `index.html`)
-- Google Fonts: **Big Shoulders Display**, **Manrope**, **JetBrains Mono**
+- Self-hosted variable woff2 z `/fonts/`: **Big Shoulders Display**, **Manrope**, **JetBrains Mono** (latin + latin-ext, ~180 KB total). Bez Google Fonts CDN — wszystko same-origin (lepszy performance + GDPR-friendly, zero requestów do third-party).
 - Bez frameworków, bez build-stepu, bez npm
 - Hostowanie: GitHub + Cloudflare Pages (free tier)
 - Design: premium industrial, paleta **antique brass + warm cream + warm black** (pod
@@ -33,11 +33,13 @@ Strona jest **w pełni statyczna** — nie wymaga żadnego serwera. Masz 3 opcje
 ### Opcja 1 — najszybsza: double-click
 
 W Eksploratorze Windows kliknij dwa razy na `index.html`. Otworzy się
-w domyślnej przeglądarce. Wszystko zadziała oprócz dwóch drobiazgów:
+w domyślnej przeglądarce. Wszystko zadziała oprócz jednego drobiazgu:
 
-- Google Fonts mogą się ładować ciut wolniej (brak prefetch przy `file://`)
 - Niektóre przeglądarki blokują `file://` iframe → mapa Google **może się
   nie pokazać** (otworzy się dopiero po wrzuceniu na realny serwer)
+
+Fonty są self-hosted z `/fonts/` (same-origin) — ładują się tak samo
+przy `file://` jak na produkcji.
 
 ### Opcja 2 — zalecana: prosty serwer HTTP
 
@@ -325,7 +327,7 @@ ważniejszy od dekoracji).
 
 - **Bez build-stepu** = brak czasu kompilacji, deploy w sekundy
 - **Brak runtime'u JS** poza vanilla mailto-generator + IntersectionObserver
-- **Google Fonts** ładowane z `preconnect` (najszybsza metoda dla self-CDN-fontów)
+- **Self-hosted fonty** (variable woff2) preloadowane z `/fonts/` — zero third-party requestów, same-origin <50 ms load
 - **`loading="lazy"`** na obrazach poniżej fold + iframe Google Maps
 - Spodziewany **Lighthouse** (po deployu na Cloudflare):
   - Performance: 95-100
