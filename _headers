@@ -1,7 +1,13 @@
 # Cloudflare Pages HTTP headers
 # https://developers.cloudflare.com/pages/configuration/headers/
 #
-# Reguly stosowane są od góry — pierwsza pasująca dla danego pathu wygrywa.
+# Wszystkie reguły z pasującymi globami są stosowane do danego żądania.
+# Gdy ta sama nazwa nagłówka pojawi się w wielu pasujących regułach,
+# wygrywa wartość z REGUŁY BARDZIEJ SPECYFICZNEJ (np. `/fonts/*` nadpisze
+# `Cache-Control` z `/*`). Nagłówki z `/*` (security: HSTS, X-Frame-Options
+# itp.) NIE zostają zastąpione przez `/fonts/*` ani `/img/*` — te bardziej
+# specyficzne reguły ustawiają tylko Cache-Control i CORS, więc security
+# headers dostają wszyscy.
 
 # === Security headers (cala strona) ===
 /*

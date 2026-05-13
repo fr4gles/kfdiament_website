@@ -92,8 +92,12 @@ za jednym kliknięciem:
 pwsh -File scripts/optimize-logo.ps1
 ```
 
-Skrypt auto-wykrywa narzędzia: **ImageMagick** (zalecane — `winget install ImageMagick.ImageMagick`)
-albo **sharp** przez `npx` (wymaga Node.js). Generuje:
+Skrypt auto-wykrywa narzędzia (preferowana kolejność):
+**ImageMagick** (`winget install ImageMagick.ImageMagick`) → **ffmpeg**
+(`winget install Gyan.FFmpeg`, zwykle już zainstalowany jako zależność
+innych narzędzi) → **sharp** przez `npx`/`npm` (wymaga Node.js,
+auto-instaluje się jednorazowo do `%TEMP%`). Skrypt używa pierwszego
+dostępnego — wszystkie 3 dają identyczny output. Generuje:
 
 - `img/logo.webp` (512×512, ~20-30 KB) — używane w nav/footer/JSON-LD
 - `img/logo-1024.webp` (1024×1024, ~50 KB) — hero LCP candidate, preload
@@ -234,7 +238,7 @@ z subtelnym czerwono-złotym akcentem). Aby podmienić na własne zdjęcia:
 <article class="gal-card reveal" style="background-image: url('img/realizacja-01.jpg')">
 ```
 
-Powtórz dla 3 kart. Galleria wygląda najlepiej gdy wszystkie 3 zdjęcia mają
+Powtórz dla 3 kart. Galeria wygląda najlepiej gdy wszystkie 3 zdjęcia mają
 podobny ton kolorystyczny (np. wszystkie close-up'y betonu / sprzętu).
 
 ## 🗺️ Mapa Google

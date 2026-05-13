@@ -46,13 +46,13 @@ To **NIE jest** projekt JS-framework. Świadomie:
 │   └── jetbrains-mono-latin-ext.woff2     11 KB
 └── img/
     ├── README.md             — instrukcja workflow assetów
-    ├── logo.png              — ŹRÓDŁO: master 500×500
+    ├── logo.png              — ŹRÓDŁO master (obecnie 500×500, zalecane min. 512×512 dla nowych źródeł)
     ├── logo.webp             — 512×512 WebP (nav/footer/JSON-LD)
     ├── logo-1024.webp        — 1024×1024 (hero LCP, preload)
     ├── logo-96.webp          — 96×96 (nav/footer thumbnail)
     ├── favicon-32.png        — favicon
     ├── apple-touch-icon.png  — 180×180 (iOS bookmark)
-    ├── og.jpg                — DO DOROBIENIA: social preview 1200×630
+    ├── og.jpg                — 1200×630 social preview (wygenerowane przez ffmpeg)
     └── realizacja-XX.jpg     — opcjonalne: galeria
 ```
 

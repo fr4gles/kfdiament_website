@@ -108,11 +108,17 @@ function Convert-WithFfmpeg {
   return $LASTEXITCODE -eq 0
 }
 
+function Get-TempDir {
+  # Cross-platform: [System.IO.Path]::GetTempPath() respektuje TMPDIR (Linux/macOS)
+  # i ${env:TEMP}/${env:TMP} (Windows). $env:TEMP nie istnieje na pwsh dla Unix.
+  return [System.IO.Path]::GetTempPath()
+}
+
 function Convert-WithSharp {
   param($Src, $Dst, $Size, $Format, $Quality)
   # Install sharp do tymczasowego katalogu (npx -p nie zawsze dziala z natywnymi modulami)
   if (-not $script:sharpDir) {
-    $script:sharpDir = Join-Path $env:TEMP "kfd-sharp-pkg"
+    $script:sharpDir = Join-Path (Get-TempDir) "kfd-sharp-pkg"
     if (-not (Test-Path (Join-Path $script:sharpDir "node_modules/sharp"))) {
       Write-Host "    (instaluje sharp jednorazowo do $script:sharpDir...)" -ForegroundColor DarkGray
       New-Item -ItemType Directory -Force -Path $script:sharpDir | Out-Null
@@ -129,7 +135,7 @@ sharp('$($Src.Replace('\','/'))').
   then(() => process.exit(0)).
   catch(e => { console.error(e); process.exit(1); });
 "@
-  $tmp = Join-Path $env:TEMP "kfd-sharp-$(Get-Random).js"
+  $tmp = Join-Path (Get-TempDir) "kfd-sharp-$(Get-Random).js"
   Set-Content -Path $tmp -Value $code -Encoding UTF8
   & node $tmp
   $result = $LASTEXITCODE -eq 0
