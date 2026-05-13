@@ -1147,13 +1147,18 @@
       font-weight: 700;
     }
     @supports (-webkit-text-stroke: 1px black) {
-      /* Outline (transparent fill + stroke) na wszystkich rozmiarach — stroke
-         w em (0.018em) skaluje sie z font-size, wiec proporcja jest spojna
-         desktop / mobile. Wczesniej była mobile-fallback do solid color, ale
-         klient zmienił zdanie — outline ma byc wszedzie. */
+      /* Outline (transparent fill + stroke) na wszystkich rozmiarach.
+         max(1.4px, 0.018em) floor'uje stroke-width na 1.4px — chroni przed
+         sub-pixel aliasingiem na mobile, gdzie 0.018em = ~0.6px (subpixel)
+         i renderowało się postrzępione. Desktop wide 8.2rem font: 0.018em
+         wygrywa (=2.4px, ładnie grube), mobile ~35px font: 1.4px wygrywa
+         (czytelny minimalny stroke). text-rendering: geometricPrecision daje
+         lepsze stroke quality kosztem speed (akceptowalne dla 3-słowowego h1). */
       .hero__title .outline {
         color: transparent;
-        -webkit-text-stroke: 0.018em var(--fg);
+        -webkit-text-stroke-width: max(1.4px, 0.018em);
+        -webkit-text-stroke-color: var(--fg);
+        text-rendering: geometricPrecision;
       }
     }
     .hero__title .accent {
