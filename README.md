@@ -323,14 +323,21 @@ przełączyć.
 
 ## 📱 Responsive
 
-Strona działa od **320px do 1920px+**. Główny breakpoint: **900px**. Drobne
-adjustacje na **600px / 768px**. Hero logo znika na ekranach < 480px (headline
-ważniejszy od dekoracji).
+Strona działa od **320px do 1920px+**. Breakpointy:
+- **1080px** — nav-specific: linki znikają, pojawia się hamburger + mobile menu (sekcja telefonów u góry panelu + 5 section links). Sekcji NIE bumpować na 1080 — tylko nav.
+- **900px** — uniwersalny mobile/desktop dla sekcji content (hero stats, about, gallery, contact grid, footer collapse na 1fr).
+- **820/640/540/460/400/360px** — szczegółowa degradacja nav: phones shrink → 1 phone → 0 phones (zostają w mobile menu).
+- **768/480px** — typografia mobile (text-stroke gated na min-width: 769px, smaller font sizes).
+
+Hero logo **nie znika** na małych ekranach — zmienia tylko pozycję/rozmiar/opacity:
+- default: `clamp(360px, 52vw, 720px)` szerokość, opacity `.18`, anchor do `--maxw` container
+- ≤900px: `right: -25vw`, `width: 90vw`, opacity `.12`
+- ≤480px: `right: -40vw`, `width: 110vw`, opacity `.10`
 
 ## ⚡ Performance
 
 - **Bez build-stepu** = brak czasu kompilacji, deploy w sekundy
-- **Brak runtime'u JS** poza vanilla mailto-generator + IntersectionObserver
+- **Vanilla JS** (~150 linii) obsługuje: mailto-generator z pre-fill per usługa, IntersectionObserver reveal-on-scroll, email obfuscation (data attrs → `mailto:` build), hamburger menu (open/close + Escape + scrim + resize cleanup), scroll progress bar (requestAnimationFrame), brak żadnych frameworków/bibliotek.
 - **Self-hosted fonty** (variable woff2) preloadowane z `/fonts/` — zero third-party requestów, same-origin <50 ms load
 - **`loading="lazy"`** na obrazach poniżej fold + iframe Google Maps
 - Spodziewany **Lighthouse** (po deployu na Cloudflare):

@@ -258,8 +258,10 @@
 
        Dark theme (premium night — do podmiany w :root gdy klient zdecyduje):
          --bg:           #14110d;
+         --bg-rgb:       20, 17, 13;
          --bg-2:         #1f1b15;
          --bg-3:         #2a241b;
+         --fg-rgb:       235, 229, 214;
          --fg:           #f0e8d4;
          --muted:        #a39880;
          --line:         #3d3527;
@@ -272,9 +274,11 @@
 
     :root {
       --bg:           #f5f1e8;   /* warm cream paper / beton-light */
+      --bg-rgb:       245, 241, 232;  /* RGB triplet --bg dla rgba() — MUSI byc w sync z --bg */
       --bg-2:         #ebe5d6;   /* kraft, sekcje alternujące */
       --bg-3:         #ddd4bf;   /* raw concrete inset */
       --fg:           #1a1614;   /* warm near-black (honoruje czerń logo) */
+      --fg-rgb:       26, 22, 20;     /* RGB triplet --fg dla rgba() w shadow/scrim */
       --muted:        #5c5346;   /* warm graphite */
       --line:         #c9bfa6;   /* hairline border */
       --line-strong:  #8a7d5e;   /* strong divider, ikony stroke */
@@ -545,13 +549,13 @@
       right: 0;
       height: var(--nav-h);
       z-index: 50;
-      background: rgba(245, 241, 232, 0.92);  /* warm cream (var(--bg) z alpha), nie czysta biel */
+      background: rgba(var(--bg-rgb), 0.92);  /* warm cream (var(--bg) z alpha), nie czysta biel */
       backdrop-filter: saturate(140%) blur(14px);
       -webkit-backdrop-filter: saturate(140%) blur(14px);
       border-bottom: 1px solid var(--line);
     }
     @supports not (backdrop-filter: blur(1px)) {
-      .nav { background: rgba(245, 241, 232, 0.98); }  /* Firefox<103, WebView fallback */
+      .nav { background: rgba(var(--bg-rgb), 0.98); }  /* Firefox<103, WebView fallback */
     }
     .nav__inner {
       height: 100%;
@@ -648,12 +652,11 @@
       font-family: var(--font-mono);
       font-size: 13px;
       font-weight: 500;
-      white-space: nowrap;  /* Cyferki "511 478 232" nigdy nie lamia sie na 2 linie */
       letter-spacing: 0.02em;
       line-height: 1;
       transition: background .2s ease, transform .15s ease;
       box-shadow: 0 2px 10px rgba(168, 132, 44, 0.22);
-      white-space: nowrap;
+      /* nowrap przez globalna regule a[href^="tel:"] u gory */
     }
     @media (hover: hover) and (pointer: fine) {
       .nav__phone:hover {
@@ -741,7 +744,7 @@
       top: 100%;
       left: 0;
       right: 0;
-      background: rgba(245, 241, 232, 0.98);
+      background: rgba(var(--bg-rgb), 0.98);
       backdrop-filter: saturate(140%) blur(14px);
       -webkit-backdrop-filter: saturate(140%) blur(14px);
       border-bottom: 1px solid var(--line);
@@ -759,7 +762,7 @@
       pointer-events: auto;
     }
     @supports not (backdrop-filter: blur(1px)) {
-      .mobile-menu { background: rgba(245, 241, 232, 1); }
+      .mobile-menu { background: var(--bg); }
     }
     /* Sekcja telefonow na gorze panelu — wyrowna z bottom links, zawsze pelne numery.
        2-kolumnowa siatka na szerszych mobile (>420px), single column ponizej. */
@@ -785,7 +788,6 @@
       color: var(--bg);
       font-family: var(--font-mono);
       font-size: 14px;
-      white-space: nowrap;  /* "+48 511 478 232" nigdy nie wraps */
       font-weight: 500;
       letter-spacing: 0.03em;
       text-decoration: none;
@@ -856,7 +858,7 @@
     .mobile-menu__scrim {
       position: fixed;
       inset: var(--nav-h) 0 0 0;
-      background: rgba(26, 22, 20, 0.32);
+      background: rgba(var(--fg-rgb), 0.32);
       z-index: 49;
       opacity: 0;
       pointer-events: none;
@@ -1591,7 +1593,7 @@
     .service-other__desc {
       font-size: 0.98rem;
       line-height: 1.55;
-      color: rgba(245, 241, 232, 0.78);
+      color: rgba(var(--bg-rgb), 0.78);
       margin: 0;
       max-width: 56ch;
     }
@@ -2014,7 +2016,7 @@
       color: var(--bg);
     }
     .mailto-card--inverted .mailto-card__desc {
-      color: rgba(245, 241, 232, 0.72);
+      color: rgba(var(--bg-rgb), 0.72);
     }
     .mailto-card--inverted .mailto-card__arrow {
       color: var(--accent-2);
@@ -2026,7 +2028,7 @@
         color: var(--bg);
       }
       .mailto-card--inverted:hover .mailto-card__desc {
-        color: rgba(245, 241, 232, 0.88);
+        color: rgba(var(--bg-rgb), 0.88);
       }
     }
     .mailto-card__desc {
@@ -2236,7 +2238,7 @@
         </span>
       </button>
     </div>
-    <div class="mobile-menu" id="mobile-menu" hidden>
+    <div class="mobile-menu" id="mobile-menu" inert>
       <div class="mobile-menu__phones" role="group" aria-label="Telefony do biura">
         <a class="mobile-menu__phone" href="tel:+48511478232" aria-label="Biuro — zadzwoń: +48 511 478 232">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2260,7 +2262,7 @@
       </ul>
     </div>
   </nav>
-  <div class="mobile-menu__scrim" hidden aria-hidden="true"></div>
+  <div class="mobile-menu__scrim" inert aria-hidden="true"></div>
 
   <main id="main" tabindex="-1">
 
@@ -2821,6 +2823,9 @@
       });
 
       // ─── mobile hamburger menu ──────────────────────────────────
+      // Używamy `inert` zamiast `hidden`: inert blokuje fokus + AT NATYCHMIAST gdy ustawione,
+      // ale element nadal renderuje (animacja opacity/transform dograć). Eliminuje 240ms okno
+      // gdzie panel byl invisible (opacity:0) ale linki nadal tabowalne (focus into invisible content).
       const burger = document.querySelector('.nav__burger');
       const menu   = document.getElementById('mobile-menu');
       const scrim  = document.querySelector('.mobile-menu__scrim');
@@ -2831,18 +2836,13 @@
           burger.setAttribute('aria-label', 'Otwórz menu');
           menu.removeAttribute('data-open');
           scrim.removeAttribute('data-open');
-          // Pozwol animacji opacity dograć, potem hidden żeby AT/Tab nie wchodzilo
-          setTimeout(function () {
-            if (burger.getAttribute('aria-expanded') !== 'true') {
-              menu.hidden = true;
-              scrim.hidden = true;
-            }
-          }, 240);
+          menu.setAttribute('inert', '');   // natychmiast blokuje Tab/AT
+          scrim.setAttribute('inert', '');  // (animacja opacity nadal dograć)
         };
         const openMenu = function () {
-          menu.hidden = false;
-          scrim.hidden = false;
-          // Force reflow przed data-open, zeby transition zalapal
+          menu.removeAttribute('inert');
+          scrim.removeAttribute('inert');
+          // Force reflow zeby transition data-open zalapal stan startowy
           void menu.offsetWidth;
           burger.setAttribute('aria-expanded', 'true');
           burger.setAttribute('aria-label', 'Zamknij menu');
