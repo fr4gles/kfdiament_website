@@ -2,6 +2,22 @@
 
 Ten plik jest dla **przyszłych iteracji Claude Code** pracujących nad tym repozytorium. Zawiera kluczowe decyzje, konwencje, **patterns z poprzednich sesji**, i pułapki — żeby nie odkrywać tego samego za każdym razem.
 
+## 🎓 Samouczenie — ZAWSZE na koniec sesji (META-REGUŁA)
+
+**Pod koniec każdej sesji rozkminić, czego można było się nauczyć**, i wpisać to do tego pliku jako nową regułę/pattern. Bez tego za miesiąc te same błędy popełnimy od nowa.
+
+Co konkretnie wyciągać:
+1. **Każdy znajdź Copilota** — co kazał poprawić, dlaczego, co była przyczyna źródłowa
+2. **Własne obserwacje** — zauważone anty-patterny, decyzje projektowe, świadome wybory technologiczne
+3. **UX feedback od klienta** — co kazał zmienić, dlaczego, jaki to wzorzec percepcyjny (np. "wypierdek" → drop short suffix, "brzydko wygląda" → hard pivot)
+4. **Proces — co poszło źle/dobrze** — np. że Copilot powtarza stare wątki gdy nierozwiązane, że trzeba `resolve all` po fixie, że PR description rotuje
+
+Format: nowy `## NN. Tytuł` w sekcji "Patterns & lessons learned" niżej. Lead z **anty-patternem**, potem **wzorcem**, potem **kiedy stosować**. Konkretnie i krótko — bez wody.
+
+Po dopisaniu reguł — `commit` + `push`, żeby było w pamięci git.
+
+---
+
 ## Czym jest projekt
 
 Statyczna **strona-wizytówka** firmy **KFDIAMENT Obrębski Motyka Spółka jawna** (cięcie i wiercenie diamentowe betonu, osadzanie kotew chemicznych — działają na terenie całej Polski, siedziba: Grybów, Grunwaldzka 9).
@@ -333,6 +349,287 @@ Galeria ma 3 karty `.gal-card.placeholder` z CSS-owym patternem industrialnym (3
 3. Dodać inline `style="background-image: url('img/realizacja-XX.jpg')"`
 
 Komentarz HTML w pliku zawiera instrukcję — szukaj `=== EDYCJA GALERII ===`.
+
+## 13. Reduced-motion completeness — KAŻDA animacja ma override
+
+**Anti-pattern**: `scroll-behavior: smooth` (lub `transition`, `animation`) ustawione globalnie, brak override'a w `@media (prefers-reduced-motion: reduce)`. To WCAG fail i Copilot to wyłapuje.
+
+**Wzorzec**: każda dyrektywa ruchowa (`animation`, `transition`, `scroll-behavior: smooth`, `transform` na hover) ma zerujący odpowiednik w bloku `prefers-reduced-motion: reduce`. Audyt: grep `scroll-behavior|animation:|transition:` i sprawdź czy każde wystąpienie ma reduced-motion counter-rule.
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero__byline, .reveal { opacity: 1; animation: none; }
+  .hero__logo { animation: none; }
+}
+```
+
+## 14. Fixed nav wymaga scroll-padding-top
+
+**Anti-pattern**: fixed top nav (`.nav { position: fixed; height: 72px }`) + `<a href="#section">` → anchor scroll przewija tak, że nagłówek sekcji chowa się pod navem. Klikalność słaba, UX zły.
+
+**Wzorzec**: `html { scroll-padding-top: calc(var(--nav-h) + 12px); }` — buffer 12px nad nagłówkiem po skoku. Wszystkie anchor links automatycznie respektują nav height bez per-section `scroll-margin-top`.
+
+## 15. Skip-link target + focus visibility (WCAG 2.4.7)
+
+**Anti-pattern A**: `<a class="skip-link" href="#main">` celuje w `<main>` bez `tabindex` — fokus klawiatury zostaje na linku, scroll się zmienia ale Tab dalej nawiguje od zaraz po skip-linku zamiast w treści.
+
+**Anti-pattern B**: `<main tabindex="-1">` + `outline: none` na focus → fokus niewidoczny = WCAG 2.4.7 fail.
+
+**Wzorzec**: `<main id="main" tabindex="-1">` + outline zastąpiony subtelnym indykatorem (inset box-shadow band u góry, nie outline wokół ogromnego elementu):
+
+```css
+main[tabindex="-1"]:focus-visible {
+  outline: none;
+  box-shadow: inset 0 4px 0 0 var(--accent);  /* 4px gold band u gory main */
+}
+```
+
+## 16. Touch hover prevention z feature query
+
+**Anti-pattern**: `:hover { transform: scale(1.05) }` triggeruje sticky hover na touch devices — long-press = trzymanie stylu hover do kolejnego tapa.
+
+**Wzorzec**: każdy transform-based hover owinięty w `@media (hover: hover) and (pointer: fine) { ... }`. Mouse users dostają hover affordances, touch users nie mają sticky.
+
+```css
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { transform: translateY(-2px); background: var(--accent-hover); }
+}
+```
+
+## 17. Symmetric safe-area-inset w landscape z notchem
+
+**Anti-pattern**: `padding-inline: max(20px, env(safe-area-inset-left))` — tylko lewy notch honored. iPhone w landscape z prawym notchem nakłada content na okrągły kąt ekranu.
+
+**Wzorzec**: rozdzielić start/end:
+```css
+padding-inline-start: max(20px, env(safe-area-inset-left));
+padding-inline-end:   max(20px, env(safe-area-inset-right));
+```
+
+Działa też dla RTL languages w przyszłości (logical properties).
+
+## 18. Progressive enhancement > `@supports not`
+
+**Anti-pattern**: `@supports not (-webkit-text-stroke: 1px black) { /* tylko re-set text-stroke */ }` — fallback nadal używa nie-wspieranej property. Z `color: transparent` dla stroke text, przeglądarki bez wsparcia renderują niewidoczny tekst.
+
+**Wzorzec**: default rule = uniwersalnie wspierana wersja. Efekt zaawansowany w POZYTYWNEJ feature query:
+
+```css
+.hero__title .outline {
+  color: var(--fg);  /* default visible */
+}
+@supports (-webkit-text-stroke: 1px black) {
+  .hero__title .outline {
+    color: transparent;
+    -webkit-text-stroke: 0.018em var(--fg);
+  }
+}
+```
+
+Plus gating na ekrany ≥769px dla efektów które na mobile wyglądają źle (artefakty antialiasingu thin stroke przy małych font-size).
+
+## 19. Format-specific image library options
+
+**Anti-pattern**: `sharp.$Format({ quality: 85, effort: 6 })` dynamicznie — działa dla webp, throws/ignoruje dla png (PNG nie ma `effort`).
+
+**Wzorzec**: branch options per format:
+```powershell
+$opts = if ($Format -eq 'webp') {
+  "{ quality: $Quality, effort: 6 }"
+} else {
+  "{ compressionLevel: 9 }"  # PNG lossless
+}
+```
+
+## 20. ffmpeg aspect-ratio preservation
+
+**Anti-pattern**: `scale=W:H` wymusza dokładne wymiary → stretching dla nie-kwadratowych źródeł.
+
+**Wzorzec**: `scale=W:H:force_original_aspect_ratio=decrease,format=rgba,pad=W:H:(ow-iw)/2:(oh-ih)/2:color=black@0`. Zachowuje proporcje, dopaduje do kwadratu z transparentnym tłem (format=rgba przed pad — pad domyślnie nie ma alpha jeśli źródło jest RGB).
+
+## 21. Cross-platform PowerShell temp dir
+
+**Anti-pattern**: `$env:TEMP` — Windows-only. macOS/Linux pwsh: `TEMP` jest unset, `Join-Path` daje śmieci.
+
+**Wzorzec**: `[System.IO.Path]::GetTempPath()` — respektuje `TMPDIR` (Unix), `$env:TEMP/$env:TMP` (Windows). Helper `Get-TempDir` w skrypcie.
+
+## 22. HTML entity encoding w atrybutach
+
+**Anti-pattern**: `<iframe src="...?a=1&b=2">` — surowe `&` w wartości atrybutu. Walidator HTML protestuje; niektóre parsery interpretują `&b` jako entity reference.
+
+**Wzorzec**: zawsze `&amp;` w atrybutach (`src`, `href`, `value`):
+```html
+<iframe src="https://maps.google.com/maps?q=X&amp;t=&amp;z=15&amp;output=embed">
+```
+
+W JS template stringach `&` jest OK (to nie HTML), tylko w atrybutach. URL-encode wartości (`%20`, `%C3%B3`) niezależnie.
+
+## 23. Detect every binary actually invoked
+
+**Anti-pattern**: gate `sharp` ścieżki na `$haveNpx`, potem w środku wywołać `npm install` i `node script.js`. Volta / nvm-windows mogą shimnąć jeden bez drugiego.
+
+**Wzorzec**: wykryj każdy binary który kod naprawdę wywołuje. Dla sharp: `$haveNode -and $haveNpm`. W komunikacie błędu **nazwij** brakujący binary precyzyjnie:
+
+```powershell
+$missing = if (-not $haveNode) { 'node' } else { 'npm' }
+Write-Host "ERROR: Brakuje: $missing"
+```
+
+## 24. PR description rotuje — sync z kodem przy pivotach
+
+**Anti-pattern**: PR description pisany na branch creation, nieupdate'owany gdy implementacja pivotuje (font, paleta, architektura). Mylące dla reviewerów.
+
+**Wzorzec**: po każdym dużym pivocie — `gh pr edit <N> --body "$(cat <<'EOF' ... EOF)"` z aktualnym opisem. Lista checkboxów "Pending" → odznaczać po ukończeniu.
+
+## 25. Copilot review cycle workflow
+
+**Pattern (operacyjny)**: każdy push triggeruje review Copilota na nowym commicie (1-3 min). Reviews często powtarzają stare findings ZE STAREMI ID — są attached do nowego commitu, ale underlying issues już naprawione.
+
+Cykl pracy:
+1. Push commit z fixem
+2. Wait for new review: `until COMMIT=$(gh pr view 1 --json reviews --jq '... .commit.oid[0:7]') && [ "$COMMIT" = "<latest>" ]; do sleep 20; done` (Bash run_in_background z timeout 420s)
+3. `gh api .../pulls/N/comments` — filtruj po **najnowszych ID** (numerycznie wyższe = nowe) vs powtórki starych
+4. Fix + commit + push **tylko realnie nowe**
+5. **`resolve all` przez GraphQL** po fixie żeby UI był czysty (one-liner: query + foreach `resolveReviewThread`)
+6. Repeat aż review jest pusty
+
+```bash
+UNRESOLVED=$(gh api graphql -f query='{ repository(owner:"X",name:"Y") { pullRequest(number:1) { reviewThreads(first:50) { nodes { id isResolved } } } } }' --jq '.data.repository.pullRequest.reviewThreads.nodes | map(select(.isResolved == false)) | .[].id')
+for tid in $UNRESOLVED; do gh api graphql -f query="mutation { resolveReviewThread(input: {threadId: \"$tid\"}) { thread { isResolved } } }" > /dev/null; done
+```
+
+## 26. Trust but verify Copilot — hallucinated occurrences
+
+**Anti-pattern**: Copilot mówi "ten typo pojawia się na linii X i Y" → ślepo poprawiasz oba. Czasem druga lokalizacja to halucynacja.
+
+**Wzorzec**: zawsze `grep` przed fixem. Match actual count vs claimed count. Jeśli się nie zgadza — fix tylko realne, ignoruj phantomy. Przykład tej sesji: Copilot twierdził że "głowny" jest w 2 miejscach, było 1.
+
+## 27. User aesthetic feedback = HARD PIVOT (wzmocnienie #9)
+
+**Wzorzec (rozszerzony)**: subjective rejections to NIE feedback do tweakowania, to sygnał do wywalenia kierunku w całości.
+
+Konkretne przykłady z tej sesji:
+- "wypierdek" o `·232/·182` shorthand → drop entirely, nie próbuj go upiększyć
+- "tytuł brzydki" o text-stroke na mobile → gate całkowicie behind `min-width: 769px`
+- "tak nie może być" o byline pchającym cards w dół → relokuj entirely, nie tweakuj marginów
+- "nudne / kompetentne" o Antonio fonts → pivot to Big Shoulders Display
+
+Cena iteracji "Anton→Antonio→Oswald→Bricolage→Big Shoulders" była niższa niż obrona Antonio. Subiektywne odrzucenie = ROZSZERZ SEARCH SPACE, nie kompromisuj w wąskim.
+
+## 28. Nav hierarchy pod presją szerokości — brand-first, phones-degrade
+
+**Project-specific rule (KFDIAMENT)**: w tym site'cie hierarchia ważności nav elementów przy szerokości malejącej:
+
+1. **Brand wordmark + mark** — ZAWSZE widoczne, ZAWSZE 26px (default), nigdy nie shrinkowane w nav scope. To identity anchor.
+2. **Hamburger** — zawsze widoczny gdy links hidden (≤1080px).
+3. **Phones** — degradują pierwsze: 2 → 1 (≤640px) → 0 (≤460px). Hidden phones zostają dostępne w `.mobile-menu__phones` na górze panelu.
+4. **Section links** — hidden ≤1080px (replaced by hamburger).
+
+Footer brand ma osobny scoping (38-46px `.footer .brand__mark`); nav scope zachowuje stały rozmiar.
+
+## 29. Phone digits never wrap
+
+**Anti-pattern**: numer "511 478 232" pęka na 2 linie ("511 478" / "232") przy tight widths.
+
+**Wzorzec**: globalna reguła `a[href^="tel:"] { white-space: nowrap; }` łapie wszystkie miejsca jednym fixem. Plus defensive `white-space: nowrap` na `.nav__phone` i `.mobile-menu__phone` — cyferki siedzą w `<span>` wewnątrz `<a>`, reguła globalna łapie parent, defensive na child gdyby style się przemieszały.
+
+## 30. Nav breakpoint niezależny od section grid
+
+**Wzorzec**: ten projekt używa 900px jako universal mobile/desktop dla sekcji (hero stats, about, gallery, contact grid, footer). NAV potrzebuje **wyższego** breakpointa (1080px) — desktop nav z 5 linkami + 2 phones + brand + maxw padding wymaga ~1100px breathing room.
+
+Reguła: media query 1080 dla rzeczy nav-only (`.nav__links display: none`, `.nav__burger display: inline-flex`, mobile-menu desktop-hide guard, JS resize-close logic). Sekcji NIE bumpować na 1080 — tylko nav.
+
+## 31. Anchor decorative element na max-width, nie na viewport
+
+**Anti-pattern**: `right: -8vw` na decorative element (slow-spin logo) — na 4K (3840px) viewport `-8vw = -307px`, element drifuje w no-man's-land daleko poza content column.
+
+**Wzorzec**: anchor right edge do `--maxw` container's right edge:
+```css
+.hero__logo {
+  right: calc(max(0px, (100vw - var(--maxw)) / 2) - 8vw);
+}
+```
+
+Na viewport ≤ `--maxw` zachowuje stare `-8vw` (element extending poza viewport). Na szerszych ekranach prawa krawędź docisnięta do prawej krawędzi container, element zostaje w obrebie content width.
+
+## 32. Belt-and-suspenders dla user requirements
+
+**Wzorzec**: gdy klient mówi "X ZAWSZE musi być w stanie Y" → enforce go w >1 warstwie żeby nie złamało się przez accidentalną edycję.
+
+Przykład email lowercase (z tej sesji):
+1. **HTML**: `data-u="kontakt" data-d="kfdiament.pl"` (lowercase obfuscation)
+2. **CSS**: `a.email-obf { text-transform: lowercase; }`
+3. **JS**: `(el.dataset.u + '@' + el.dataset.d).toLowerCase()`
+
+Trzy niezależne warstwy. Nawet jeśli przyszły edytor wpisze "Kontakt@..." w data attrs, output zostaje lowercase.
+
+## 33. Inverted CTA = section 2 banner consistency
+
+**Project-specific rule**: każde "Inne zapytanie" / general inquiry CTA na stronie (mailto-card, banner, button) używa inverted treatment:
+- `background: var(--fg)` (dark)
+- `color: var(--bg)` (cream)
+- arrow / accent: `var(--accent-2)` (jasny gold, kontrast na ciemnym)
+- hover: `background: var(--accent-deep)`
+
+Spójność wizualna: gdziekolwiek "inne zapytanie" pojawia się, ma ten sam dark+gold akcent. Implementacja przez `.mailto-card--inverted` modifier (sekcja 5) lub `.service-other` banner (sekcja 2).
+
+## 34. Mobile hamburger menu — phones-section pattern
+
+**Project-specific HTML/CSS structure** dla `.mobile-menu`:
+
+```
+.mobile-menu (absolute top: 100%, slides down)
+├── .mobile-menu__phones (sekcja telefonow u gory, 2-col grid >420px, stack ≤420px)
+│   ├── .mobile-menu__phone (gold pill button, full number "+48 511 478 232")
+│   └── .mobile-menu__phone
+├── (hairline divider via border-bottom na __phones)
+└── .mobile-menu__links (ul z 5 section links)
+    └── li.a → <span class="mobile-menu__num">01</span><span>O nas</span>
+```
+
+JS toggle pattern:
+- `aria-expanded` na burger
+- `data-open` attribute na panel + scrim (CSS transition opacity/translateY)
+- `hidden` attribute removed BEFORE animating + `void el.offsetWidth` żeby transition zalapal
+- Close on: Escape (+ refocus burger), scrim click, link click, resize >=1081
+- `setTimeout(240ms)` przed `hidden = true` żeby fade-out animation dograł
+
+## 35. JS reflow trick dla transition po `hidden`
+
+**Anti-pattern**: `element.hidden = false; element.classList.add('open');` — `hidden=false` i klasa stosowane w tym samym frame, transition nie triggeruje (browser nie widzi initial state).
+
+**Wzorzec**: force reflow między display change a state change:
+```js
+menu.hidden = false;
+void menu.offsetWidth;  // reflow — czyta layout, force commit
+menu.setAttribute('data-open', 'true');
+```
+
+## 36. PR description sync via `gh pr edit`
+
+**Wzorzec (operacyjny)**: `gh pr edit <N> --body "$(cat <<'EOF' ... EOF)"` przy każdym pivocie. HEREDOC single-quoted (`'EOF'`) chroni przed expansion zmiennych shell w opisie. Zostawia jeden "source of truth" w PR body.
+
+## 37. Cloudflare _headers — semantics merge, nie first-match
+
+**Wzorzec (dokumentacyjny)**: w `_headers` reguły z pasującymi globami są **mergeowane** dla danego żądania. Konflikt nazwy header (np. `Cache-Control`) — wygrywa **bardziej specyficzny glob** (`/fonts/*` nadpisuje `/*`). Security headers z `/*` (HSTS itp.) **przechodzą** do `/fonts/*` i `/img/*`, bo te bardziej specyficzne reguły ustawiają tylko Cache-Control + CORS, nie security.
+
+Mit "first-match wins" jest błędny — nie kopiuj security headers do każdego bloku, wystarczą w `/*`.
+
+## 38. iframe sandbox — minimum necessary
+
+**Wzorzec**: dla third-party iframe (Google Maps embed):
+```html
+<iframe
+  src="..."
+  loading="lazy"
+  referrerpolicy="no-referrer-when-downgrade"
+  sandbox="allow-scripts allow-same-origin allow-popups"
+  title="...">
+</iframe>
+```
+
+NIE dodawać `allow-popups-to-escape-sandbox` (redundant + ryzyko). NIE używać `allow-forms allow-top-navigation` chyba że konkretnie potrzebne. `referrerpolicy` chroni privacy.
 
 ## Skróty / przyspieszacze pracy
 
