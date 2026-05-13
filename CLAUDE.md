@@ -104,13 +104,13 @@ Z 4px gold gradient bar `::before`. Architektoniczna tabliczka znamionowa.
 ## Struktura sekcji
 
 1. Nav — fixed top, blur, 72px wysokości. 2 osobne klikalne phone buttons (`.nav__phones > .nav__phone × 2`). Breakpointy nav-specific: 1080px (linki znikają → hamburger), 820/640/540/460/400/360px (degradacja phones: 2 → 1 → 0). Mobile menu (≤1080px): hamburger toggle, slide-down z `.mobile-menu__phones` (2 gold pill buttons z pełnymi numerami) + 5 section links. `inert` (nie `hidden`) blokuje fokus/AT natychmiast. Focus trap: gdy menu open, `<main>` dostaje `inert`.
-2. Hero — full vh, slow-spin logo absolute clamp(360px, 52vw, 720px), anchor do `--maxw` container, opacity 0.18, blend mode multiply. h1 z `outline` (text-stroke `max(1.4px, 0.018em)`) + brand byline (link do #kontakt) + hero__sub (bold otwarcie "Jesteśmy specjalistami w cięciu i wierceniu techniką diamentową.") + 2 CTA + 5 stats (Ø800mm / PL / 3 lata / 2. gen. DST 20-CA / Beton+Żelbet), grid 5→3→2 responsive, center-aligned (gap robi separator).
+2. Hero — full vh, slow-spin logo absolute clamp(360px, 52vw, 720px), anchor do `--maxw` container, opacity 0.18, blend mode multiply. h1 3-spanowy: "Specjaliści w cięciu i wierceniu" / **"techniką diamentową"** (accent gold) / "betonu i żelbetu." + brand byline (link do #kontakt) + hero__sub (otwarcie "Zajmujemy się profesjonalną obróbką betonu oraz żelbetu...") + 2 CTA + 4 stats (Ø800mm / PL / 2. gen. DST 20-CA / Beton+Żelbet), grid 4→2 responsive, center-aligned (gap robi separator).
 3. Marquee ticker — czarny pas między hero a o-nas, gold-accented "Cięcie diamentowe · Wiercenie do ⌀800mm · Wyburzenia · Sprzęt Hilti · Cała Polska" (5 items + duplikat dla seamless loop). 38s linear infinite, pauza on hover.
-4. `#o-nas` — bg-2 + background "01", 5 akapitów + corner-card "Dlaczego my?". Para 2 mówi "3 lata doświadczenia" (z PDF klienta), nie "wieloletnie".
-5. `#uslugi` — bg + "02", 3 service cards (Cięcie betonu, Wiercenie otworów, Wyburzenia) + banner "Inne zapytanie" (full-width dark CTA, mailto query `ogolne`).
+4. `#o-nas` — bg-2 + background "01", 5 akapitów + corner-card "Dlaczego my?". Para 2 mówi **"wiele lat doświadczenia"** — świadoma decyzja klienta (2026-05-14), NIE "3 lata" mimo że niektóre PDF-y od klienta nadal podają "3 lata". Patrz pattern #48.
+5. `#uslugi` — bg + "02", 4 service cards (Cięcie betonu, Wiercenie otworów, Wyburzenia, Kotwy chemiczne) + banner "Inne zapytanie" /05 (full-width dark CTA, mailto query `ogolne`). Grid `repeat(auto-fit, minmax(320px, 1fr))` daje 4 kolumny ≥1280px, 2×2 medium, 1 col mobile.
 6. `#realizacje` — bg-2 + "03", 3 gal-card z placeholderami.
 7. `#sprzet` — bg-3 gradient, "HILTI" w tle, 2 spec-items (DST 20-CA piła ścienna 2. gen., DD500-CA wiertnica do ⌀800mm).
-8. `#kontakt` — bg + "05". `section__head--kontakt` to 2-kolumnowy grid `1fr 1.3fr`: h2 z lewej, brand byline (`hero__byline--static`) z prawej. Niżej 4 contact-blocks (Telefon, E-mail, Siedziba z "Otwórz w Mapach Google" pill button, Zasięg) + 4 mailto-cards (czwarty `mailto-card--inverted`) + iframe Google Maps. Blok Zasięg ma 4-kolumnowy grid `52px auto auto 1fr` — ikona | text pair | mini-mapa | buffer 1fr. Mini-mapa Polski z Natural Earth 110m (45 punktów, CC0), `clamp(78px, 14vw, 110px)`, znika ≤380px.
+8. `#kontakt` — bg + "05". `section__head--kontakt` to 2-kolumnowy grid `1fr 1.3fr`: h2 z lewej, brand byline (`hero__byline--static`) z prawej. Niżej 4 contact-blocks (Telefon, E-mail, Siedziba z "Otwórz w Mapach Google" pill button, Zasięg) + 5 mailto-cards (Cięcie / Wiercenie / Wyburzenia / Kotwy chemiczne / Inne zapytanie — piąty `mailto-card--inverted`) + iframe Google Maps. Blok Zasięg ma 4-kolumnowy grid `52px auto auto 1fr` — ikona | text pair | mini-mapa | buffer 1fr. Mini-mapa Polski z Natural Earth 110m (45 punktów, CC0), `clamp(78px, 14vw, 110px)`, znika ≤380px.
 9. Footer — bg-2, brand+dane+kontakt.
 
 Persistent UI:
@@ -724,6 +724,22 @@ SVG wybierz gdy:
 - Animacja/interakcja na symbolu
 
 Unicode + font fallback wymaga: (1) explicit font-family chain (#43), (2) czasem font-size bump w caps context (#44).
+
+## 48. PDF od klienta vs wcześniejsze świadome decyzje — nie regresować
+
+Anty: dostajesz nowy PDF z treścią od klienta, traktujesz go jako pełny source of truth, regresujesz wcześniejsze decyzje klienta (które same odbiegały od starszych PDF-ów). PDF często wysyłany "dla porządku" zawiera nieaktualne fragmenty, które klient sam zmienił przy poprzedniej iteracji.
+
+Pattern: cross-check PDF z `git log` ostatnich dni. Każda rozbieżność PDF ↔ strona ma **dwa potencjalne źródła**:
+1. PDF świeższy → klient chce update (przyjmij)
+2. Strona świeższa → świadoma pivot klienta, PDF stale (zostaw)
+
+Rozpoznać po commit history: jeśli ostatnie commity dotykały tej linii, to klient zmienił świadomie → PDF stale na tym punkcie. Przykład: commity `a1cbdee`, `a3e0fb1`, `3bc3818` z 2026-05-14 zmieniły "3 lata" → "wiele lat" → drop ze stats. Nowy PDF wraca do "3 lata" — to **regresja**, nie update.
+
+Format raportu rozbieżności (rozszerzenie #39): dodaj kolumnę **"site newer than PDF — sprawdź czy to świadomy pivot"**. Klient potwierdza per item, czy chce revert do PDF czy zostaje wersja site.
+
+Project-specific dla KFDIAMENT (zatwierdzone 2026-05-14):
+- **"wiele lat doświadczenia"** w `O nas` para 2 — NIE "3 lata" (mimo że niektóre PDF mówią 3)
+- Hero stats: brak liczby lat doświadczenia (drop podczas `a1cbdee`)
 
 ## Skróty / przyspieszacze
 
