@@ -1304,15 +1304,18 @@
       font-style: normal;
       color: var(--accent);
     }
-    /* Znak średnicy — Unicode U+2300 DIAMETER SIGN (⌀). Klasa nadana tylko
-       po to żeby zapewnić font-family fallback chain (self-hosted Big Shoulders /
-       Manrope / JetBrains Mono subsety nie pokrywaja Misc Technical block).
-       vertical-align dodatni — podnosi glyph zeby srodek kola lezial bliżej
-       srodka cap-height otaczajacych liter/cyfr zamiast siedziec na baseline. */
+    /* Znak średnicy — Unicode U+2300 DIAMETER SIGN (⌀). Cambria Math (i podobne
+       math fonts) renderuja go na poziomie x-height (jak mała litera), wiec obok
+       wielkich liter / cyfr wyglada za malo. Bump font-size: 1.5em zeby srednica
+       byla wizualnie zblizona do wysokosci kapitelek sasiadow. line-height: 1
+       chroni line-box przed rozciagnieciem, vertical-align kompensuje. */
     .ic-diameter {
       font-family: 'Cambria Math', 'STIX Two Math', 'Lucida Sans Unicode', 'Segoe UI Symbol', 'DejaVu Sans', sans-serif;
       font-style: normal;
-      vertical-align: 0.08em;
+      font-size: 1.5em;
+      line-height: 1;
+      vertical-align: -0.05em;
+      margin-inline: 0.02em;
     }
     /* Wariant tekstowy dla statow ktorych "num" to slowo a nie cyfra
        (np. "Beton + Żelbet"). Skali sie bliska big nums — łamie się
