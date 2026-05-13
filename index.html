@@ -1147,14 +1147,13 @@
       font-weight: 700;
     }
     @supports (-webkit-text-stroke: 1px black) {
-      /* Outline aktywny tylko na ekranach >= 768px. Na mobile czarny border na
-         duzym headerze wyglada brzydko (artefakty antialiasingu, zbyt grube linie
-         w stosunku do font-weight); zostaje solid color: var(--fg) z default. */
-      @media (min-width: 769px) {
-        .hero__title .outline {
-          color: transparent;
-          -webkit-text-stroke: 0.018em var(--fg);
-        }
+      /* Outline (transparent fill + stroke) na wszystkich rozmiarach — stroke
+         w em (0.018em) skaluje sie z font-size, wiec proporcja jest spojna
+         desktop / mobile. Wczesniej była mobile-fallback do solid color, ale
+         klient zmienił zdanie — outline ma byc wszedzie. */
+      .hero__title .outline {
+        color: transparent;
+        -webkit-text-stroke: 0.018em var(--fg);
       }
     }
     .hero__title .accent {
