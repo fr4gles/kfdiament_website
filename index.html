@@ -11,7 +11,6 @@
   <meta name="author" content="KFDIAMENT Obrębski Motyka Spółka jawna">
 
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
-  <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
   <meta name="robots" content="index, follow">
 
@@ -62,6 +61,25 @@
       "addressRegion": "małopolskie",
       "addressCountry": "PL"
     },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 49.6294,
+      "longitude": 20.9505
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "07:00",
+        "closes": "17:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Saturday",
+        "opens": "08:00",
+        "closes": "14:00"
+      }
+    ],
     "taxID": "7343669611",
     "vatID": "PL7343669611",
     "identifier": [
@@ -273,7 +291,11 @@
     *::before,
     *::after { box-sizing: border-box; }
 
-    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+      overflow-x: clip;  /* iOS Safari ignoruje overflow-x: hidden tylko na body */
+    }
 
     body {
       margin: 0;
@@ -284,9 +306,36 @@
       line-height: 1.55;
       font-weight: 400;
       letter-spacing: -0.005em;
-      overflow-x: hidden;
+      overflow-x: clip;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Skip-to-content link — WCAG 2.4.1 — visually hidden until focused */
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 12px;
+      z-index: 1000;
+      padding: 12px 18px;
+      background: var(--fg);
+      color: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: top .2s ease;
+    }
+    .skip-link:focus { top: 12px; outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* Global focus-visible — WCAG 2.4.7 — widoczny focus dla każdego interaktywnego elementu */
+    a:focus-visible,
+    button:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--accent-hover);
+      outline-offset: 3px;
+      border-radius: 1px;
     }
 
     /* Papierowa ziarnistość (SVG fractalNoise jako data URI) */
@@ -312,7 +361,7 @@
 
     button { font: inherit; cursor: pointer; }
 
-    ::selection { background: var(--accent); color: #fff; }
+    ::selection { background: var(--accent); color: var(--bg); }
 
     .container {
       width: 100%;
@@ -417,7 +466,7 @@
     }
     .btn--primary {
       background: var(--accent);
-      color: #fff;
+      color: var(--bg);
       border-color: var(--accent);
     }
     .btn--primary:hover {
@@ -445,16 +494,19 @@
       right: 0;
       height: var(--nav-h);
       z-index: 50;
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(245, 241, 232, 0.92);  /* warm cream (var(--bg) z alpha), nie czysta biel */
       backdrop-filter: saturate(140%) blur(14px);
       -webkit-backdrop-filter: saturate(140%) blur(14px);
       border-bottom: 1px solid var(--line);
+    }
+    @supports not (backdrop-filter: blur(1px)) {
+      .nav { background: rgba(245, 241, 232, 0.98); }  /* Firefox<103, WebView fallback */
     }
     .nav__inner {
       height: 100%;
       max-width: var(--maxw);
       margin: 0 auto;
-      padding-inline: var(--pad-x);
+      padding-inline: max(var(--pad-x), env(safe-area-inset-left));
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -477,7 +529,9 @@
       filter: drop-shadow(0 2px 6px rgba(26, 22, 20, 0.18));
       transition: transform .7s cubic-bezier(.2, .8, .2, 1);
     }
-    .brand:hover .brand__mark { transform: rotate(-30deg); }
+    @media (hover: hover) and (pointer: fine) {
+      .brand:hover .brand__mark { transform: rotate(-30deg); }
+    }
     .brand__text {
       font-family: var(--font-display);
       font-weight: 800;
@@ -536,6 +590,7 @@
       background: var(--accent);
       color: var(--bg);
       padding: 10px 16px;
+      min-height: 44px;  /* WCAG 2.5.5 tap target */
       font-family: var(--font-mono);
       font-size: 13px;
       font-weight: 500;
@@ -545,9 +600,11 @@
       box-shadow: 0 2px 10px rgba(168, 132, 44, 0.22);
       white-space: nowrap;
     }
-    .nav__phone:hover {
-      background: var(--accent-hover);
-      transform: translateY(-1px);
+    @media (hover: hover) and (pointer: fine) {
+      .nav__phone:hover {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+      }
     }
     .nav__phone svg {
       width: 14px;
@@ -592,6 +649,7 @@
 
     .hero {
       min-height: 100vh;
+      min-height: 100svh;  /* iOS Safari: stable height bez skoku przy URL bar */
       padding-top: calc(var(--nav-h) + 40px);
       padding-bottom: 80px;
       display: flex;
@@ -1083,12 +1141,14 @@
       z-index: 2;
       box-shadow: 0 0 14px rgba(168, 132, 44, 0.4);
     }
-    .service:hover {
-      background: var(--bg-2);
-      transform: translateY(-6px);
+    @media (hover: hover) and (pointer: fine) {
+      .service:hover {
+        background: var(--bg-2);
+        transform: translateY(-6px);
+      }
+      .service:hover::before { transform: scaleX(1); }
+      .service:hover::after  { transform: rotate(45deg) scale(1); }
     }
-    .service:hover::before { transform: scaleX(1); }
-    .service:hover::after  { transform: rotate(45deg) scale(1); }
 
     .service__num {
       font-family: var(--font-mono);
@@ -1273,7 +1333,9 @@
       border: 1px solid var(--line);
       transition: transform .4s ease;
     }
-    .gal-card:hover { transform: translateY(-6px); }
+    @media (hover: hover) and (pointer: fine) {
+      .gal-card:hover { transform: translateY(-6px); }
+    }
 
     .gal-card.placeholder {
       background-image:
@@ -1572,10 +1634,13 @@
       border: 1px solid var(--line);
       transition: background .25s ease, border-color .25s ease, transform .25s ease;
     }
-    .mailto-card:hover {
-      background: var(--bg-2);
-      border-color: var(--accent);
-      transform: translateX(4px);
+    @media (hover: hover) and (pointer: fine) {
+      .mailto-card:hover {
+        background: var(--bg-2);
+        border-color: var(--accent);
+        transform: translateX(4px);
+      }
+      .mailto-card:hover .mailto-card__arrow { transform: translateX(4px); }
     }
     .mailto-card__title {
       font-family: var(--font-display);
@@ -1599,7 +1664,6 @@
       color: var(--accent);
       transition: transform .25s ease;
     }
-    .mailto-card:hover .mailto-card__arrow { transform: translateX(4px); }
 
     .mailto-note {
       margin-top: 16px;
@@ -1609,7 +1673,7 @@
       color: var(--muted);
       line-height: 1.5;
     }
-    .mailto-note a { color: var(--accent); }
+    .mailto-note a { color: var(--accent-hover); text-decoration: underline; text-underline-offset: 2px; }
 
     /* Map */
     .map-wrap {
@@ -1661,7 +1725,7 @@
     @media (max-width: 900px) {
       .footer__grid { grid-template-columns: 1fr; gap: 36px; margin-bottom: 36px; }
     }
-    .footer__col h4 {
+    .footer__col h3 {
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 500;
@@ -1728,6 +1792,7 @@
       transform: translateY(0);
     }
     @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
       *,
       *::before,
       *::after {
@@ -1748,6 +1813,8 @@
   </style>
 </head>
 <body>
+
+  <a class="skip-link" href="#main">Przejdź do treści</a>
 
   <!-- Scroll progress indicator -->
   <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
@@ -1785,6 +1852,8 @@
       </div>
     </div>
   </nav>
+
+  <main id="main">
 
   <!-- ─── HERO ─────────────────────────────────────────────────── -->
   <header class="hero" id="top">
@@ -2238,11 +2307,13 @@
           src="https://maps.google.com/maps?q=Grunwaldzka%209%2C%2033-330%20Gryb%C3%B3w&t=&z=15&ie=UTF8&iwloc=&output=embed"
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
-          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          sandbox="allow-scripts allow-same-origin allow-popups"
           title="Mapa — siedziba KFDIAMENT, Grunwaldzka 9, Grybów"></iframe>
       </div>
     </div>
   </section>
+
+  </main>
 
   <!-- ─── FOOTER ───────────────────────────────────────────────── -->
   <footer class="footer">
@@ -2264,7 +2335,7 @@
         </div>
 
         <div class="footer__col">
-          <h4>Dane firmy</h4>
+          <h3>Dane firmy</h3>
           <ul class="footer__list">
             <li>
               <span class="footer__list-label">NIP</span>
@@ -2282,7 +2353,7 @@
         </div>
 
         <div class="footer__col">
-          <h4>Kontakt</h4>
+          <h3>Kontakt</h3>
           <ul class="footer__list">
             <li>
               <span class="footer__list-label">Telefon</span>

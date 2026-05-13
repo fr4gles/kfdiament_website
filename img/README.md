@@ -13,6 +13,8 @@
 | `og.jpg` | **dorób ręcznie** | 1200×630 | do dorobienia (social preview) |
 | `realizacja-01.jpg` … | **ręcznie** | 800×1000 (4:5) | opcjonalne (galeria) |
 
+> Pamiętaj: nazwa repo to `kfdiament_website` (nie `kfdiament_webiste`). Lokalna ścieżka projektu zawiera literówkę `D:\kfdiament_webiste\` ale GitHub remote ma poprawną nazwę.
+
 ## Workflow
 
 1. **Zapisz oryginał logo** (klient czatu → "Zapisz obraz jako…") jako:
