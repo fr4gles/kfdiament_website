@@ -406,23 +406,30 @@
     }
     /* Kontakt: 2-kolumnowy head (title+label po lewej, brand byline po prawej)
        wypelnia pustke po prawej obok waskiego h2 (max-width 18ch). */
+    /* Kontakt head: 2-kolumnowy grid pasujacy do contact__grid ponizej (1fr 1.3fr),
+       gap rowny. h2 z lewej, byline z prawej (lewo-wyrowna w swojej kolumnie,
+       align-items: start zeby siadl wysoko na rowni z section-label). Mailto-cards
+       ponizej startują na pelnej wysokosci bez przesuniecia w dol. */
     .section__head--kontakt {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: clamp(28px, 5vw, 64px);
-      align-items: end;
+      grid-template-columns: 1fr 1.3fr;
+      gap: clamp(40px, 5vw, 72px);
+      align-items: start;
     }
     .section__head--kontakt .section__head-titles {
       display: flex;
       flex-direction: column;
       gap: 14px;
+      min-width: 0;
     }
-    .section__head--kontakt .hero__byline { margin: 0; }
-    @media (max-width: 720px) {
+    .section__head--kontakt .hero__byline {
+      margin: 0;
+      justify-self: start;
+    }
+    @media (max-width: 900px) {
       .section__head--kontakt {
         grid-template-columns: 1fr;
-        gap: 32px;
-        align-items: start;
+        gap: 24px;
       }
     }
 
@@ -598,6 +605,7 @@
       margin: 0;
       padding: 0;
     }
+    .nav__links li { white-space: nowrap; }
     .nav__links a {
       font-family: var(--font-body);
       font-size: 13px;
@@ -607,6 +615,7 @@
       color: var(--fg);
       position: relative;
       padding: 4px 0;
+      white-space: nowrap;  /* "O NAS" / "REALIZACJE" itd. nigdy nie lamia sie na 2 linie */
     }
     .nav__links a::after {
       content: '';
@@ -657,7 +666,11 @@
       flex-shrink: 0;
     }
 
-    @media (max-width: 900px) {
+    /* Nav-specific breakpoint (1080px, NIE 900 jak inne sekcje):
+       desktop nav z 5 linkami + 2 telefonami + brand + maxw padding wymaga ~1100px.
+       Ponizej tej szerokosci linki znikaja i pojawia sie hamburger, zeby
+       links nie wraps i druga telefon nie wystawal poza viewport. */
+    @media (max-width: 1080px) {
       .nav__links { display: none; }
       /* Bez nav__links flex space-between rozsypywal phones do srodka.
          margin-left: auto sklasta phones do prawej krawedzi (do hamburgera). */
@@ -717,7 +730,7 @@
       top: 6px;
       transform: rotate(-45deg);
     }
-    @media (max-width: 900px) {
+    @media (max-width: 1080px) {
       .nav__burger { display: inline-flex; }
     }
 
@@ -852,8 +865,8 @@
       opacity: 1;
       pointer-events: auto;
     }
-    /* Desktop: panel + scrim nigdy widoczne */
-    @media (min-width: 901px) {
+    /* Desktop: panel + scrim nigdy widoczne (parami z nav burger breakpointem) */
+    @media (min-width: 1081px) {
       .mobile-menu, .mobile-menu__scrim { display: none !important; }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -1187,25 +1200,6 @@
       opacity: 1;
       margin-top: 0;
       margin-bottom: 0;
-    }
-    /* Wariant prawokolumnowy w #kontakt: dosuniety do prawej krawedzi
-       prawej kolumny grida, marginesem nizej oddziela od pierwszej mailto-card.
-       display: grid (zamiast inline-grid z bazy) + width: max-content +
-       margin-left: auto = block-level + sized-to-content + push-right. */
-    .hero__byline--right {
-      display: grid;
-      width: max-content;
-      max-width: 100%;
-      margin-left: auto;
-      margin-bottom: 32px;
-    }
-    /* Na waskich ekranach grid kolapsuje do 1fr — byline ma byc po lewej
-       (z spojnym wyrównaniem z mailto-cards ponizej) i z mniejszym marginem. */
-    @media (max-width: 900px) {
-      .hero__byline--right {
-        margin-left: 0;
-        margin-bottom: 24px;
-      }
     }
     .hero__byline-text {
       display: flex;
@@ -2598,9 +2592,18 @@
   <section class="section section--with-num" id="kontakt">
     <span class="section__num-bg section__num-bg--left" aria-hidden="true">05</span>
     <div class="container">
-      <div class="section__head reveal">
-        <a class="section-label" href="#kontakt" aria-label="Sekcja 05 — Kontakt">05 — Kontakt</a>
-        <h2 class="section-title">Powiedz nam,<br>co <em>wyciąć.</em></h2>
+      <div class="section__head section__head--kontakt reveal">
+        <div class="section__head-titles">
+          <a class="section-label" href="#kontakt" aria-label="Sekcja 05 — Kontakt">05 — Kontakt</a>
+          <h2 class="section-title">Powiedz nam,<br>co <em>wyciąć.</em></h2>
+        </div>
+        <p class="hero__byline hero__byline--static" aria-label="Realizuje KFDIAMENT Obrębski Motyka Spółka jawna">
+          <span class="hero__byline-text">
+            <span class="hero__byline-key">Realizuje</span>
+            <span class="hero__byline-brand">KFDIAMENT</span>
+            <span class="hero__byline-sub">Obrębski · Motyka <em>Sp. j.</em></span>
+          </span>
+        </p>
       </div>
 
       <div class="contact__grid">
@@ -2690,13 +2693,6 @@
         </div>
 
         <div class="reveal">
-          <p class="hero__byline hero__byline--static hero__byline--right" aria-label="Realizuje KFDIAMENT Obrębski Motyka Spółka jawna">
-            <span class="hero__byline-text">
-              <span class="hero__byline-key">Realizuje</span>
-              <span class="hero__byline-brand">KFDIAMENT</span>
-              <span class="hero__byline-sub">Obrębski · Motyka <em>Sp. j.</em></span>
-            </span>
-          </p>
           <div class="mailto-stack">
             <a class="mailto-card" href="#kontakt" data-mailto="ciecie">
               <div>
@@ -2868,7 +2864,7 @@
         });
         // Gdy resize na desktop, zamknij menu zeby stan byl czysty
         window.addEventListener('resize', function () {
-          if (window.innerWidth >= 901 && burger.getAttribute('aria-expanded') === 'true') {
+          if (window.innerWidth >= 1081 && burger.getAttribute('aria-expanded') === 'true') {
             closeMenu();
           }
         });
