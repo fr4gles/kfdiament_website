@@ -769,34 +769,42 @@
       gap: 14px;
       margin-bottom: clamp(40px, 6vw, 72px);
     }
-    /* Kontakt: 2-kolumnowy head (title+label po lewej, brand byline po prawej)
-       wypelnia pustke po prawej obok waskiego h2 (max-width 18ch). */
-    /* Kontakt head: 2-kolumnowy grid pasujacy do contact__grid ponizej (1fr 1.3fr),
-       gap rowny. h2 z lewej, byline z prawej (lewo-wyrowna w swojej kolumnie,
-       align-items: start zeby siadl wysoko na rowni z section-label). Mailto-cards
-       ponizej startują na pelnej wysokosci bez przesuniecia w dol. */
-    .section__head--kontakt {
+    /* Kontakt: jedna 2-kolumnowa siatka grid-template-areas dla calej sekcji.
+       Byline siedzi u gory prawej kolumny rowno z section-label (label/h2 po
+       lewej, byline po prawej — wszystko zaczyna sie od top sekcji, zero pustki
+       nad byline'em). Row 2: contact-blocks vs mailto-stack. Mapa ponizej grid'a.
+       Po dodaniu 4. uslugi (Kotwy chemiczne) prawy column ma 5 mailto-cards
+       zamiast 4 — pojedyncza siatka z align-items: start zapobiega przesuwaniu
+       mapy w dol gdy prawa kolumna jest wyzsza od lewej. */
+    .kontakt-grid {
       display: grid;
       grid-template-columns: 1fr 1.3fr;
-      gap: clamp(40px, 5vw, 72px);
+      column-gap: clamp(40px, 5vw, 72px);
+      row-gap: clamp(40px, 6vw, 72px);
       align-items: start;
+      grid-template-areas:
+        "head   byline"
+        "blocks mailto";
+      margin-bottom: clamp(40px, 6vw, 72px);
     }
-    .section__head--kontakt .section__head-titles {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      min-width: 0;
-    }
-    .section__head--kontakt .hero__byline {
-      margin: 0;
-      justify-self: start;
-      align-self: end;  /* Dosuniete do dolu komorki — siedzi blisko mailto-cards poniżej */
-    }
+    .kontakt-grid__head    { grid-area: head; margin-bottom: 0; }
+    .kontakt-grid__byline  { grid-area: byline; margin: 0; justify-self: start; align-self: end; }
+    .kontakt-grid__blocks  { grid-area: blocks; }
+    /* Negatywny margin-top przesuwa prawa kolumne (mailto-stack) wyzej,
+       blizej do byline'a. Lewa kolumna (contact-blocks) zostaje na swojej
+       pozycji — gap row-gap regulowany asymetrycznie tylko po prawej. */
+    .kontakt-grid__mailto  { grid-area: mailto; margin-top: -40px; }
     @media (max-width: 900px) {
-      .section__head--kontakt {
+      .kontakt-grid {
         grid-template-columns: 1fr;
-        gap: 24px;
+        grid-template-areas:
+          "head"
+          "byline"
+          "blocks"
+          "mailto";
+        row-gap: 24px;
       }
+      .kontakt-grid__mailto { margin-top: 0; }
     }
 
     a.section-label,
@@ -2287,13 +2295,8 @@
 
     /* ─── Contact ──────────────────────────────────────────────── */
 
-    .contact__grid {
-      display: grid;
-      grid-template-columns: 1fr 1.3fr;
-      gap: clamp(40px, 5vw, 72px);
-      align-items: start;
-    }
-    @media (max-width: 900px) { .contact__grid { grid-template-columns: 1fr; } }
+    /* .contact__grid replaced by .kontakt-grid (single 2-col grid with
+       grid-template-areas for whole #kontakt section — patrz definicja wyzej). */
 
     .contact-blocks {
       display: flex;
@@ -3372,22 +3375,22 @@
   <section class="section section--with-num" id="kontakt">
     <span class="section__num-bg section__num-bg--left" aria-hidden="true">05</span>
     <div class="container">
-      <div class="section__head section__head--kontakt reveal">
-        <div class="section__head-titles">
+      <div class="kontakt-grid">
+
+        <div class="section__head kontakt-grid__head reveal">
           <a class="section-label" href="#kontakt" aria-label="Sekcja 05 — Kontakt">05 — Kontakt</a>
           <h2 class="section-title"><em>Skontaktuj się</em><br>z nami.</h2>
         </div>
-        <p class="hero__byline hero__byline--static" aria-label="Realizuje KFDIAMENT Obrębski Motyka Spółka jawna">
+
+        <p class="hero__byline hero__byline--static kontakt-grid__byline reveal" aria-label="Realizuje KFDIAMENT Obrębski Motyka Spółka jawna">
           <span class="hero__byline-text">
             <span class="hero__byline-key">Realizuje</span>
             <span class="hero__byline-brand">KFDIAMENT</span>
             <span class="hero__byline-sub">Obrębski · Motyka <em>Sp. j.</em></span>
           </span>
         </p>
-      </div>
 
-      <div class="contact__grid">
-        <div class="contact-blocks reveal">
+        <div class="contact-blocks kontakt-grid__blocks reveal">
 
           <div class="contact-block">
             <span class="contact-icon" aria-hidden="true">
@@ -3472,7 +3475,7 @@
 
         </div>
 
-        <div class="reveal">
+        <div class="kontakt-grid__mailto reveal">
           <header class="mailto-stack__intro">
             <p class="mailto-stack__kicker">Zapytaj o usługę</p>
             <p class="mailto-stack__help">Kliknij wybraną kartę — otworzy się gotowa wiadomość e-mail z tematem i polami do uzupełnienia. Nie musisz pisać od zera.</p>
