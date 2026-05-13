@@ -106,7 +106,7 @@ Dark theme variant siedzi w komentarzu na początku `<style>` w `index.html`.
 - **Manrope** — body. Geometryczny humanist sans, perfect contrast z condensed Big Shoulders display.
 - **JetBrains Mono** — etykiety techniczne (`/ 01`, `01 — O nas`, spec lines). NIE używać do długich akapitów.
 
-**Hero h1**: trzy-linijkowy, `clamp(2.8rem, 9.5vw, 8.2rem)`. Środkowe słowo `outline` (text-stroke jako **em-units** `0.018em` — skaluje z font-size, mobile breakpointy 0.8px/0.6px żeby na iPhone nie wyglądało zbyt grubo). Trzecie `accent` (gold weight 900, BEZ italic — brutalist purity).
+**Hero h1**: trzy-linijkowy, `clamp(2.8rem, 9.5vw, 8.2rem)`. Środkowe słowo `outline` (text-stroke jako **em-units** `0.018em` — skaluje z font-size proporcjonalnie, **bez** per-breakpoint stroke-width overrides; em-unit zapewnia że proporcja stroke/font jest spójna desktop↔mobile). Outline aktywny na wszystkich rozmiarach przez `@supports (-webkit-text-stroke)`. Trzecie `accent` (gold weight 900, BEZ italic — brutalist purity).
 
 **Hero brand byline** (między h1 a sub):
 ```html
@@ -669,6 +669,155 @@ Z konkretnymi linijkami i propozycją działania per item. NIE wprowadzaj zmian 
 - "Sposób wywozu gruzu (w naszym zakresie czy klienta)"
 
 Nawiasy wyraźnie sygnalizują "to są podpowiedzi, nie część nazwy pola". W mailu wyglądają lepiej, łatwiejsze do skasowania jeśli klient nie chce ich w final message.
+
+## 41. `inert` zamiast `hidden` dla animowanych paneli (a11y + animacja razem)
+
+**Anti-pattern**: `hidden` attribute toggled przez `setTimeout` po fade-out — w oknie ~240ms między startem animacji (data-open removed → opacity 0) a `hidden=true` panel jest **wizualnie niewidoczny ale tabbable**: focus into invisible content (WCAG 2.4.3 Focus Order fail).
+
+**Wzorzec**: `inert` attribute zamiast `hidden`. `inert` **natychmiast** blokuje Tab + AT (screen reader), ale element nadal renderuje — animacja opacity/transform dograć normalnie:
+
+```js
+const closeMenu = () => {
+  menu.setAttribute('inert', '');         // natychmiast blokuje fokus + AT
+  menu.removeAttribute('data-open');      // triggeruje CSS transition out
+  // bez setTimeout! animacja sie sama doegra.
+};
+const openMenu = () => {
+  menu.removeAttribute('inert');
+  void menu.offsetWidth;                  // reflow zeby transition zalapal stan startowy
+  menu.setAttribute('data-open', 'true');
+};
+```
+
+Browser support: Chrome 102+, Firefox 112+, Safari 15.5+ (2022+). Dla starszych browserów `inert` po prostu nie zrobi nic → fokus dziala jak normalnie, animacja nadal działa — graceful degradation.
+
+## 42. CSS RGB-triplet variable dla theme-aware rgba()
+
+**Anti-pattern**: hardkodowanie `rgba(245, 241, 232, 0.92)` w komponentach gdy paleta siedzi w CSS variables. Theme switch (dark mode, rebranding) wymaga search-replace przez cały plik.
+
+**Wzorzec**: definiuj parę `--bg` (hex) + `--bg-rgb` (RGB triplet) w `:root`, używaj `rgba(var(--bg-rgb), 0.92)` w komponentach. Komentarz "MUSI być w sync" jako safety net.
+
+```css
+:root {
+  --bg:     #f5f1e8;
+  --bg-rgb: 245, 241, 232;  /* MUSI być w sync z --bg dla theme-aware rgba() */
+  --fg:     #1a1614;
+  --fg-rgb: 26, 22, 20;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:     #14110d;
+    --bg-rgb: 20, 17, 13;
+    /* ... */
+  }
+}
+.nav { background: rgba(var(--bg-rgb), 0.92); }
+.scrim { background: rgba(var(--fg-rgb), 0.32); }
+```
+
+Wszystkie rgba() automatycznie przerendują się przy theme switch.
+
+**Modern alternative** (Chrome 111+/Firefox 113+/Safari 16.2+): `background: color-mix(in srgb, var(--bg) 92%, transparent)` — bez RGB-triplet duplikatu. Wymaga `@supports (color: color-mix(in srgb, white, white))` fallback dla starszych.
+
+## 43. Unicode special chars wymagają explicit font-family fallback chain
+
+**Anti-pattern**: użyć Unicode special char (`⌀` U+2300 DIAMETER SIGN, math operators, technical symbols, arrows) bez font-family chain. Self-hosted woff2 subsety często pokrywają tylko Basic Latin + Latin-Ext, **NIE** zawierają blocków Misc Technical / Mathematical Operators / Arrows. Browser fallback → losowy default serif (Times New Roman) — wygląda obco.
+
+**Wzorzec**: dla niestandardowych Unicode znaków daj explicit font-family chain do fontów które rzeczywiście mają glyph:
+
+```css
+.ic-diameter {
+  font-family:
+    'Cambria Math',        /* Windows */
+    'STIX Two Math',       /* cross-platform math, often macOS */
+    'Lucida Sans Unicode', /* Windows legacy */
+    'Segoe UI Symbol',     /* Windows */
+    'DejaVu Sans',         /* Linux */
+    sans-serif;
+}
+```
+
+Chain trafia w fonty z dobrym pokryciem technical/math blocks na każdym major OS. Browser użyje pierwszego dostępnego.
+
+**Alternative**: dodać dodatkowy subset (np. `unicode-range: U+2300-23FF`) do self-hosted woff2 z brakującymi glyphami. Koszt: ~5-10 KB woff2 file. Korzyść: jednolite renderowanie cross-platform, bez visual mismatch z resztą fontu (patrz pattern #44).
+
+## 44. Symbol z math fontu w caps context — bump font-size 1.4-1.5em
+
+**Anti-pattern**: Cambria Math / STIX renderują symbole technical na **x-height** (jak małe litery). W kontekście ALL-CAPS lub digit-heavy ("WIERCENIE DO ⌀800MM"), symbol wygląda subscripted — wizualnie ~70% wysokości sąsiadów. Wynik: znak czytelny, ale optycznie "lewy", "obcy".
+
+**Wzorzec**: bump `font-size: 1.4-1.5em` żeby symbol matched visual cap-height. Stosunek x-height/cap-height w typowych fontach ~0.7, więc `1/0.7 ≈ 1.43`. Plus `line-height: 1` zapobiega rozciąganiu line-box. `vertical-align` baseline tweak po skali.
+
+```css
+.ic-diameter {
+  font-family: 'Cambria Math', /* ... */;
+  font-size: 1.5em;             /* match cap-height of caps siblings */
+  line-height: 1;               /* nie ciągnij wyzej */
+  vertical-align: -0.05em;      /* fine-tune baseline po skali */
+  margin-inline: 0.02em;        /* 1-2px breathing room */
+}
+```
+
+Em-unit utrzymuje proporcję spójną przez wszystkie konteksty (hero stat 3.8rem, marquee 1.6rem, mailto desc 0.92rem) — jedna reguła, działa wszędzie.
+
+## 45. Grid 1fr cells dają nierówne wizualne odstępy przy różnej szerokości treści
+
+**Anti-pattern**: `grid-template-columns: repeat(N, 1fr)` na liście stats/items gdzie content szerokość waha się (krótkie "PL" obok długiego "Ø800mm"). Każda komórka ma równą szerokość, content sit at start of cell — empty space po prawej różnej szerokości tworzy wizualny chaos. Dodanie `border-right` jako separator pogłębia problem (border siedzi at cell edge daleko od treści).
+
+**Wzorzec — 2 opcje**:
+
+**A. Flex-column z `align-items: center`** — content każdego itemu wycentrowany w 1fr komórce, optycznie spaced równo niezależnie od długości:
+```css
+.hero__stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0 clamp(12px, 1.6vw, 24px); }
+.stat { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+```
+
+**B. `auto` cols + `justify-content: space-between`** — komórki packed tight do treści, browser distributes leftover jako equal gaps:
+```css
+.list { display: flex; justify-content: space-between; align-items: baseline; }
+```
+
+A = symetryczne kolumny niezależnie od treści (responsive grid 5→3→2 wrap działa).
+B = gaps są equal, kolumny różnej szerokości (płaska linia bez wrappingu).
+
+**Pułapka**: NIE używać border-right jako separator z 1fr cells + variable content. Gap (white space) jest lepszym separatorem niż border przy heterogenicznych treściach.
+
+## 46. Strukturuj kod tak, żeby user mind change → revert był łatwy
+
+**Wzorzec**: user może zmienić zdanie po feedback runds. Przykład tej sesji:
+- Round 1: "outline na PRECYZYJNE brzydki na mobile" → dodałem `@media (min-width: 769px)` gate
+- Round 5: "nie, daj outline wszędzie" → revert media query (3 deleted lines)
+
+Code structured well (em-based stroke + jeden `@supports` + jeden `@media` wrapper) pozwala one-line revert. Code structured badly (hardkodowane px breakpointy, wiele media queries po niu pixele, per-element overrides) wymagałby godzinnego refactoru.
+
+**Zasady**:
+- em/rem/% zamiast px gdy proporcje muszą skalować z context
+- jedna `@supports` lub `@media` zamiast warstw warunków
+- progressive enhancement default = uniwersalnie wspierany rendering, feature query opt-in (nie odwrotnie — patrz pattern #18)
+- mobile-specific overrides oddzielne od enhancement layer (nie wmieszane)
+
+Wtedy "wycofaj jak było" = commit z 3 deleted lines, nie 50-linijkowy refactor.
+
+## 47. Unicode + font fallback vs inline SVG — DIY-vs-trust-the-platform
+
+**Tej sesji konkretnie — saga ze znakiem ⌀**:
+1. **Latin Ø (U+00D8)** w Big Shoulders → wygląda jak przekreślone zero (elongated condensed display font)
+2. **Inline SVG per użycie** → pixel-perfect, ale duplikat HTML 6 razy
+3. **SVG sprite + `<use href="#id"/>`** → DRY, ale moja kreska była **wewnątrz** koła (nie engineering convention "linia wychodzi poza")
+4. **Unicode ⌀ (U+2300) + font fallback chain** → system math font renderuje prawdziwy diameter sign z linią wychodzącą poza koło. ALE x-height rendered → bumped font-size: 1.5em
+
+**Final lesson**: dla typografii/symboli **prefer Unicode + font fallback OVER inline SVG**, gdy:
+- Symbol jest standardowy Unicode (math/technical/punctuation blocks)
+- System fonty często go mają (Cambria Math, STIX, Segoe UI Symbol)
+- Pattern używany w wielu kontekstach o różnych font-size (Unicode skaluje się jak każda inna litera)
+
+**SVG wybierz gdy**:
+- Symbol nie jest standardowy Unicode (custom brand glyph, niestandardowy projekt)
+- Visual MUST be pixel-perfect identical cross-platform (różne system fonty rysują ten sam Unicode codepoint inaczej)
+- Animacja / interakcja na symbolu (CSS transform na SVG inline)
+
+**Unicode + font fallback wymaga 2 dodatkowych rzeczy**:
+1. Explicit font-family chain z fontami które mają glyph (patrz #43)
+2. Czasem font-size bump (math fonty renderują w x-height — visual mismatch w caps context, patrz #44)
 
 ## Skróty / przyspieszacze pracy
 
