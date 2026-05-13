@@ -585,10 +585,8 @@
     }
     .footer .brand__mark { width: 46px; height: 46px; }
     .footer .brand__text { font-size: 28px; }
-    @media (max-width: 600px) {
-      .brand__mark { width: 34px; height: 34px; }
-      .brand__text { font-size: 21px; }
-    }
+    /* Footer-only brand sizing pozostaje w footer scope; w navie KFDIAMENT
+       trzyma stały rozmiar across breakpoints — phones znikają jako pierwsze. */
     .nav__links {
       display: flex;
       gap: 32px;
@@ -745,6 +743,52 @@
     @supports not (backdrop-filter: blur(1px)) {
       .mobile-menu { background: rgba(245, 241, 232, 1); }
     }
+    /* Sekcja telefonow na gorze panelu — wyrowna z bottom links, zawsze pelne numery.
+       2-kolumnowa siatka na szerszych mobile (>420px), single column ponizej. */
+    .mobile-menu__phones {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    @media (max-width: 420px) {
+      .mobile-menu__phones { grid-template-columns: 1fr; gap: 8px; }
+    }
+    .mobile-menu__phone {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 18px;
+      min-height: 48px;
+      background: var(--accent);
+      color: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      text-decoration: none;
+      border-radius: 999px;
+      transition: background-color 180ms ease, transform 180ms ease;
+    }
+    .mobile-menu__phone svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .mobile-menu__phone:hover {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+      }
+    }
+    .mobile-menu__phone:focus-visible {
+      outline: 2px solid var(--accent-hover);
+      outline-offset: 3px;
+    }
+
     .mobile-menu__links {
       list-style: none;
       margin: 0;
@@ -822,8 +866,6 @@
       }
       .nav__phones { gap: 5px; }
       .nav__phone { padding: 10px 12px; font-size: 13px; gap: 6px; }
-      .brand__text { font-size: 22px; }
-      .brand { gap: 11px; }
     }
     @media (max-width: 640px) {
       .nav__inner { gap: 12px; }
@@ -839,9 +881,6 @@
       .nav__phones { gap: 5px; }
       .nav__phone { padding: 9px 12px; font-size: 12.5px; gap: 6px; }
       .nav__phone svg { width: 13px; height: 13px; }
-      .brand__text { font-size: 20px; }
-      .brand__mark { width: 32px; height: 32px; }
-      .brand { gap: 11px; }
     }
     @media (max-width: 440px) {
       .nav__inner {
@@ -851,9 +890,6 @@
       }
       .nav__phone { padding: 9px 11px; font-size: 12px; gap: 5px; }
       .nav__phone svg { width: 12px; height: 12px; }
-      .brand__text { font-size: 18px; }
-      .brand__mark { width: 30px; height: 30px; }
-      .brand { gap: 9px; }
     }
     /* Ciasno (iPhone SE / Mini / display zoom): pokaz krotki suffix "..232/..182",
        zmniejsz hamburger, zwiń brand wordmark — żeby nic nie wyciekło poza viewport. */
@@ -870,19 +906,21 @@
       .nav__burger[aria-expanded="true"] .nav__burger-lines span:nth-child(1),
       .nav__burger[aria-expanded="true"] .nav__burger-lines span:nth-child(3) { top: 5px; }
     }
-    @media (max-width: 380px) {
+    @media (max-width: 400px) {
       .nav__inner {
         padding-inline-start: max(12px, env(safe-area-inset-left));
         padding-inline-end: max(12px, env(safe-area-inset-right));
-        gap: 6px;
+        gap: 8px;
       }
-      .nav__phone { padding: 8px 9px; font-size: 12px; }
-      .brand__text { font-size: 16px; }
-      .brand__mark { width: 28px; height: 28px; }
-      .brand { gap: 7px; }
+      /* 2. przycisk telefonu chowamy — nadal jest dostępny w mobile menu
+         (sekcja u góry), pierwszy zostaje "primary call" w navie. */
+      .nav__phones .nav__phone:nth-child(2) { display: none; }
+      .nav__phone { padding: 8px 11px; font-size: 12.5px; }
     }
-    @media (max-width: 340px) {
-      .brand__text { display: none; }
+    /* Bardzo ciasno (iPhone SE 1st gen 320px, display zoom) — oba przyciski
+       telefonow znikają, sa dostępne w sekcji u góry mobile menu. */
+    @media (max-width: 360px) {
+      .nav__phones { display: none; }
     }
 
     /* ─── Hero ─────────────────────────────────────────────────── */
@@ -2222,6 +2260,20 @@
       </button>
     </div>
     <div class="mobile-menu" id="mobile-menu" hidden>
+      <div class="mobile-menu__phones" role="group" aria-label="Telefony do biura">
+        <a class="mobile-menu__phone" href="tel:+48511478232" aria-label="Biuro — zadzwoń: +48 511 478 232">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          <span>+48 511 478 232</span>
+        </a>
+        <a class="mobile-menu__phone" href="tel:+48511478182" aria-label="Biuro — zadzwoń: +48 511 478 182">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          <span>+48 511 478 182</span>
+        </a>
+      </div>
       <ul class="mobile-menu__links" role="list">
         <li><a href="#o-nas"><span class="mobile-menu__num">01</span><span>O nas</span></a></li>
         <li><a href="#uslugi"><span class="mobile-menu__num">02</span><span>Usługi</span></a></li>
