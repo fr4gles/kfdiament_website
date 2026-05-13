@@ -136,6 +136,16 @@
             "serviceType": "Wyburzenia",
             "areaServed": { "@type": "Country", "name": "Polska" }
           }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Wklejanie i osadzanie kotew chemicznych",
+            "description": "Profesjonalny montaż kotew chemicznych i mechanicznych do konstrukcji stalowych, żelbetowych oraz elementów instalacyjnych. Wiercenie, czyszczenie otworów i precyzyjne osadzanie kotew zgodnie z dokumentacją techniczną.",
+            "serviceType": "Kotwy chemiczne",
+            "areaServed": { "@type": "Country", "name": "Polska" }
+          }
         }
       ]
     }
@@ -3006,8 +3016,8 @@
       <p class="hero__tag">Technika diamentowa · Cała Polska</p>
 
       <h1 class="hero__title">
-        <span>Specjaliści w cięciu techniką</span>
-        <span class="accent">diamentową</span>
+        <span>Specjaliści w cięciu i wierceniu</span>
+        <span class="accent">techniką diamentową</span>
         <span>betonu i żelbetu.</span>
       </h1>
 
@@ -3098,10 +3108,10 @@
           </p>
           <p>
             Wykonujemy precyzyjne wycinanie otworów technologicznych, usuwanie ścian, stropów
-            oraz elementów konstrukcyjnych. Oferujemy również poszerzanie otworów drzwiowych
-            i okiennych, demontaż konstrukcji betonowych oraz przygotowanie pod instalacje
-            elektryczne i hydrauliczne. Realizujemy prace w budynkach mieszkalnych,
-            przemysłowych i komercyjnych.
+            oraz elementów konstrukcyjnych. Oferujemy również cięcie stropów i fundamentów,
+            poszerzanie otworów drzwiowych i okiennych, demontaż konstrukcji betonowych
+            oraz przygotowanie pod instalacje elektryczne i hydrauliczne. Realizujemy prace
+            w budynkach mieszkalnych, przemysłowych i komercyjnych.
           </p>
           <p>
             Dzięki wieloletniemu doświadczeniu w branży, nowoczesnemu sprzętowi oraz sprawdzonym
@@ -3226,11 +3236,43 @@
           </a>
         </article>
 
+        <article class="service reveal">
+          <span class="service__num">/ 04</span>
+          <div class="service__icon" aria-hidden="true">
+            <!-- Kotwy chemiczne: pret zakotwiony w betonie (otwor + gwint + warstwa zywicy) -->
+            <svg viewBox="0 0 64 64">
+              <rect x="6" y="32" width="52" height="26"/>
+              <line x1="6" y1="40" x2="58" y2="40" stroke-dasharray="2 3"/>
+              <line x1="6" y1="48" x2="58" y2="48" stroke-dasharray="2 3"/>
+              <line x1="26" y1="6" x2="26" y2="54"/>
+              <line x1="38" y1="6" x2="38" y2="54"/>
+              <line x1="26" y1="12" x2="38" y2="12"/>
+              <line x1="26" y1="18" x2="38" y2="18"/>
+              <line x1="26" y1="24" x2="38" y2="24"/>
+              <line x1="26" y1="30" x2="38" y2="30"/>
+              <line x1="26" y1="36" x2="38" y2="36"/>
+              <line x1="26" y1="42" x2="38" y2="42"/>
+              <line x1="26" y1="48" x2="38" y2="48"/>
+            </svg>
+          </div>
+          <h3>Kotwy chemiczne</h3>
+          <p class="service__desc">
+            Profesjonalny montaż kotew chemicznych i mechanicznych do konstrukcji stalowych,
+            żelbetowych oraz elementów instalacyjnych. Wiercenie, czyszczenie otworów oraz
+            precyzyjne osadzanie kotew zgodnie z dokumentacją techniczną.
+          </p>
+          <p class="service__spec">Wklejanie · osadzanie · montaż</p>
+          <a class="service__cta" href="#kontakt" data-mailto="kotwy">
+            Zapytaj o tę usługę
+            <span aria-hidden="true">→</span>
+          </a>
+        </article>
+
       </div>
 
       <aside class="service-other reveal" aria-label="Inne zapytanie">
         <div class="service-other__text">
-          <span class="service-other__label">/ 04 — Inne zapytanie</span>
+          <span class="service-other__label">/ 05 — Inne zapytanie</span>
           <h3 class="service-other__title">Niestandardowy zakres prac?</h3>
           <p class="service-other__desc">
             Nietypowe wymiary, trudno dostępna lokalizacja, łączony zakres usług
@@ -3454,6 +3496,13 @@
               <div>
                 <h3 class="mailto-card__title">Wyburzenia</h3>
                 <p class="mailto-card__desc">Ściany, stropy, fundamenty · demontaż konstrukcji</p>
+              </div>
+              <span class="mailto-card__arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="mailto-card" href="#kontakt" data-mailto="kotwy">
+              <div>
+                <h3 class="mailto-card__title">Kotwy chemiczne</h3>
+                <p class="mailto-card__desc">Wklejanie i osadzanie kotew · konstrukcje stalowe i żelbetowe</p>
               </div>
               <span class="mailto-card__arrow" aria-hidden="true">→</span>
             </a>
@@ -3740,6 +3789,19 @@
             'Rodzaj materiału (beton, żelbet, mur)',
             'Czy obiekt jest w użytkowaniu (ochrona sąsiedztwa, pylenie, pora dnia)',
             'Sposób wywozu gruzu (w naszym zakresie czy klienta)',
+            'Preferowany termin realizacji'
+          ]
+        },
+        kotwy: {
+          subject: 'Wycena - Kotwy chemiczne - zapytanie ze strony',
+          intro: 'Chciałbym otrzymać wycenę montażu kotew chemicznych lub mechanicznych.',
+          fields: [
+            'Lokalizacja robót',
+            'Liczba kotew do osadzenia',
+            'Średnica i długość kotew',
+            'Rodzaj kotew (chemiczne, mechaniczne)',
+            'Materiał konstrukcji (beton, żelbet, stal)',
+            'Czy dostępna dokumentacja techniczna lub karta kotwy',
             'Preferowany termin realizacji'
           ]
         },
