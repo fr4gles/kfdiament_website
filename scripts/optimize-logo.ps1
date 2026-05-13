@@ -63,15 +63,20 @@ if (-not (Test-Path $outDir)) {
   New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 }
 
-# Wykryj dostępne narzędzia (kolejność preferencji: magick → ffmpeg → sharp przez npx)
+# Wykryj dostępne narzędzia (kolejność preferencji: magick → ffmpeg → sharp przez node+npm).
+# sharp wymaga obu node + npm (do instalacji), nie samego npx — niektore Node-shimy
+# (volta, nvm-windows) podstawia jeden bez drugiego, wiec sprawdzamy osobno.
 $haveMagick = $null -ne (Get-Command magick -ErrorAction SilentlyContinue)
 $haveFfmpeg = $null -ne (Get-Command ffmpeg -ErrorAction SilentlyContinue)
-$haveNpx    = $null -ne (Get-Command npx    -ErrorAction SilentlyContinue)
+$haveNode   = $null -ne (Get-Command node   -ErrorAction SilentlyContinue)
+$haveNpm    = $null -ne (Get-Command npm    -ErrorAction SilentlyContinue)
+$haveSharp  = $haveNode -and $haveNpm
 
 Write-Host "Available tools:"
 Write-Host "  ImageMagick (magick): $haveMagick"
 Write-Host "  ffmpeg:               $haveFfmpeg"
-Write-Host "  npx (Node.js):        $haveNpx"
+Write-Host "  node:                 $haveNode"
+Write-Host "  npm:                  $haveNpm"
 Write-Host ""
 
 # Definicja targetów wyjściowych
@@ -151,7 +156,8 @@ sharp('$($Src.Replace('\','/'))').
   return $result
 }
 
-# Wybierz strategię konwersji (kolejnosc preferencji: magick > ffmpeg > sharp)
+# Wybierz strategię konwersji (kolejnosc preferencji: magick > ffmpeg > sharp).
+# sharp wymaga jednoczesnie node + npm — jeden bez drugiego nie wystarczy.
 $converter = $null
 if ($haveMagick) {
   $converter = "magick"
@@ -159,9 +165,14 @@ if ($haveMagick) {
 } elseif ($haveFfmpeg) {
   $converter = "ffmpeg"
   Write-Host "Using: ffmpeg (libwebp + scaler)" -ForegroundColor Green
-} elseif ($haveNpx) {
+} elseif ($haveSharp) {
   $converter = "sharp"
   Write-Host "Using: sharp (pierwsze uruchomienie zainstaluje sharp do TEMP, ~30 MB)" -ForegroundColor Green
+} elseif ($haveNode -or $haveNpm) {
+  $missing = if (-not $haveNode) { 'node' } else { 'npm' }
+  Write-Host "ERROR: Sciezka 'sharp' wymaga obu: node + npm. Brakuje: $missing" -ForegroundColor Red
+  Write-Host "Zainstaluj pelny Node.js (zawiera npm): winget install OpenJS.NodeJS"
+  exit 1
 } else {
   Write-Host "ERROR: Brak dostepnego narzedzia do konwersji obrazow." -ForegroundColor Red
   Write-Host ""

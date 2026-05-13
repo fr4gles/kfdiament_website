@@ -185,7 +185,7 @@ Dashboard → Speed → Optimization:
 - **Brotli**: ON (kompresja lepsza niż gzip)
 - **Early Hints**: ON (preload HTTP/3 hints)
 - **0-RTT Connection Resumption**: ON
-- Auto Minify: HTML/CSS/JS już są zminifikowane (inline) — można zostawić ON, nie zaszkodzi
+- Auto Minify: HTML/CSS/JS w repo są czytelnie sformatowane (nie zminifikowane), ale wszystko siedzi inline w jednym pliku. Auto Minify jest opcjonalne — możesz włączyć, żeby Cloudflare zminifikował edge-side (zwykle 5-15% mniejszy transfer), albo zostawić OFF żeby zachować czytelny `view-source`
 
 ---
 
