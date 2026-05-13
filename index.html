@@ -1268,7 +1268,7 @@
 
     .hero__stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 0;
       border-top: 1px solid var(--line-strong);
       padding-top: 28px;
@@ -1296,6 +1296,18 @@
       font-style: normal;
       color: var(--accent);
     }
+    /* Wariant tekstowy dla statow ktorych "num" to slowo a nie cyfra
+       (np. "Beton + Żelbet"). Mniejszy font, regular weight, tak zeby
+       linia wysokosci pasowala do 3.8rem big nums. */
+    .stat__num--text {
+      font-size: clamp(1.2rem, 1.9vw, 1.5rem);
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      line-height: 1.05;
+      font-variation-settings: 'opsz' 16;
+      padding-top: clamp(0.3rem, 0.8vw, 0.6rem);  /* lekko obniz zeby srodki rzedow sie pokrywaly */
+    }
     .stat__label {
       font-family: var(--font-mono);
       font-size: 11px;
@@ -1304,12 +1316,16 @@
       text-transform: uppercase;
       color: var(--muted);
     }
-    @media (max-width: 900px) {
-      .hero__stats { grid-template-columns: repeat(2, 1fr); gap: 28px 0; }
-      .stat { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
-      .stat:nth-child(odd) { border-right: 1px solid var(--line); }
-      .stat:nth-child(2n) { border-right: none; }
-      .stat:nth-last-child(-n+2) { padding-bottom: 0; border-bottom: none; }
+    /* 5 statów: średnie ekrany (≤1080px) → 3 kolumny, małe (≤600px) → 2.
+       Na zwiniętych layoutach borderów dotted nie liczymy — gap między
+       rzedami daje wizualny separator bez calc gymnastyki dla 5-items
+       wrapowanych w 2/3 kolumnach. */
+    @media (max-width: 1080px) {
+      .hero__stats { grid-template-columns: repeat(3, 1fr); gap: 28px 16px; }
+      .stat { border-right: none; padding-right: 0; padding-bottom: 0; }
+    }
+    @media (max-width: 600px) {
+      .hero__stats { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
     }
     @media (max-width: 600px) {
       .hero__title { letter-spacing: -0.02em; }
@@ -1910,7 +1926,10 @@
       align-self: flex-start;
     }
     .zasieg-map {
-      width: 110px;
+      /* Scale down proporcjonalnie: 110px desktop → ~78px przy 400px viewport.
+         Dzięki temu mapa zostaje widoczna na iPhone'ach (np. 14 Pro Max = 430px CSS)
+         zamiast znikać przedwcześnie. */
+      width: clamp(78px, 14vw, 110px);
       height: auto;
       flex-shrink: 0;
       align-self: center;
@@ -1922,7 +1941,10 @@
       stroke-linejoin: round;
       stroke-linecap: round;
     }
-    @media (max-width: 540px) {
+    /* Mapa znika dopiero gdy faktycznie brakuje miejsca obok tekstu —
+       iPhone 14 Pro Max (430px CSS) i Plus (414px) maja jeszcze przestrzen
+       na 78px mapę po prawej, więc breakpoint obniżony 540 → 380. */
+    @media (max-width: 380px) {
       .contact-block.contact-block--zasieg { grid-template-columns: 52px 1fr; column-gap: 18px; }
       .zasieg-map { display: none; }
     }
@@ -2320,12 +2342,20 @@
           <span class="stat__label">Maks. średnica wiercenia</span>
         </li>
         <li class="stat">
-          <span class="stat__num">100<em>%</em></span>
-          <span class="stat__label">Sprzęt Hilti</span>
-        </li>
-        <li class="stat">
           <span class="stat__num">PL</span>
           <span class="stat__label">Cała Polska</span>
+        </li>
+        <li class="stat">
+          <span class="stat__num">3<em> lata</em></span>
+          <span class="stat__label">Doświadczenia w branży</span>
+        </li>
+        <li class="stat">
+          <span class="stat__num">2<em>. gen.</em></span>
+          <span class="stat__label">Piła ścienna DST 20-CA</span>
+        </li>
+        <li class="stat">
+          <span class="stat__num stat__num--text">Beton <em>+</em> Żelbet</span>
+          <span class="stat__label">Specjalizacja</span>
         </li>
       </ul>
     </div>
