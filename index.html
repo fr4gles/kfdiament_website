@@ -1682,7 +1682,7 @@
 
     .hero__stats {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0 clamp(12px, 1.6vw, 24px);  /* równy odstęp między statami */
       border-top: 1px solid var(--line-strong);
       padding-top: 28px;
@@ -1752,9 +1752,9 @@
       text-transform: uppercase;
       color: var(--muted);
     }
-    /* 5 statów: średnie ekrany (≤1080px) → 3 kolumny, małe (≤600px) → 2. */
+    /* 4 staty: średnie ekrany (≤1080px) → 2 kolumny (2x2), małe (≤600px) → 2. */
     @media (max-width: 1080px) {
-      .hero__stats { grid-template-columns: repeat(3, 1fr); gap: 28px 16px; }
+      .hero__stats { grid-template-columns: repeat(2, 1fr); gap: 28px 16px; }
     }
     @media (max-width: 600px) {
       .hero__stats { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
@@ -3046,10 +3046,6 @@
         <li class="stat">
           <span class="stat__num">PL</span>
           <span class="stat__label">Cała Polska</span>
-        </li>
-        <li class="stat">
-          <span class="stat__num">wiele lat</span>
-          <span class="stat__label">Doświadczenia w branży</span>
         </li>
         <li class="stat">
           <span class="stat__num">2<em>. gen.</em></span>
