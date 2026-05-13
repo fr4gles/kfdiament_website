@@ -20,7 +20,7 @@ Po dopisaniu reguł — `commit` + `push`, żeby było w pamięci git.
 
 ## Czym jest projekt
 
-Statyczna **strona-wizytówka** firmy **KFDIAMENT Obrębski Motyka Spółka jawna** (cięcie i wiercenie diamentowe betonu, osadzanie kotew chemicznych — działają na terenie całej Polski, siedziba: Grybów, Grunwaldzka 9).
+Statyczna **strona-wizytówka** firmy **KFDIAMENT Obrębski Motyka Spółka jawna** (cięcie i wiercenie diamentowe betonu, wyburzenia konstrukcji — działają na terenie całej Polski, siedziba: Grybów, Grunwaldzka 9).
 
 Hostowana na **Cloudflare Pages** (free tier), domena docelowa: **kfdiament.pl**. GitHub remote: `fr4gles/kfdiament_website`.
 
@@ -123,10 +123,10 @@ Z 4px gold gradient bar `::before`. Architektoniczna tabliczka znamionowa.
 ## Struktura sekcji
 
 1. **Nav** — fixed top, blur, 72px wysokości. **2 osobne klikalne przyciski telefonów obok siebie** (`.nav__phones > .nav__phone × 2`), nie jeden CTA. Responsive z 4 breakpointami (640/540/440/380px) żeby się mieściło na iPhone 14 Pro Max bez overflow.
-2. **Hero** — full vh, slow-spin logo absolute (~52vw, opacity 0.18, blend mode multiply). Brand byline + 4 stats + 2 CTA + engraved h1.
+2. **Hero** — full vh, slow-spin logo absolute (~52vw, opacity 0.18, blend mode multiply). Engraved h1 + brand byline + hero__sub (z bold otwarciem "Jesteśmy specjalistami w cięciu i wierceniu techniką diamentową.") + 2 CTA + 3 stats (Ø800mm / 100% Hilti / PL).
 3. **Marquee ticker** — czarny pas między hero a o-nas, gold-accented scrolling text "CIĘCIE · WIERCENIE · KOTWY · CAŁA POLSKA · BEZ KUCIA". 38s linear infinite, pauza on hover.
 4. `#o-nas` — bg-2 + background "01" numeral, 5 akapitów + corner-card "Dlaczego my?"
-5. `#uslugi` — bg + "02" numeral, 3 service cards + **banner "Inne zapytanie"** (full-width dark CTA pod kartami, mailto query `ogolne`)
+5. `#uslugi` — bg + "02" numeral, 3 service cards (Cięcie betonu, Wiercenie otworów, **Wyburzenia**) + **banner "Inne zapytanie"** (full-width dark CTA pod kartami, mailto query `ogolne`)
 6. `#realizacje` — bg-2 + "03" numeral, 3 gal-card z placeholderami
 7. `#sprzet` — bg-3 gradient, ogromny "HILTI" w tle
 8. `#kontakt` — bg + "05" numeral, 4 contact-blocks + 4 mailto-cards + iframe Google Maps. **Blok Zasięg** ma 3-kolumnowy grid: ikona | 2 pary label/value (Zasięg/Cała Polska + Baza/Grybów, Małopolska) | **mini-mapa Polski** (real outline z Natural Earth 110m, 45 punktów, CC0).
@@ -142,12 +142,12 @@ Sekcja kontakt **NIE ma `<form>`**. Zamiast tego 4 karty `<a class="mailto-card"
 
 **Kluczowy detal**: fallback `href="#kontakt"` (NIE `mailto:...`) — żeby HTML nie zawierał literalnego mailto: dla botów. JS na końcu pliku replace'uje href na pełny `mailto:?subject=...&body=...` z `encodeURIComponent`.
 
-**Klucze obecnie:** `ciecie`, `wiercenie`, `kotwy`, `ogolne`. Karta `ogolne` ma tytuł **"Inne zapytanie"** w kontekście Kontakt, ale w sekcji Usługi ten sam klucz triggeruje banner "Skontaktuj się z nami / Niestandardowy zakres prac".
+**Klucze obecnie:** `ciecie`, `wiercenie`, `wyburzenia`, `ogolne`. Karta `ogolne` ma tytuł **"Inne zapytanie"** w kontekście Kontakt, ale w sekcji Usługi ten sam klucz triggeruje banner "Skontaktuj się z nami / Niestandardowy zakres prac".
 
 **Subjects** — bez nawiasów/symboli technicznych:
 - `Wycena - Cięcie betonu - zapytanie ze strony`
 - `Wycena - Wiercenie otworów - zapytanie ze strony`
-- `Wycena - Osadzanie kotew - zapytanie ze strony`
+- `Wycena - Wyburzenia - zapytanie ze strony`
 - `Kontakt ze strony - zapytanie ogólne`
 
 Body kończy się stopką `Wiadomość wysłana ze strony kfdiament.pl`.
@@ -630,6 +630,45 @@ Mit "first-match wins" jest błędny — nie kopiuj security headers do każdego
 ```
 
 NIE dodawać `allow-popups-to-escape-sandbox` (redundant + ryzyko). NIE używać `allow-forms allow-top-navigation` chyba że konkretnie potrzebne. `referrerpolicy` chroni privacy.
+
+## 39. PDF/dokument od klienta = source of truth, ale CHECK W OBIE STRONY
+
+**Anti-pattern**: dostajesz PDF z treścią od klienta i tylko sprawdzasz "czy wszystko z PDF jest na stronie". Albo odwrotnie — bierzesz to co już jest na stronie i nie weryfikujesz z PDF.
+
+**Wzorzec**: cross-check W OBIE STRONY:
+
+1. **PDF → site**: czy wszystkie claims/teksty/dane firmy z PDF są reflektowane na stronie? (oczywiste)
+2. **Site → PDF**: czy wszystko co jest na stronie pojawia się w PDF? Każdy claim na stronie który NIE ma odpowiednika w PDF jest podejrzany — mógł być wymyślony przez Claude'a w trakcie iteracji, zostać z poprzedniej wersji oferty, albo być copywritingiem do potwierdzenia.
+
+**Konkretnie sprawdź**:
+- Dane firmy (NIP, REGON, adres, telefony, email) — exact match
+- Lista usług — szczególnie nazwy i kolejność. Jedna usługa "wymyślona" może być po prostu nieaktualna oferta
+- Statystyki/claims marketingowe — "~0 wibracji", "3 lata vs wieloletnie doświadczenie", "100% Hilti" — każda liczba musi mieć źródło
+- Specyfikacja sprzętu — modele, średnice
+- Mottos / tagline'y — exact phrasing matters
+- Stylistyczne wymyślenia copywritera (Claude) — zgadzaj się tylko jeśli klient potwierdzi
+
+**Format raportu po cross-checku**:
+```
+🔴 KRYTYCZNE ROZBIEŻNOŚCI — wymagają decyzji klienta
+🟡 BRAKUJĄCE NA STRONIE (z PDF) — drobne
+🟢 NA STRONIE — claims spoza PDF (sprawdzić u klienta)
+✅ ZGODNE
+```
+
+Z konkretnymi linijkami i propozycją działania per item. NIE wprowadzaj zmian automatycznie — klient decyduje per rozbieżność.
+
+**Tej sesji konkretnie**: PDF od klienta miał "Wyburzenia" jako 3. usługę, a strona miała "Osadzanie kotew chemicznych" (wymyślone wcześniej przez Claude'a). PDF miał "3 lata doświadczenia", strona "wieloletnie". PDF nie wspomniał "bezwibracyjne cięcie" ani "Akcesoria oryginalne Hilti" — strona miała. Wszystkie te 4 rzeczy wyleciały po klient-decyzji.
+
+## 40. Mailto template fields w nawiasach, nie po em-dash
+
+**Anti-pattern**: w mailto-card body fields wpisać "Rodzaj materiału — beton lub żelbet". Em-dash + przykłady wyglądają jak część NAZWY pola, idą do każdego maila i klient ich nie chce widzieć w każdym message.
+
+**Wzorzec**: przykłady w nawiasach okrągłych, krótkie i jednoznaczne:
+- "Rodzaj materiału (beton, żelbet, mur)"
+- "Sposób wywozu gruzu (w naszym zakresie czy klienta)"
+
+Nawiasy wyraźnie sygnalizują "to są podpowiedzi, nie część nazwy pola". W mailu wyglądają lepiej, łatwiejsze do skasowania jeśli klient nie chce ich w final message.
 
 ## Skróty / przyspieszacze pracy
 

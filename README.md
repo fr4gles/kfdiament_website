@@ -1,7 +1,7 @@
 # KFDIAMENT — strona-wizytówka
 
 Statyczna jednoplikowa strona-wizytówka firmy **KFDIAMENT Obrębski Motyka Spółka jawna**
-(cięcie i wiercenie diamentowe betonu, osadzanie kotew chemicznych — cała Polska).
+(cięcie i wiercenie diamentowe betonu, wyburzenia konstrukcji — cała Polska).
 
 ## Stack i charakter
 
@@ -361,7 +361,7 @@ Hero logo **nie znika** na małych ekranach — zmienia tylko pozycję/rozmiar/o
 - [ ] **Page rules** w Cloudflare — przekierowanie `www.kfdiament.pl` →
       `kfdiament.pl` (lub odwrotnie — wybierz jedno)
 - [ ] **Strony usług** (rozważyć w przyszłości): `/ciecie-betonu`, `/wiercenie`,
-      `/osadzanie-kotew` — osobne podstrony pomogą w SEO long-tail
+      `/wyburzenia` — osobne podstrony pomogą w SEO long-tail
 
 ## 🔗 Linki przydatne
 

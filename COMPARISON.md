@@ -78,16 +78,16 @@ Zakładając 3 zdjęcia z realizacji (zalecane: WebP, ~80 KB każdy = 240 KB) + 
 |---|---|---|
 | Hero h1 | „Cięcie precyzyjne jak diament." (Big Shoulders Display 800, industrial, outline+gold accent) | „Specjaliści w cięciu i wierceniu techniką diamentową" (mniejsze, generyczne) |
 | Sub | 3-zdaniowy intro z USP | krótki claim |
-| Statystyki | 4 stat-itemy (Ø800mm, 100% Hilti, PL, ~0 wibracji) | brak |
+| Statystyki | 3 stat-itemy (Ø800mm, 100% Hilti, PL) | brak |
 | CTA above fold | 2 (czerwony „o ofertę" + outline „zobacz usługi") | 1 („kontakt") |
 
 ### Opis oferty
 
 | | **KFDIAMENT** | **DIAMTAR** |
 |---|---|---|
-| Liczba usług prezentowanych | 3 (cięcie, wiercenie, kotwy) | 6 (cięcie, wiercenie, kotwy, wyburzanie, kucie, szlifowanie) |
+| Liczba usług prezentowanych | 3 (cięcie, wiercenie, wyburzenia) + opcja "inne zapytanie" | 6 (cięcie, wiercenie, kotwy, wyburzanie, kucie, szlifowanie) |
 | Konkretne specs sprzętu | **TAK** — Hilti DST 20-CA, DD500-CA, Ø800 mm | częściowe |
-| Przykład: podstrona "Osadzanie kotew" | brak (zaplanowana w roadmapie) | ~350-400 słów + 27 zdjęć w galerii |
+| Przykład: podstrony usług per zakres | brak (zaplanowane w roadmapie) | ~350-400 słów + 27 zdjęć w galerii dla osadzania kotew |
 
 **Wniosek:** my mamy mocniejszy hero i statystyki, oni mają **głębsze podstrony usług** z galerią. To główna przewaga DIAMTAR-u — pokazują realny dorobek. **Naszą luką są zdjęcia** (placeholdery czekają).
 
@@ -101,7 +101,7 @@ Zakładając 3 zdjęcia z realizacji (zalecane: WebP, ~80 KB każdy = 240 KB) + 
 | Mapa Google | TAK (free embed iframe) | brak na home |
 | NIP/REGON | TAK (footer) | TAK |
 
-**Przewaga KFDIAMENT:** mailto-cards generują pre-wypełnione zapytanie ofertowe z szablonem pól ("Lokalizacja", "Liczba kotew", "Typ kotwy M8/M10/M12...", "Głębokość", "Materiał"). Klient od razu wie co napisać → wyższa konwersja niż "open formularz i wymyśl co napisać".
+**Przewaga KFDIAMENT:** mailto-cards generują pre-wypełnione zapytanie ofertowe z szablonem pól per usługa (np. dla wyburzeń: lokalizacja, co dokładnie do wyburzenia, wymiary/kubatura, materiał, czy obiekt w użytkowaniu, sposób wywozu gruzu, termin). Klient od razu wie co napisać → wyższa konwersja niż "open formularz i wymyśl co napisać".
 
 ---
 
@@ -152,7 +152,7 @@ Zakładając 3 zdjęcia z realizacji (zalecane: WebP, ~80 KB każdy = 240 KB) + 
 
 ### Priorytet 2 (więcej treści SEO)
 
-- [ ] Osobne podstrony usług: `/ciecie-betonu`, `/wiercenie-otworow`, `/osadzanie-kotew`. DIAMTAR ma podstronę osadzania kotew z 350-400 słowami i 27 zdjęciami. Możemy zrobić to lepiej (więcej tech-specs: rozmiary M8-M24, normy ETA, materiały bazowe C20/25-C50/60, czasy żywicowania, próby wyrywania).
+- [ ] Osobne podstrony usług: `/ciecie-betonu`, `/wiercenie-otworow`, `/wyburzenia`. DIAMTAR ma głębokie podstrony usług (np. osadzanie kotew: 350-400 słów + 27 zdjęć). My możemy zrobić podobnie pod nasze 3 usługi z tech-specs (DST 20-CA gen.2, DD500-CA Ø800mm, sposoby demontażu), galerią realizacji i FAQ.
 - [ ] FAQ section — "Ile kosztuje cięcie ściany 30cm betonu?", "Jak długo trwa wiercenie?", "Czy potrzebny jest dostęp do wody/prądu?" — odpowiedzi to bezpośredni ranking signal w Google.
 - [ ] Strona z opiniami klientów (DIAMTAR ma 4 testimoniale — kierownik budowy, inżynierowie).
 
