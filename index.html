@@ -1315,6 +1315,12 @@
       font-style: normal;
       font-weight: 700;
       letter-spacing: 0;
+      /* System fonty renderują ⌀ optycznie mniejsze od cyfr/liter — bump 1.25em
+         żeby się równoważyło wizualnie z otaczającą czcionką mono/display. */
+      font-size: 1.25em;
+      line-height: 1;
+      vertical-align: -0.08em;
+      margin-right: 0.04em;
     }
     /* Wariant tekstowy dla statow ktorych "num" to slowo a nie cyfra
        (np. "Beton + Żelbet"). Skali sie bliska big nums — łamie się
