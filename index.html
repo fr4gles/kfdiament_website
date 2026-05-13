@@ -651,10 +651,6 @@
       height: 14px;
       flex-shrink: 0;
     }
-    /* Domyslnie pokaz pelny numer, krotki ukryty. Aria-label na <a> trzyma
-       pelna wartosc dla AT niezaleznie od tego co jest widoczne. */
-    .nav__phone-short { display: none; }
-    .nav__phone-full  { display: inline; }
 
     @media (max-width: 900px) {
       .nav__links { display: none; }
@@ -882,45 +878,24 @@
       .nav__phone { padding: 9px 12px; font-size: 12.5px; gap: 6px; }
       .nav__phone svg { width: 13px; height: 13px; }
     }
-    @media (max-width: 440px) {
-      .nav__inner {
-        padding-inline-start: max(14px, env(safe-area-inset-left));
-        padding-inline-end: max(14px, env(safe-area-inset-right));
-        gap: 8px;
-      }
-      .nav__phone { padding: 9px 11px; font-size: 12px; gap: 5px; }
-      .nav__phone svg { width: 12px; height: 12px; }
+    /* Graceful degradation telefonow w navie. NIE robimy brzydkich
+       skrotow "·232/·182" — albo pelny numer, albo brak (mobile menu
+       ma stala sekcje telefonow u gory niezaleznie od szerokosci). */
+    /* ≤640px: ciasniej -> chowamy 2. przycisk, ale 1. zostaje pelny */
+    @media (max-width: 640px) {
+      .nav__phones .nav__phone:nth-child(2) { display: none; }
     }
-    /* Ciasno (iPhone SE / Mini / display zoom): pokaz krotki suffix "..232/..182",
-       zmniejsz hamburger, zwiń brand wordmark — żeby nic nie wyciekło poza viewport. */
-    @media (max-width: 420px) {
-      .nav__phone-full  { display: none; }
-      .nav__phone-short { display: inline; }
-      .nav__phone svg { display: none; }
-      .nav__phone { padding: 8px 10px; font-size: 12.5px; gap: 0; letter-spacing: 0.02em; }
-      .nav__phones { gap: 4px; }
-      .nav__burger { width: 38px; height: 38px; }
-      .nav__burger-lines { width: 16px; height: 12px; }
-      .nav__burger-lines span:nth-child(2) { top: 5px; }
-      .nav__burger-lines span:nth-child(3) { top: 10px; }
-      .nav__burger[aria-expanded="true"] .nav__burger-lines span:nth-child(1),
-      .nav__burger[aria-expanded="true"] .nav__burger-lines span:nth-child(3) { top: 5px; }
-    }
-    @media (max-width: 400px) {
+    /* ≤460px: i 1. przycisk nie ma juz miejsca obok brand + hamburger.
+       Oba telefony znikaja z nav — sa w mobile menu pod hamburgerem. */
+    @media (max-width: 460px) {
+      .nav__phones { display: none; }
       .nav__inner {
         padding-inline-start: max(12px, env(safe-area-inset-left));
         padding-inline-end: max(12px, env(safe-area-inset-right));
-        gap: 8px;
+        gap: 10px;
       }
-      /* 2. przycisk telefonu chowamy — nadal jest dostępny w mobile menu
-         (sekcja u góry), pierwszy zostaje "primary call" w navie. */
-      .nav__phones .nav__phone:nth-child(2) { display: none; }
-      .nav__phone { padding: 8px 11px; font-size: 12.5px; }
-    }
-    /* Bardzo ciasno (iPhone SE 1st gen 320px, display zoom) — oba przyciski
-       telefonow znikają, sa dostępne w sekcji u góry mobile menu. */
-    @media (max-width: 360px) {
-      .nav__phones { display: none; }
+      /* Hamburger mniejszy zeby dac brandowi maksimum miejsca */
+      .nav__burger { width: 40px; height: 40px; }
     }
 
     /* ─── Hero ─────────────────────────────────────────────────── */
@@ -2239,15 +2214,13 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/>
           </svg>
-          <span class="nav__phone-full">511 478 232</span>
-          <span class="nav__phone-short" aria-hidden="true">·232</span>
+          <span>511 478 232</span>
         </a>
         <a class="nav__phone" href="tel:+48511478182" aria-label="Biuro — zadzwoń: +48 511 478 182">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/>
           </svg>
-          <span class="nav__phone-full">511 478 182</span>
-          <span class="nav__phone-short" aria-hidden="true">·182</span>
+          <span>511 478 182</span>
         </a>
       </div>
       <button class="nav__burger" type="button"
