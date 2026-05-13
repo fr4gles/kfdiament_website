@@ -47,7 +47,7 @@ To **NIE jest** projekt JS-framework. Świadomie:
 └── img/
     ├── README.md             — instrukcja workflow assetów
     ├── logo.png              — ŹRÓDŁO master (obecnie 500×500, zalecane min. 512×512 dla nowych źródeł)
-    ├── logo.webp             — 512×512 WebP (nav/footer/JSON-LD)
+    ├── logo.webp             — 512×512 WebP (nav/footer via <picture> WebP source)
     ├── logo-1024.webp        — 1024×1024 (hero LCP, preload)
     ├── logo-96.webp          — 96×96 (nav/footer thumbnail)
     ├── favicon-32.png        — favicon

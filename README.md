@@ -99,7 +99,7 @@ innych narzędzi) → **sharp** przez `npx`/`npm` (wymaga Node.js,
 auto-instaluje się jednorazowo do `%TEMP%`). Skrypt używa pierwszego
 dostępnego — wszystkie 3 dają identyczny output. Generuje:
 
-- `img/logo.webp` (512×512, ~20-30 KB) — używane w nav/footer/JSON-LD
+- `img/logo.webp` (512×512, ~20-30 KB) — używane w nav/footer (`<picture>` WebP source). JSON-LD ma `img/logo.png` (PNG jest bezpieczniejszy dla Google Knowledge Graph + szerokie wsparcie consumerów structured data).
 - `img/logo-1024.webp` (1024×1024, ~50 KB) — hero LCP candidate, preload
 - `img/logo-96.webp` (96×96, ~5 KB) — nav/footer thumbnail (retina)
 - `img/favicon-32.png` — favicon

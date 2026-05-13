@@ -126,11 +126,19 @@ function Convert-WithSharp {
       try { & npm install --silent --no-save sharp 2>&1 | Out-Null } finally { Pop-Location }
     }
   }
+  # sharp options per format — webp ma `effort`, png ma `compressionLevel`.
+  # Wspolne `quality` przekazujemy tylko dla webp; dla png lossless + max compression
+  # (favicon-32 = ostry pixel art, kazda strata jakosci widoczna).
+  $opts = if ($Format -eq 'webp') {
+    "{ quality: $Quality, effort: 6 }"
+  } else {
+    "{ compressionLevel: 9 }"
+  }
   $code = @"
 const sharp = require('$($script:sharpDir.Replace('\','/'))/node_modules/sharp');
 sharp('$($Src.Replace('\','/'))').
   resize($Size, $Size, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } }).
-  $Format({ quality: $Quality, effort: 6 }).
+  $Format($opts).
   toFile('$($Dst.Replace('\','/'))').
   then(() => process.exit(0)).
   catch(e => { console.error(e); process.exit(1); });

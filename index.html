@@ -299,6 +299,9 @@
 
     html {
       scroll-behavior: smooth;
+      /* Kompensacja fixed .nav (--nav-h) — anchor-scroll nie chowa tytułów sekcji pod navem.
+         +12px to oddech wizualny nad nagłówkiem po skoku. */
+      scroll-padding-top: calc(var(--nav-h) + 12px);
       -webkit-text-size-adjust: 100%;
       overflow-x: clip;  /* iOS Safari ignoruje overflow-x: hidden tylko na body */
     }
