@@ -1403,6 +1403,48 @@
       flex-shrink: 0;
     }
 
+    /* === Sun/moon toggle — persistent, widoczny na wszystkich viewportach ===
+       Circle 44x44 (WCAG 2.5.5), outlined accent (sp9jne wizualnie z nav__email).
+       Ikona swap: sun visible when data-mode="dark", moon when data-mode="light".
+       Sygnalizuje TARGET state (klik → świat się zmieni w to, co widzisz). */
+    .nav__theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      flex-shrink: 0;
+      background: transparent;
+      color: var(--fg);
+      border: 1.5px solid var(--accent);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background-color .2s ease, color .2s ease, transform .15s ease, border-color .2s ease;
+    }
+    .nav__theme-toggle-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    /* Ikony jedna nad drugą — pokazujemy jedną na podstawie data-mode na <html>.
+       Domyślnie (brak data-mode w bootstrap edge case) pokazujemy moon (= light mode). */
+    .nav__theme-toggle-icon--sun  { display: none; }
+    .nav__theme-toggle-icon--moon { display: inline-block; }
+    :root[data-mode="dark"] .nav__theme-toggle-icon--sun  { display: inline-block; }
+    :root[data-mode="dark"] .nav__theme-toggle-icon--moon { display: none; }
+    @media (hover: hover) and (pointer: fine) {
+      .nav__theme-toggle:hover {
+        background: var(--accent);
+        color: var(--bg);
+        transform: translateY(-1px);
+      }
+    }
+    .nav__theme-toggle:focus-visible {
+      outline: 2px solid var(--accent-hover);
+      outline-offset: 3px;
+    }
+
     /* Nav-specific breakpoint (1080px, NIE 900 jak inne sekcje):
        desktop nav z 5 linkami + 2 telefonami + brand + maxw padding wymaga ~1100px.
        Ponizej tej szerokosci linki znikaja i pojawia sie hamburger, zeby
@@ -1691,8 +1733,14 @@
         padding-inline-end: max(12px, env(safe-area-inset-right));
         gap: 10px;
       }
-      /* Hamburger mniejszy zeby dac brandowi maksimum miejsca */
+      /* Hamburger + toggle mniejsze zeby dac brandowi maksimum miejsca */
       .nav__burger { width: 40px; height: 40px; }
+      .nav__theme-toggle { width: 40px; height: 40px; }
+      .nav__theme-toggle-icon { width: 17px; height: 17px; }
+      /* Bez phones/email .nav__theme-toggle musi mieć margin-left:auto, bo
+         space-between na 3 itemach (brand | toggle | burger) wepchnąłby toggle
+         do dead center. margin-left:auto przyklei toggle+burger do prawej. */
+      .nav__theme-toggle { margin-left: auto; }
     }
 
     /* ─── Hero ─────────────────────────────────────────────────── */
@@ -3204,11 +3252,12 @@
       Wybierz paletę kolorystyczną
     </label>
     <select id="theme-panel-select" class="theme-panel__select">
+      <!-- Każda paleta = jeden entry (family canonical = light slug).
+           Wariant dark dostępny przez sun/moon toggle w navie. -->
       <option value="">Antique brass (obecna)</option>
       <optgroup label="A — pasujące do logo">
-        <option value="logo-metallic">Metaliczne złoto z logo ✨ (dark)</option>
-        <option value="logo-metallic-light">Metaliczne złoto z logo ✨ (light)</option>
-        <option value="brass-midnight">Mosiądz nocny (dark)</option>
+        <option value="logo-metallic-light">Metaliczne złoto z logo ✨</option>
+        <option value="brass-noon">Mosiądz w południe</option>
         <option value="parchment-amber">Pergamin i bursztyn</option>
       </optgroup>
       <optgroup label="B — easy-on-eyes, wieczorem">
@@ -3217,7 +3266,7 @@
       </optgroup>
       <optgroup label="C — pełne słońce, outdoor">
         <option value="solar-bright">Białe słońce (cynober)</option>
-        <option value="hivis-engineer">Hi-Vis Engineer (dark + amber)</option>
+        <option value="hivis-daylight">Hi-Vis Engineer (amber)</option>
       </optgroup>
       <optgroup label="D — nieoczywiste">
         <option value="moss-brass">Mech i mosiądz</option>
@@ -3279,6 +3328,23 @@
         </svg>
         <span>E-mail</span>
       </a>
+      <!-- Sun/moon toggle — persistent, niezależny od testowego theme-panela.
+           Pozycja: po prawej od email, po lewej od burgera (mobile). -->
+      <button class="nav__theme-toggle" type="button"
+              data-theme-toggle
+              aria-label="Przełącz motyw na ciemny"
+              aria-pressed="false"
+              title="Przełącz motyw">
+        <!-- Sun (widoczne w trybie ciemnym = "klik = pójdziesz w jasny") -->
+        <svg class="nav__theme-toggle-icon nav__theme-toggle-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <!-- Moon (widoczne w trybie jasnym = "klik = pójdziesz w ciemny") -->
+        <svg class="nav__theme-toggle-icon nav__theme-toggle-icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
       <button class="nav__burger" type="button"
               aria-label="Otwórz menu"
               aria-expanded="false"
@@ -3923,11 +3989,105 @@
     (function () {
       'use strict';
 
-      // ─── theme panel (przestawne palety testowe) ─────────────────
-      // Bootstrap juz w <head> ustawil data-theme z localStorage (anti-FOUC).
-      // Tu tylko: sync selecta z aktualnym tematem + event listenery
-      // (change → apply + persist, reset, hide). Defensive try/catch wokol
-      // localStorage/sessionStorage — sandbox/incognito moga rzucic.
+      // ─── theme system (family + mode + toggle) ──────────────────────────
+      // Architektura:
+      //   - kfd_theme (localStorage) → palette family slug (= canonical light slug)
+      //   - kfd_mode  (localStorage) → 'light' | 'dark' | (brak = auto)
+      //   - THEME_PAIRS[family] → { light, dark } slug
+      //   - aktywny data-theme = THEME_PAIRS[family][effectiveMode]
+      //   - data-mode = effectiveMode (gate CSS color-scheme + ikony toggle)
+      //
+      // Bootstrap w <head> już zaaplikował początkowe data-theme+data-mode
+      // (anti-FOUC). Tu: sync UI (select + toggle aria) + event listenery.
+      //
+      // UWAGA: THEME_PAIRS musi być w sync z PAIRS w bootstrap <head>.
+      // Jeśli zmieniasz mapping, edytuj OBA miejsca albo wprowadź wspolny
+      // <script src> (na razie inline = anti-FOUC priorytet).
+      const THEME_PAIRS = {
+        '':                    { light: '',                    dark: 'default-dark' },
+        'logo-metallic-light': { light: 'logo-metallic-light', dark: 'logo-metallic' },
+        'parchment-amber':     { light: 'parchment-amber',     dark: 'parchment-amber-dark' },
+        'brass-noon':          { light: 'brass-noon',          dark: 'brass-midnight' },
+        'navy-evening':        { light: 'navy-evening',        dark: 'navy-evening-dark' },
+        'nordic-mist':         { light: 'nordic-mist',         dark: 'nordic-mist-dark' },
+        'solar-bright':        { light: 'solar-bright',        dark: 'solar-bright-dark' },
+        'hivis-daylight':      { light: 'hivis-daylight',      dark: 'hivis-engineer' },
+        'moss-brass':          { light: 'moss-brass',          dark: 'moss-brass-dark' },
+        'concrete-plasma':     { light: 'concrete-plasma',     dark: 'concrete-plasma-dark' },
+        'comp-hilti-red':      { light: 'comp-hilti-red',      dark: 'comp-hilti-red-dark' },
+        'comp-safety-orange':  { light: 'comp-safety-orange',  dark: 'comp-safety-orange-dark' },
+        'comp-corp-blue':      { light: 'comp-corp-blue',      dark: 'comp-corp-blue-dark' },
+        'comp-arcad':          { light: 'comp-arcad',          dark: 'comp-arcad-dark' }
+      };
+
+      const THEME_KEY = 'kfd_theme';
+      const MODE_KEY  = 'kfd_mode';
+      const HIDE_KEY  = 'kfd_theme_panel_hidden';
+
+      const safeGet = function (k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
+      const safeSet = function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} };
+      const safeDel = function (k)   { try { localStorage.removeItem(k); } catch (e) {} };
+
+      const getFamily = function () {
+        const f = safeGet(THEME_KEY);
+        return THEME_PAIRS[f] ? f : '';
+      };
+      const getMode = function () {
+        const m = safeGet(MODE_KEY);
+        if (m === 'light' || m === 'dark') return m;
+        // Auto — system preference
+        return (window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      };
+
+      const applyTheme = function () {
+        const family = getFamily();
+        const mode = getMode();
+        const pair = THEME_PAIRS[family] || THEME_PAIRS[''];
+        const slug = pair[mode] || pair.light;
+        if (slug) document.documentElement.setAttribute('data-theme', slug);
+        else document.documentElement.removeAttribute('data-theme');
+        document.documentElement.setAttribute('data-mode', mode);
+        updateToggleA11y(mode);
+      };
+
+      const updateToggleA11y = function (mode) {
+        const toggle = document.querySelector('[data-theme-toggle]');
+        if (!toggle) return;
+        const isDark = mode === 'dark';
+        toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+        toggle.setAttribute('aria-label',
+          isDark ? 'Przełącz motyw na jasny' : 'Przełącz motyw na ciemny');
+      };
+
+      // ── Toggle button (sun/moon) ────────────────────────────────────────
+      const toggle = document.querySelector('[data-theme-toggle]');
+      if (toggle) {
+        toggle.addEventListener('click', function () {
+          const current = getMode();
+          const next = current === 'dark' ? 'light' : 'dark';
+          safeSet(MODE_KEY, next);
+          applyTheme();
+        });
+      }
+      // Initial sync — bootstrap mógł nie mieć dostępu do matchMedia
+      updateToggleA11y(getMode());
+
+      // ── System preference change (tylko gdy user na auto, czyli brak kfd_mode) ──
+      if (window.matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const onChange = function () {
+          // Honoruj user wybór — gdy MODE_KEY ustawiony, ignoruj system change
+          if (safeGet(MODE_KEY) === 'light' || safeGet(MODE_KEY) === 'dark') return;
+          applyTheme();
+        };
+        if (mq.addEventListener) mq.addEventListener('change', onChange);
+        else if (mq.addListener) mq.addListener(onChange);  // Safari <14
+      }
+
+      // ── Theme panel (palety testowe — opcjonalny) ────────────────────────
+      // Bootstrap juz ustawil data-theme z localStorage (anti-FOUC).
+      // Tu: sync select z aktualnym FAMILY + event listenery.
       // Cały panel mozna wylaczyc dodajac <body data-theme-panel="off">.
       (function initThemePanel () {
         const panel  = document.querySelector('.theme-panel');
@@ -3937,32 +4097,23 @@
         const hideBtn  = panel.querySelector('[data-theme-action="hide"]');
         if (!select) return;
 
-        const STORAGE_KEY = 'kfd_theme';
-        const HIDE_KEY    = 'kfd_theme_panel_hidden';
-
-        // Sync select z bieżącym tematem (bootstrap w <head> juz mogl ustawic).
-        let current = '';
-        try { current = localStorage.getItem(STORAGE_KEY) || ''; } catch (e) {}
-        select.value = current;
-        // Jesli zapisany temat nie istnieje na liscie (np. usuniety placeholder),
-        // select.value pozostaje '' — fallback do default.
+        // Sync select z bieżącym FAMILY (nie z slug — w storage jest family).
+        select.value = getFamily();
 
         select.addEventListener('change', function () {
           const val = select.value;
-          if (val) {
-            document.documentElement.setAttribute('data-theme', val);
-            try { localStorage.setItem(STORAGE_KEY, val); } catch (e) {}
-          } else {
-            document.documentElement.removeAttribute('data-theme');
-            try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-          }
+          if (val) safeSet(THEME_KEY, val);
+          else safeDel(THEME_KEY);
+          applyTheme();
         });
 
         if (resetBtn) {
           resetBtn.addEventListener('click', function () {
-            document.documentElement.removeAttribute('data-theme');
-            try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+            // Reset = wracamy do defaultu (family='' i mode='auto')
+            safeDel(THEME_KEY);
+            safeDel(MODE_KEY);
             select.value = '';
+            applyTheme();
           });
         }
 
