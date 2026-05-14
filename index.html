@@ -1482,6 +1482,15 @@
         padding-inline-start: max(16px, env(safe-area-inset-left));
         padding-inline-end: max(16px, env(safe-area-inset-right));
       }
+      /* KLUCZOWE: nav__inner ma justify-content: space-between, ktore przy
+         niewypelnionym rzedzie rozprasza itemy równo na całej szerokości
+         (gap to MINIMUM, browser dodaje extra space jako "between" rozkład).
+         To dawalo widoczne puste pola obok email/toggle przy 1081-1280.
+         margin-left:auto na phones nadpisuje space-between dla tej grupy
+         i wszystkiego po niej — brand i links zostaja po lewej, phones+
+         email+toggle przyklejone do prawej z tylko `gap` między nimi.
+         (Ten sam pattern co przy ≤1080 — extending range w gore.) */
+      .nav__phones { margin-left: auto; }
     }
     /* Przy ≤1080 burger pojawia sie i e-mail przenosi sie do mobile menu —
        wzorzec stage 3 (hidden). Patrz nizej w @media (max-width: 1080px). */
