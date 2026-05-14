@@ -1034,6 +1034,11 @@
     /* Cyferki numeru telefonu nigdy nie wraps — globalnie dla wszystkich tel: linkow
        (nav, mobile-menu, contact-block, footer). */
     a[href^="tel:"] { white-space: nowrap; }
+    /* E-mail (label albo adres) nigdy nie wraps — globalnie dla wszystkich
+       obfuskowanych emaili + przyciskow w nav/mobile-menu (kontakt@kfdiament.pl
+       jako jeden wyraz, nigdy "e-/mail" ani "kontakt@/kfdiament.pl"). */
+    a[href^="mailto:"],
+    a.email-obf { white-space: nowrap; }
 
     /* Skip-link target — main staje się focusable żeby skip-link przeniósł fokus.
        Outline wokół calego <main> wygladal by zle (ogromny prostokat), ale WCAG 2.4.7
@@ -1444,6 +1449,42 @@
       outline: 2px solid var(--accent-hover);
       outline-offset: 3px;
     }
+
+    /* Staged collapse e-maila — gdy do nav dochodzi toggle sun/moon (44px+gap),
+       pelny "E-mail" label przestaje miescic sie miedzy phones a togglem przy
+       narrow desktop (≤1280). Pattern degradacji: pełny → ikonka → ukryty.
+       Icon-only zone: 821-1280 (44x44 circle, sp9jne z toggle). Ukryty <821
+       (już istnieje w bloku ≤820 niżej). */
+    @media (max-width: 1280px) {
+      .nav__email {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        gap: 0;
+        border-radius: 999px;
+        justify-content: center;
+        flex-shrink: 0;  /* w flex nav__inner inaczej zostanie scisniety do ~20px */
+      }
+      .nav__email span { display: none; }
+      .nav__email svg { width: 18px; height: 18px; }
+      /* Toggle + email + phones + 5 linków + brand nie miesci sie z gap=24/32
+         na 1100-1280; obcina ostatni element po prawej. Zwezamy odstepy. */
+      .nav__inner { gap: 16px; }
+      .nav__links { gap: 22px; }
+      /* Brand zmniejszamy: logo 86→68, text 36→30. W navie identyfikator dalej
+         czytelny ale uwalnia ~60px na phones+email+toggle. Footer brand
+         (scope .footer .brand__*) niezmieniony. */
+      .nav .brand__mark { width: 68px; height: 68px; }
+      .nav .brand__text { font-size: 30px; }
+      /* Pad-x: domyslnie clamp(20, 5vw, 64) → max 64 przy ≥1280. Tu zwezamy
+         do clamp(16, 3vw, 40) — uwalnia ~24px po kazdej stronie przy 1100. */
+      .nav__inner {
+        padding-inline-start: max(16px, env(safe-area-inset-left));
+        padding-inline-end: max(16px, env(safe-area-inset-right));
+      }
+    }
+    /* Przy ≤1080 burger pojawia sie i e-mail przenosi sie do mobile menu —
+       wzorzec stage 3 (hidden). Patrz nizej w @media (max-width: 1080px). */
 
     /* Nav-specific breakpoint (1080px, NIE 900 jak inne sekcje):
        desktop nav z 5 linkami + 2 telefonami + brand + maxw padding wymaga ~1100px.
