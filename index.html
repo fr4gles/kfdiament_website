@@ -1036,8 +1036,11 @@
     a[href^="tel:"] { white-space: nowrap; }
     /* E-mail (label albo adres) nigdy nie wraps — globalnie dla wszystkich
        obfuskowanych emaili + przyciskow w nav/mobile-menu (kontakt@kfdiament.pl
-       jako jeden wyraz, nigdy "e-/mail" ani "kontakt@/kfdiament.pl"). */
-    a[href^="mailto:"],
+       jako jeden wyraz, nigdy "e-/mail" ani "kontakt@/kfdiament.pl").
+       :not(.mailto-card) excluduje duze karty w sekcji kontakt — JS na starcie
+       podmienia ich href="#kontakt" → href="mailto:...", co kiedys lapalo je
+       w nowrap i forsowalo min-content > viewport (strzalki wycinane). */
+    a[href^="mailto:"]:not(.mailto-card),
     a.email-obf { white-space: nowrap; }
 
     /* Skip-link target — main staje się focusable żeby skip-link przeniósł fokus.
