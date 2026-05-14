@@ -1328,10 +1328,14 @@
         saturate(calc(1 + 0.22 * var(--saw-glow, 0)));
       will-change: transform, filter;
     }
-    /* REDESIGN — pulse ring. Pojedynczy cienki gold okrag pulsuje na zewnatrz
-       od saw rim, fading. Continuous infinite animation. Border-color alpha
-       tied do --saw-glow przez calc w rgba — idle invisible, sustained motion
-       gradually pulsuje wokol pily. Czysto, NO sparks, NO blur. */
+    /* REDESIGN — pulse ring. Pojedynczy cienki gold okrag emituje sie z saw rim
+       na zewnatrz, fade-out + rosnacy blur (im dalej tym bardziej rozmazany).
+       NIE infinite — triggered przez JS na kazdym "rozpedzaniu" (hover start +
+       scroll impulse delta > threshold). Class .saw-pulse-trigger dodawana
+       przez JS startuje animation, po 1.6s sama sie zatrzymuje.
+       opacity * --saw-glow daje extra safety: jak velocity zniknie podczas pulse
+       (np. user puscil scroll), pulse i tak fade-out via keyframes ale dodatkowo
+       mozna obnizyc widocznosc. */
     .nav .brand picture::before {
       content: '';
       position: absolute;
@@ -1339,49 +1343,57 @@
       border-radius: 50%;
       border: 1.5px solid transparent;
       pointer-events: none;
-      animation: kfd-saw-pulse 1.6s ease-out infinite;
       transform-origin: 50% 48.5%;
-      will-change: transform, border-color;
+      opacity: 0;
+      will-change: transform, border-color, opacity, filter;
+    }
+    .nav .brand picture.saw-pulse-trigger::before {
+      animation: kfd-saw-pulse 1.6s cubic-bezier(.2, .7, .3, 1) 1;
     }
     @keyframes kfd-saw-pulse {
       0% {
         transform: scale(0.95);
-        border-color: rgba(var(--accent-rgb), calc(0.7 * var(--saw-glow, 0)));
+        border-color: rgba(var(--accent-rgb), 0.85);
         border-width: 1.5px;
+        opacity: 1;
+        filter: blur(0px);
       }
-      60% {
-        border-color: rgba(var(--accent-rgb), calc(0.35 * var(--saw-glow, 0)));
+      50% {
+        border-color: rgba(var(--accent-rgb), 0.45);
+        filter: blur(2px);
+        opacity: 0.7;
       }
       100% {
-        transform: scale(1.45);
+        transform: scale(1.6);
         border-color: rgba(var(--accent-rgb), 0);
         border-width: 0.5px;
+        filter: blur(5px);
+        opacity: 0;
       }
     }
-    /* Dark mode: SZEROKIE podswietlenie pod logiem (3-warstwowy backlight) zeby
-       ciemne czesci pily byly widoczne na czarnym bg. --fg-rgb na dark mode =
-       cream/light → drop-shadow daje wielowarstwowy halo:
-         - tight 6px 0.5α (sharp outline)
-         - mid 16px 0.32α (depth)
-         - wide 36px 0.16α (diffuse ambient)
-       Plus ambient gold illumination wokol K&F z velocity. */
+    /* Dark mode: SZEROKIE podswietlenie via box-shadow NA PICTURE (circular,
+       thanks to border-radius: 50%). Drop-shadow na masked IMG/::after tworzylo
+       square artefakt przy rotacji ringa — box-shadow na picture omija ten
+       problem bo picture nie rotuje i jest circular. 4-warstwowy backlight do 90px.
+       Plus jeden minimalny halo na .brand__mark + ::after dla "outline" loga. */
+    :root[data-mode="dark"] .nav .brand picture {
+      border-radius: 50%;
+      box-shadow:
+        0 0 14px rgba(var(--fg-rgb), 0.55),
+        0 0 30px rgba(var(--fg-rgb), 0.40),
+        0 0 55px rgba(var(--fg-rgb), 0.24),
+        0 0 90px rgba(var(--fg-rgb), 0.12);
+    }
     :root[data-mode="dark"] .nav .brand .brand__mark {
       filter:
-        drop-shadow(0 0 8px   rgba(var(--fg-rgb), 0.60))
-        drop-shadow(0 0 20px  rgba(var(--fg-rgb), 0.45))
-        drop-shadow(0 0 40px  rgba(var(--fg-rgb), 0.28))
-        drop-shadow(0 0 70px  rgba(var(--fg-rgb), 0.15))
+        drop-shadow(0 0 4px rgba(var(--fg-rgb), 0.4))
         drop-shadow(0 0 calc(18px * var(--saw-glow, 0)) rgba(var(--accent-rgb), calc(0.7 * var(--saw-glow, 0))))
         drop-shadow(0 0 calc(50px * var(--saw-glow, 0)) rgba(var(--accent-rgb), calc(0.35 * var(--saw-glow, 0))));
     }
     :root[data-mode="dark"] .nav .brand picture::after {
       filter:
         brightness(calc(1 + 0.12 * var(--saw-glow, 0)))
-        saturate(calc(1 + 0.22 * var(--saw-glow, 0)))
-        drop-shadow(0 0 6px  rgba(var(--fg-rgb), 0.55))
-        drop-shadow(0 0 18px rgba(var(--fg-rgb), 0.38))
-        drop-shadow(0 0 36px rgba(var(--fg-rgb), 0.22))
-        drop-shadow(0 0 60px rgba(var(--fg-rgb), 0.12));
+        saturate(calc(1 + 0.22 * var(--saw-glow, 0)));
     }
     @media (hover: hover) and (pointer: fine) {
       /* Footer brand: prosty -30deg wobble (bez easter egga). */
@@ -4333,6 +4345,7 @@
         const root = document.documentElement;
         const navBrand = document.querySelector('.nav .brand');
         if (!navBrand) return;
+        const navPicture = navBrand.querySelector('picture');
 
         const HOVER_VEL    = 1500;   // deg/s gdy hover (≈ 4 rev/s)
         const HOVER_ACCEL  = 4500;   // ramp w ~0.33s do HOVER_VEL
@@ -4341,6 +4354,21 @@
         const SCROLL_CAP   = 1200;   // max scroll-induced velocity (deg/s)
         const DECAY_PER_S  = 2.2;    // ln(decay) per sec — velocity *= exp(-2.2 * dt)
                                      // ≈ velocity halves every 315ms (~swift decay)
+        const PULSE_COOLDOWN = 400;  // ms, min czas miedzy pulse'ami
+        const PULSE_DELTA    = 80;   // deg/s, min impuls velocity zeby trigger pulse
+
+        // Trigger pulse animation (CSS @keyframes kfd-saw-pulse via class toggle).
+        // Remove class + force reflow + add class = restart animation od poczatku.
+        let lastPulseT = 0;
+        function triggerPulse (t) {
+          if (!navPicture) return;
+          if (t - lastPulseT < PULSE_COOLDOWN) return;
+          navPicture.classList.remove('saw-pulse-trigger');
+          // Force reflow zeby browser zauwazyl removal przed re-add
+          void navPicture.offsetWidth;
+          navPicture.classList.add('saw-pulse-trigger');
+          lastPulseT = t;
+        }
 
         let angle = 0;
         let velocity = 0;
@@ -4392,6 +4420,7 @@
 
         // Scroll handler — działa zarówno desktop scroll wheel JAK i mobile touch.
         // Każde scroll-event dolicza impuls do velocity, RAF interpoluje + decay.
+        // Plus trigger pulse jak impulse > PULSE_DELTA (znaczace rozpedzanie).
         window.addEventListener('scroll', function () {
           const ns = window.scrollY;
           const dy = ns - lastScroll;
@@ -4399,10 +4428,16 @@
           if (!isHovering) {
             // Scroll DOWN (dy>0) → CW (positive velocity)
             // Scroll UP (dy<0) → CCW (negative velocity)
-            velocity += dy * SCROLL_KICK;
+            const impulse = dy * SCROLL_KICK;
+            velocity += impulse;
             // Cap velocity
             if (velocity >  SCROLL_CAP) velocity =  SCROLL_CAP;
             if (velocity < -SCROLL_CAP) velocity = -SCROLL_CAP;
+            // Trigger pulse jak impulse znaczacy (czyli rozpedzanie wzgledem
+            // poprzedniego stanu, nie ledwo zauwazalny ruch)
+            if (Math.abs(impulse) >= PULSE_DELTA) {
+              triggerPulse(performance.now());
+            }
           }
           ensureRaf();
         }, { passive: true });
@@ -4413,6 +4448,8 @@
           navBrand.addEventListener('mouseenter', function () {
             isHovering = true;
             ensureRaf();
+            // Hover start = nowa "rozpedzanie" akcja → pulse
+            triggerPulse(performance.now());
           });
           navBrand.addEventListener('mouseleave', function () {
             isHovering = false;
