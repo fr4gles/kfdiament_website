@@ -1537,20 +1537,30 @@
       outline-offset: 3px;
     }
 
-    /* Collapse e-maila — brand zawsze 86px (user requirement). Przy ≤1280px
-       (compact desktop) email od razu HIDDEN (skip stage icon-only), zeby
-       miejsce dla pelnego brand 86px + 5 linków + 2 phones + toggle. */
+    /* Compact desktop ≤1280 — brand 86px stays, ale tightening:
+       - nav__inner gap 24→14, pad-x clamp(16, env safe-area)
+       - nav__links gap 32→18, font-size 13→12
+       - email collapse do icon-only (44x44 circle, bez napisu) — pattern user'a:
+         "jak coś znika to pojawia się menu, jest miejsce na małą ikonę email"
+       Email pelny (z napisem) tylko przy ≥1281, icon-only 821-1280, hidden ≤820 (mobile menu). */
     @media (max-width: 1280px) {
-      .nav__email { display: none; }
-      /* Toggle + email + phones + 5 linków + brand nie miesci sie z gap=24/32
-         na 1100-1280; obcina ostatni element po prawej. Zwezamy odstepy. */
-      .nav__inner { gap: 16px; }
-      .nav__links { gap: 22px; }
-      /* Pad-x: domyslnie clamp(20, 5vw, 64) → max 64 przy ≥1280. Tu zwezamy
-         do clamp(16, 3vw, 40) — uwalnia ~24px po kazdej stronie przy 1100. */
+      .nav__email {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        gap: 0;
+        border-radius: 999px;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .nav__email span { display: none; }
+      .nav__email svg { width: 18px; height: 18px; }
+      .nav__inner { gap: 14px; }
+      .nav__links { gap: 18px; }
+      .nav__links a { font-size: 12px; letter-spacing: 0.05em; }
       .nav__inner {
-        padding-inline-start: max(16px, env(safe-area-inset-left));
-        padding-inline-end: max(16px, env(safe-area-inset-right));
+        padding-inline-start: max(14px, env(safe-area-inset-left));
+        padding-inline-end: max(14px, env(safe-area-inset-right));
       }
       /* KLUCZOWE: nav__inner ma justify-content: space-between, ktore przy
          niewypelnionym rzedzie rozprasza itemy równo na całej szerokości
@@ -1818,7 +1828,9 @@
       }
       .nav__phones { gap: 5px; }
       .nav__phone { padding: 10px 12px; font-size: 13px; gap: 6px; }
-      /* Email juz hidden z ≤1280 (display:none) — nie potrzeba duplicate rule. */
+      /* Email hidden ≤820 — pelna wersja w mobile menu (.mobile-menu__email)
+         + sekcji 5. */
+      .nav__email { display: none; }
     }
     /* Bardzo waskie mobile (≤380) — brand szuka oddechu, dropniemy z powrotem. */
     @media (max-width: 380px) {
