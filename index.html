@@ -1322,75 +1322,58 @@
       pointer-events: none;
       transform: rotate(var(--saw-angle, 0deg));
       transform-origin: 50% 48.5%;
-      /* Ring motion blur — subtelne, max ~1.5px (v1 mial 3.8 ale userowi
-         za duzo). Plus brightness/saturate "nagrzewanie". */
+      /* Brightness/saturate "nagrzewanie" — subtle. Bez blur. */
       filter:
         brightness(calc(1 + 0.12 * var(--saw-glow, 0)))
-        saturate(calc(1 + 0.22 * var(--saw-glow, 0)))
-        blur(var(--saw-blur, 0px));
+        saturate(calc(1 + 0.22 * var(--saw-glow, 0)));
       will-change: transform, filter;
     }
-    /* Sparks — 3.5px pixele w kolorze akcentu palety. Counter-rotation
-       (rotuja PRZECIWNIE do saw — wieksza wizualna intryga, wyrazisty kontrast
-       miedzy ringiem a iskrami). Dark outline drop-shadow (fg-rgb / 0.5) plus
-       3-layer accent halo. 16 pozycji (29-42px od center → przy zebach saw).
-       Opacity delayed onset: clamp(0, (glow - 0.6) * 3, 1) — sparks pojawiaja
-       sie DOPIERO po rozpedzeniu (glow 0.6 = ~36% velocity po sqrt = sustained
-       motion, nie brief spike). Glow 0.93 → full opacity. */
+    /* REDESIGN — pulse ring. Pojedynczy cienki gold okrag pulsuje na zewnatrz
+       od saw rim, fading. Continuous infinite animation. Border-color alpha
+       tied do --saw-glow przez calc w rgba — idle invisible, sustained motion
+       gradually pulsuje wokol pily. Czysto, NO sparks, NO blur. */
     .nav .brand picture::before {
       content: '';
       position: absolute;
-      left: 50%;
-      top: 48.5%;
-      width: 3.5px;
-      height: 3.5px;
-      margin: -1.75px 0 0 -1.75px;
+      inset: 0;
       border-radius: 50%;
-      background: var(--accent);
+      border: 1.5px solid transparent;
       pointer-events: none;
-      box-shadow:
-         32px -10px 0 0 var(--accent),
-        -29px  14px 0 0 var(--accent),
-         16px  30px 0 0 var(--accent),
-        -21px -26px 0 0 var(--accent),
-         36px  12px 0 0 var(--accent),
-        -32px  -3px 0 0 var(--accent),
-          8px -34px 0 0 var(--accent),
-        -12px  31px 0 0 var(--accent),
-         25px  23px 0 0 var(--accent),
-        -26px -16px 0 0 var(--accent),
-         39px  -4px 0 0 var(--accent),
-        -36px  21px 0 0 var(--accent),
-         -5px -29px 0 0 var(--accent),
-         29px  18px 0 0 var(--accent),
-         22px -22px 0 0 var(--accent),
-        -18px  -8px 0 0 var(--accent);
-      /* Dark outline (fg-rgb) dla kontrastu na light bg — bez tego sparks
-         w accent kolorze blendowaly z cream bg i bylo niewidoczne. */
-      filter:
-        drop-shadow(0 0 1.5px rgba(var(--fg-rgb), 0.6))
-        drop-shadow(0 0 4px   rgba(var(--accent-rgb), 1.0))
-        drop-shadow(0 0 9px   rgba(var(--accent-rgb), 0.7))
-        drop-shadow(0 0 14px  rgba(var(--accent-rgb), 0.4));
-      opacity: clamp(0, calc((var(--saw-glow, 0) - 0.6) * 3), 1);
-      transform: rotate(calc(var(--saw-angle, 0deg) * -1));
-      transform-origin: 50% 50%;
-      will-change: transform, opacity;
+      animation: kfd-saw-pulse 1.6s ease-out infinite;
+      transform-origin: 50% 48.5%;
+      will-change: transform, border-color;
     }
-    /* Dark mode: dodatkowy blur na sparkach + ambient illumination tla via
-       wide drop-shadow na IMG. Counter-rotation juz zaaplikowane uniwersalnie. */
-    :root[data-mode="dark"] .nav .brand picture::before {
-      filter:
-        blur(0.7px)
-        drop-shadow(0 0 4px  rgba(var(--accent-rgb), 1.0))
-        drop-shadow(0 0 10px rgba(var(--accent-rgb), 0.75))
-        drop-shadow(0 0 18px rgba(var(--accent-rgb), 0.45));
+    @keyframes kfd-saw-pulse {
+      0% {
+        transform: scale(0.95);
+        border-color: rgba(var(--accent-rgb), calc(0.7 * var(--saw-glow, 0)));
+        border-width: 1.5px;
+      }
+      60% {
+        border-color: rgba(var(--accent-rgb), calc(0.35 * var(--saw-glow, 0)));
+      }
+      100% {
+        transform: scale(1.45);
+        border-color: rgba(var(--accent-rgb), 0);
+        border-width: 0.5px;
+      }
     }
+    /* Dark mode: backlight pod logiem zeby ciemne czesci pily byly widoczne
+       na czarnym bg. --fg-rgb na dark mode = cream/light → drop-shadow daje
+       light halo wokol zarowno K&F (IMG) jak i saw ring (::after).
+       Plus ambient gold illumination wokol K&F z velocity. */
     :root[data-mode="dark"] .nav .brand .brand__mark {
       filter:
-        drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.18))
+        drop-shadow(0 0 7px rgba(var(--fg-rgb), 0.45))
+        drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.15))
         drop-shadow(0 0 calc(18px * var(--saw-glow, 0)) rgba(var(--accent-rgb), calc(0.7 * var(--saw-glow, 0))))
         drop-shadow(0 0 calc(45px * var(--saw-glow, 0)) rgba(var(--accent-rgb), calc(0.32 * var(--saw-glow, 0))));
+    }
+    :root[data-mode="dark"] .nav .brand picture::after {
+      filter:
+        brightness(calc(1 + 0.12 * var(--saw-glow, 0)))
+        saturate(calc(1 + 0.22 * var(--saw-glow, 0)))
+        drop-shadow(0 0 6px rgba(var(--fg-rgb), 0.4));
     }
     @media (hover: hover) and (pointer: fine) {
       /* Footer brand: prosty -30deg wobble (bez easter egga). */
@@ -4375,27 +4358,20 @@
 
           angle = (angle + velocity * dt) % 360;
           root.style.setProperty('--saw-angle', angle.toFixed(2) + 'deg');
-          // --saw-glow: sqrt curve zamiast linear. Low velocity (np scroll daje
-          // ~120/1500 = 0.08 linear) wzmocniona do sqrt(0.08) = 0.28 — sparks
-          // widoczne podczas zwyklego scroll, NIE tylko przy peak hover.
-          // sqrt(1) = 1 → bez zmian przy peak hover.
+          // --saw-glow: sqrt curve zamiast linear. Low velocity daje meaningful
+          // glow (sqrt(0.08)=0.28). CSS uzywa do drop-shadow halo + pulse ring
+          // opacity + brightness/saturate na ring.
           const ratio = Math.min(1, Math.abs(velocity) / HOVER_VEL);
           const glow = Math.sqrt(ratio);
           root.style.setProperty('--saw-glow', glow.toFixed(3));
-          // --saw-blur: sigmoid jak w v1 ale max obnizony do 1.5px (v1 mial 3.8,
-          // userowi za duzo rozmazania). 1.5 * (1 - exp(-3r)) → ~1.1px@glow=0.5,
-          // ~1.43px@glow=1. Subtle motion-blur na RING (saw teeth).
-          const blur = 1.5 * (1 - Math.exp(-3 * glow));
-          root.style.setProperty('--saw-blur', blur.toFixed(2) + 'px');
 
           if (Math.abs(velocity) > 0.1 || isHovering) {
             raf = requestAnimationFrame(tick);
           } else {
             raf = null;
             lastTime = 0;
-            // Idle: snap obu var-ow do 0 zeby halo + blur znikly cleanly
+            // Idle: snap glow do 0 zeby efekty znikly cleanly
             root.style.setProperty('--saw-glow', '0');
-            root.style.setProperty('--saw-blur', '0px');
           }
         }
 
