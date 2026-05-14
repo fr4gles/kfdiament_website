@@ -1378,7 +1378,15 @@
        Plus jeden minimalny halo na .brand__mark + ::after dla "outline" loga. */
     :root[data-mode="dark"] .nav .brand picture {
       border-radius: 50%;
+      /* Backlight w 2 warstwach:
+         - INSET (wewnetrzna): wypelnia transparent gap miedzy saw rim a bbox
+           picture. PNG ma ~15% padding wokol saw blade (content radius 213px
+           w 250px PNG), wiec gap to ~15% picture promienia. Inset glow widoczny
+           w transparent zones (gap miedzy saw a bbox edge + AA zone masek).
+         - OUTER (zewnetrzna): ambient halo extending dalej poza picture. */
       box-shadow:
+        inset 0 0 14px rgba(var(--fg-rgb), 0.65),
+        inset 0 0 24px rgba(var(--fg-rgb), 0.40),
         0 0 14px rgba(var(--fg-rgb), 0.55),
         0 0 30px rgba(var(--fg-rgb), 0.40),
         0 0 55px rgba(var(--fg-rgb), 0.24),
