@@ -1318,6 +1318,40 @@
       transition: filter .3s ease-out;
       will-change: transform, filter;
     }
+    /* Sparks (iskry) — pseudo na picture::before. Multi-box-shadow daje
+       kilka kropek wokół loga (3px dotki rozmyte filter:blur). Rotuje razem
+       z saw via --saw-angle. Default: niewidoczne (opacity 0). Hover: fade-in
+       + subtle twinkle pulse (scale 1 ↔ 1.12). Tylko delikatne, nie krzyczące. */
+    .nav .brand picture::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 48.5%;
+      width: 3px;
+      height: 3px;
+      margin: -1.5px 0 0 -1.5px;
+      border-radius: 50%;
+      background: rgba(var(--accent-rgb), 0.9);
+      /* 6 spark positions wokol saw (45-58px od center → tuż za zębami piły) */
+      box-shadow:
+         48px  -10px 1.5px 0.4px rgba(var(--accent-rgb), 0.7),
+        -42px   18px 1.5px 0.4px rgba(var(--accent-rgb), 0.6),
+         24px   42px 2px   0.4px rgba(var(--accent-rgb), 0.65),
+        -30px  -36px 1.5px 0.4px rgba(var(--accent-rgb), 0.7),
+         54px   24px 2px   0.4px rgba(var(--accent-rgb), 0.45),
+        -50px   -8px 2px   0.4px rgba(var(--accent-rgb), 0.55);
+      filter: blur(1.4px);
+      opacity: 0;
+      pointer-events: none;
+      transform: rotate(var(--saw-angle, 0deg));
+      transform-origin: 50% 50%;
+      transition: opacity .4s cubic-bezier(.2, .8, .2, 1);
+      will-change: transform, opacity;
+    }
+    @keyframes kfd-sparks-twinkle {
+      0%, 100% { transform: rotate(var(--saw-angle, 0deg)) scale(1); }
+      50%      { transform: rotate(var(--saw-angle, 0deg)) scale(1.18); }
+    }
     @media (hover: hover) and (pointer: fine) {
       /* Footer brand: prosty -30deg wobble (bez easter egga). */
       .footer .brand:hover .brand__mark { transform: rotate(-30deg); }
@@ -1331,6 +1365,10 @@
       }
       .nav .brand:hover picture::after {
         filter: brightness(1.15) saturate(1.3);
+      }
+      .nav .brand:hover picture::before {
+        opacity: 1;
+        animation: kfd-sparks-twinkle 1.7s ease-in-out infinite;
       }
     }
     @keyframes kfd-logo-glow-pulse {
@@ -1346,8 +1384,9 @@
       }
     }
     @media (prefers-reduced-motion: reduce) {
-      /* Reduce-motion: brak rotacji i pulsacji. Logo statyczne, IMG bez maski. */
-      .nav .brand picture::after { display: none; }
+      /* Reduce-motion: brak rotacji, pulsacji, iskier. Logo statyczne, IMG bez maski. */
+      .nav .brand picture::after,
+      .nav .brand picture::before { display: none; }
       .nav .brand .brand__mark { mask: none; -webkit-mask: none; }
       .nav .brand:hover .brand__mark { animation: none; }
     }
@@ -1539,8 +1578,9 @@
       .nav__inner { gap: 16px; }
       .nav__links { gap: 22px; }
       /* Brand zmniejszamy: logo 86→68, text 36→30. W navie identyfikator dalej
-         czytelny ale uwalnia ~60px na phones+email+toggle. Footer brand
-         (scope .footer .brand__*) niezmieniony. */
+         czytelny ale uwalnia ~60px na phones+email+toggle. Tylko w zonie
+         compact desktop (821-1280); przy ≤820 (mobile) odzyskujemy pelny rozmiar
+         bo phones+email+(nav__links) znikaja → jest miejsce na pelny brand. */
       .nav .brand__mark { width: 68px; height: 68px; }
       .nav .brand__text { font-size: 30px; }
       /* Pad-x: domyslnie clamp(20, 5vw, 64) → max 64 przy ≥1280. Tu zwezamy
@@ -1818,6 +1858,14 @@
       /* Email znika wczesniej niz phones — w navie zostaje wymagane "zadzwon".
          Pelny e-mail dostepny w mobile menu (.mobile-menu__email) + sekcji 5. */
       .nav__email { display: none; }
+      /* Brand wraca do pelnego rozmiaru (86/36) — phones+email znikneły, jest miejsce. */
+      .nav .brand__mark { width: 86px; height: 86px; }
+      .nav .brand__text { font-size: 36px; }
+    }
+    /* Bardzo waskie mobile (≤380) — brand szuka oddechu, dropniemy z powrotem. */
+    @media (max-width: 380px) {
+      .nav .brand__mark { width: 76px; height: 76px; }
+      .nav .brand__text { font-size: 32px; }
     }
     @media (max-width: 640px) {
       .nav__inner { gap: 12px; }
