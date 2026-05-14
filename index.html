@@ -1855,8 +1855,10 @@
     /* Graceful degradation telefonow w navie. NIE robimy brzydkich
        skrotow "·232/·182" — albo pelny numer, albo brak (mobile menu
        ma stala sekcje telefonow u gory niezaleznie od szerokosci). */
-    /* ≤640px: ciasniej -> chowamy 2. przycisk, ale 1. zostaje pelny */
-    @media (max-width: 640px) {
+    /* ≤720px: brand 86 + 2 phones + toggle + burger nie miesci sie. Chowamy
+       2. przycisk, 1. zostaje pelny. (Bylo ≤640; ale przy 660 brand 86 wymaga
+       wiecej luzu — 2. phone musi zniknac wczesniej.) */
+    @media (max-width: 720px) {
       .nav__phones .nav__phone:nth-child(2) { display: none; }
     }
     /* ≤460px: i 1. przycisk nie ma juz miejsca obok brand + hamburger.
