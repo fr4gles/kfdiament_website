@@ -4376,8 +4376,8 @@
         const SCROLL_CAP   = 1200;   // max scroll-induced velocity (deg/s)
         const DECAY_PER_S  = 2.2;    // ln(decay) per sec — velocity *= exp(-2.2 * dt)
                                      // ≈ velocity halves every 315ms (~swift decay)
-        const PULSE_COOLDOWN = 1200; // ms, min czas miedzy pulse'ami (dluzsze odstepy)
-        const PULSE_DELTA    = 150;  // deg/s, min impuls velocity zeby trigger pulse
+        const PULSE_COOLDOWN = 700;  // ms, min czas miedzy pulse'ami
+        const PULSE_DELTA    = 100;  // deg/s, min impuls velocity zeby trigger pulse
 
         // Trigger pulse animation (CSS @keyframes kfd-saw-pulse via class toggle).
         // Remove class + force reflow + add class = restart animation od poczatku.
