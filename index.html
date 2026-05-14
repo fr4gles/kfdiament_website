@@ -1330,43 +1330,45 @@
         blur(var(--saw-blur, 0px));
       will-change: transform, filter;
     }
-    /* Sparks — ostre 1.5px white-gold pixele, BEZ filter blur (poprzednie podejscia
-       z blur'em wygladaly fluffy/brzydko). Kazdy spark ma 2-layer drop-shadow gold
-       halo (2.5px tight + 5px diffuse) co daje "ember" feel — bright center + warm
-       glow. 14 pozycji wokol saw (40-60px od center, tuz za zebami). Rotuja z saw
-       via --saw-angle. Opacity tied do --saw-glow (scroll + hover). */
+    /* Sparks — ostre 2.5px white-gold pixele tuz przy zebach pily. Kazdy spark:
+       3-layer drop-shadow gold halo (3px tight + 7px mid + 12px diffuse) =
+       bright center + warm wide glow, czytelne podczas spin. 16 pozycji
+       (29-42px od center → przy zebach saw, ~41px radius). Rotuja z saw via
+       --saw-angle. Opacity ramp boosted (min(1, glow*1.4)) = widoczne wczesniej
+       podczas scroll, full visibility juz przy ~70% velocity. */
     .nav .brand picture::before {
       content: '';
       position: absolute;
       left: 50%;
       top: 48.5%;
-      width: 1.5px;
-      height: 1.5px;
-      margin: -0.75px 0 0 -0.75px;
+      width: 2.5px;
+      height: 2.5px;
+      margin: -1.25px 0 0 -1.25px;
       border-radius: 50%;
-      background: #fff5d0;
+      background: #fff8e0;
       pointer-events: none;
-      /* Sparks blizej zebow pily (dist 29-42px od center, saw teeth ~41px).
-         Wczesniej 46-64px = za daleko, wygladaly jak osobne elementy. */
       box-shadow:
-         32px -10px 0 0 #fff5d0,
-        -29px  14px 0 0 #fff5d0,
-         16px  30px 0 0 #fff5d0,
-        -21px -26px 0 0 #fff5d0,
-         36px  12px 0 0 #fff5d0,
-        -32px  -3px 0 0 #fff5d0,
-          8px -34px 0 0 #fff5d0,
-        -12px  31px 0 0 #fff5d0,
-         25px  23px 0 0 #fff5d0,
-        -26px -16px 0 0 #fff5d0,
-         39px  -4px 0 0 #fff5d0,
-        -36px  21px 0 0 #fff5d0,
-         -5px -29px 0 0 #fff5d0,
-         29px  18px 0 0 #fff5d0;
+         32px -10px 0 0 #fff8e0,
+        -29px  14px 0 0 #fff8e0,
+         16px  30px 0 0 #fff8e0,
+        -21px -26px 0 0 #fff8e0,
+         36px  12px 0 0 #fff8e0,
+        -32px  -3px 0 0 #fff8e0,
+          8px -34px 0 0 #fff8e0,
+        -12px  31px 0 0 #fff8e0,
+         25px  23px 0 0 #fff8e0,
+        -26px -16px 0 0 #fff8e0,
+         39px  -4px 0 0 #fff8e0,
+        -36px  21px 0 0 #fff8e0,
+         -5px -29px 0 0 #fff8e0,
+         29px  18px 0 0 #fff8e0,
+         22px -22px 0 0 #fff8e0,
+        -18px  -8px 0 0 #fff8e0;
       filter:
-        drop-shadow(0 0 2.5px rgba(var(--accent-rgb), 0.95))
-        drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.45));
-      opacity: var(--saw-glow, 0);
+        drop-shadow(0 0 3px  rgba(var(--accent-rgb), 1.0))
+        drop-shadow(0 0 7px  rgba(var(--accent-rgb), 0.65))
+        drop-shadow(0 0 12px rgba(var(--accent-rgb), 0.35));
+      opacity: clamp(0, calc(var(--saw-glow, 0) * 1.4), 1);
       transform: rotate(var(--saw-angle, 0deg));
       transform-origin: 50% 50%;
       will-change: transform, opacity;
