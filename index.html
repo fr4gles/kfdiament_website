@@ -1864,9 +1864,10 @@
     @media (max-width: 720px) {
       .nav__phones .nav__phone:nth-child(2) { display: none; }
     }
-    /* ≤460px: i 1. przycisk nie ma juz miejsca obok brand + hamburger.
-       Oba telefony znikaja z nav — sa w mobile menu pod hamburgerem. */
-    @media (max-width: 460px) {
+    /* ≤540px: 1. przycisk telefonu nie ma juz miejsca obok brand 86 + toggle +
+       hamburger (przy 486 burger wypadal poza viewport). Oba telefony znikaja
+       z nav — sa w mobile menu pod hamburgerem. */
+    @media (max-width: 540px) {
       .nav__phones { display: none; }
       .nav__inner {
         padding-inline-start: max(12px, env(safe-area-inset-left));
