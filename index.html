@@ -1279,10 +1279,27 @@
       object-fit: contain;
       display: block;
       filter: drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.18));
-      transition: transform .7s cubic-bezier(.2, .8, .2, 1);
+      transition: transform .7s cubic-bezier(.2, .8, .2, 1), filter .4s ease-out;
+      /* Wymuszamy GPU compositing layer + explicit origin: bez tego rotacja
+         z animowanego transform-a leciala przez subpixel CPU rendering, co
+         dawalo percepcyjny "wobble" (góra-dół trzęsienie ostrza) gdy logo
+         nie jest idealnie zaokraglone do pixela. Z translateZ(0) + backface
+         hidden GPU rysuje stale w sub-pixel precision = stabilna os. */
+      transform-origin: 50% 50%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: translateZ(0);
+      will-change: transform, filter;
     }
     @media (hover: hover) and (pointer: fine) {
-      .brand:hover .brand__mark { transform: rotate(-30deg); }
+      /* Footer brand: prosty -30deg wobble. */
+      .footer .brand:hover .brand__mark { transform: rotate(-30deg); }
+      /* Nav brand: easter egg — piła diamentowa nabiera obrotów (initSawSpin
+         w JS). Dynamiczne rotation + motion blur + gold halo + lift scale.
+         CSS fallback dla user z prefers-reduced-motion: zwykly -30deg. */
+    }
+    @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: reduce) {
+      .nav .brand:hover .brand__mark { transform: rotate(-30deg); }
     }
     .brand__text {
       font-family: var(--font-display);
@@ -4188,6 +4205,98 @@
             try { sessionStorage.removeItem(HIDE_KEY); } catch (e) {}
           });
         }
+      })();
+
+      // ─── Easter egg: nav brand logo saw spin ────────────────────────────
+      // Hover na .nav .brand → logo nabiera obrotów jak piła diamentowa
+      // (rampa-up via fizyczna akceleracja, nie liniowo). Mouse leave →
+      // deceleracja. Wraz z predkoscia: motion blur + gold halo (jakby blade
+      // sie nagrzewala) + minimalny lift (scale).
+      //
+      // Skip dla:
+      //   - touch / pointer:coarse (no hover meaningfull)
+      //   - prefers-reduced-motion (CSS fallback: prosty -30deg)
+      //   - footer brand (osobny scope w CSS dostal prosty -30deg)
+      //
+      // Wydajnosc: RAF tylko gdy velocity > 0 lub target > 0. Idle = 0 koszt.
+      (function initSawSpin () {
+        const hoverable = window.matchMedia('(hover: hover) and (pointer: fine)');
+        const reduced   = window.matchMedia('(prefers-reduced-motion: reduce)');
+        if (!hoverable.matches || reduced.matches) return;
+
+        const navBrand = document.querySelector('.nav .brand');
+        const logo = navBrand && navBrand.querySelector('.brand__mark');
+        if (!navBrand || !logo) return;
+
+        const MAX_VEL = 2400;   // deg/s ≈ 6.7 rev/s — wystarczajaco szybko, zeby
+                                // K&F litery rozmyly sie w pierscien (inaczej mozg
+                                // tropuje litery i percepcyjnie widzi "góra-dół").
+        const ACCEL   = 4200;   // deg/s² — snappier start, ~0.6s do max
+        const DECEL   = 1200;   // deg/s² — zatrzymuje sie w ~2s (cieższa inercja)
+
+        let angle = 0;
+        let velocity = 0;
+        let target = 0;
+        let last = 0;
+        let raf = null;
+
+        function step (t) {
+          if (!last) last = t;
+          const dt = Math.min((t - last) / 1000, 0.05);  // clamp dt (tab switch / lag)
+          last = t;
+
+          if (velocity < target)      velocity = Math.min(target, velocity + ACCEL * dt);
+          else if (velocity > target) velocity = Math.max(target, velocity - DECEL * dt);
+
+          angle = (angle + velocity * dt) % 360;
+          const r = velocity / MAX_VEL;
+
+          // Pura rotacja + translateZ(0) keeps GPU layer = sub-pixel stabilna os.
+          logo.style.transform = 'translateZ(0) rotate(' + angle + 'deg)';
+          // KLUCZ przeciw "wobble" gora-dol: heavy blur, w pelnym zakresie spin-up.
+          // Logo zawiera K&F monogram NIE rotacyjnie-symetryczny — gdy K leci w
+          // prawo, wzrok tropuje "ciezar" wizualny przesuwajacy sie po orbicie =
+          // mozg percypuje gora-dol. Lekarstwo: blur na tyle silny, ze litery
+          // rozmywaja sie w jednolity pierscien. Funkcja blur'a:
+          //   ramp-up (r<0.5): blur rosnie szybko, max 3.5px gdy r~0.4
+          //   high-speed (r>0.5): blur 4px stale (nieczytelne litery)
+          //   ramp-down: zanika z velocity
+          // Sigmoid-ish: 4 * (1 - exp(-3 * r))  → smooth ramp do 4px ~r=0.6+
+          const blur = 4 * (1 - Math.exp(-3 * r));
+          logo.style.filter =
+            'drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.18)) ' +
+            'drop-shadow(0 0 ' + (r * 18) + 'px rgba(var(--accent-rgb), ' + (r * 0.7) + ')) ' +
+            'blur(' + blur + 'px)';
+
+          if (velocity > 0.5 || target > 0) {
+            raf = requestAnimationFrame(step);
+          } else {
+            // Stop: reset wszystkie inline style i pozwol CSS transition
+            // (.7s cubic-bezier) odprowadzic transform z bieżącego angle
+            // do 0deg smoothly. Filter wraca przez .4s transition.
+            raf = null;
+            last = 0;
+            angle = 0;
+            logo.style.transition = '';
+            logo.style.transform = '';
+            logo.style.filter = '';
+          }
+        }
+
+        navBrand.addEventListener('mouseenter', function () {
+          // Override CSS transition — w RAF transformujemy co frame, transition
+          // by interpolowala miedzy frame'ami i wyszly by jittery skoki.
+          logo.style.transition = 'none';
+          target = MAX_VEL;
+          if (!raf) {
+            last = 0;
+            raf = requestAnimationFrame(step);
+          }
+        });
+        navBrand.addEventListener('mouseleave', function () {
+          target = 0;
+          // RAF nadal leci — odprowadzi velocity do 0 i wyczysci style w step()
+        });
       })();
 
       // ─── email obfuscation reveal ──────────────────────────────
