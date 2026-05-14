@@ -1330,18 +1330,21 @@
         blur(var(--saw-blur, 0px));
       will-change: transform, filter;
     }
-    /* Sparks — ostre 2.5px pixele w kolorze akcentu palety. Kazdy spark:
-       3-layer drop-shadow accent halo (3px tight + 7px mid + 12px diffuse).
-       16 pozycji (29-42px od center → przy zebach saw). Rotuja z saw via
-       --saw-angle. Opacity tied do --saw-glow (boost x1.7 = widoczne wczesniej). */
+    /* Sparks — 3.5px pixele w kolorze akcentu palety. Counter-rotation
+       (rotuja PRZECIWNIE do saw — wieksza wizualna intryga, wyrazisty kontrast
+       miedzy ringiem a iskrami). Dark outline drop-shadow (fg-rgb / 0.5) plus
+       3-layer accent halo. 16 pozycji (29-42px od center → przy zebach saw).
+       Opacity delayed onset: clamp(0, (glow - 0.6) * 3, 1) — sparks pojawiaja
+       sie DOPIERO po rozpedzeniu (glow 0.6 = ~36% velocity po sqrt = sustained
+       motion, nie brief spike). Glow 0.93 → full opacity. */
     .nav .brand picture::before {
       content: '';
       position: absolute;
       left: 50%;
       top: 48.5%;
-      width: 2.5px;
-      height: 2.5px;
-      margin: -1.25px 0 0 -1.25px;
+      width: 3.5px;
+      height: 3.5px;
+      margin: -1.75px 0 0 -1.75px;
       border-radius: 50%;
       background: var(--accent);
       pointer-events: none;
@@ -1362,31 +1365,26 @@
          29px  18px 0 0 var(--accent),
          22px -22px 0 0 var(--accent),
         -18px  -8px 0 0 var(--accent);
+      /* Dark outline (fg-rgb) dla kontrastu na light bg — bez tego sparks
+         w accent kolorze blendowaly z cream bg i bylo niewidoczne. */
       filter:
-        drop-shadow(0 0 3px  rgba(var(--accent-rgb), 1.0))
-        drop-shadow(0 0 7px  rgba(var(--accent-rgb), 0.65))
-        drop-shadow(0 0 12px rgba(var(--accent-rgb), 0.35));
-      opacity: clamp(0, calc(var(--saw-glow, 0) * 1.7), 1);
-      transform: rotate(var(--saw-angle, 0deg));
+        drop-shadow(0 0 1.5px rgba(var(--fg-rgb), 0.6))
+        drop-shadow(0 0 4px   rgba(var(--accent-rgb), 1.0))
+        drop-shadow(0 0 9px   rgba(var(--accent-rgb), 0.7))
+        drop-shadow(0 0 14px  rgba(var(--accent-rgb), 0.4));
+      opacity: clamp(0, calc((var(--saw-glow, 0) - 0.6) * 3), 1);
+      transform: rotate(calc(var(--saw-angle, 0deg) * -1));
       transform-origin: 50% 50%;
       will-change: transform, opacity;
     }
-    /* Dark mode: sparks bardziej rozmazane (blur), counter-rotation (zmieniaja
-       kierunek wzgledem saw — wieksza wizualna intryga), plus szerszy halo dla
-       ambient "illumination" na ciemnym tle.
-       Ambient: dodatkowa wide drop-shadow na IMG (45px radius) "rozswietla" tlo
-       gdy sparks lecą.
-       Opacity: delayed onset — sparks pojawiaja sie stopiowo, dopiero przy
-       glow > 0.35 (czyli ~12% velocity po sqrt curve). Light mode pokazuje
-       sparks juz przy slabym scroll, dark wymaga wiekszego rozpedzenia. */
+    /* Dark mode: dodatkowy blur na sparkach + ambient illumination tla via
+       wide drop-shadow na IMG. Counter-rotation juz zaaplikowane uniwersalnie. */
     :root[data-mode="dark"] .nav .brand picture::before {
       filter:
-        blur(0.9px)
+        blur(0.7px)
         drop-shadow(0 0 4px  rgba(var(--accent-rgb), 1.0))
-        drop-shadow(0 0 9px  rgba(var(--accent-rgb), 0.75))
-        drop-shadow(0 0 16px rgba(var(--accent-rgb), 0.45));
-      transform: rotate(calc(var(--saw-angle, 0deg) * -1));
-      opacity: clamp(0, calc((var(--saw-glow, 0) - 0.35) * 1.5), 1);
+        drop-shadow(0 0 10px rgba(var(--accent-rgb), 0.75))
+        drop-shadow(0 0 18px rgba(var(--accent-rgb), 0.45));
     }
     :root[data-mode="dark"] .nav .brand .brand__mark {
       filter:
