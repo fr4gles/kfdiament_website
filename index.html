@@ -1283,60 +1283,73 @@
     }
     /* Nav brand picture: relative container dla overlay-rotating-ring. */
     .nav .brand picture { position: relative; }
-    /* Easter egg — split-rendering:
-         - IMG (.brand__mark) na hover maskowany tylko do ŚRODKA loga (K&F
-           monogram). Litery zostaja w miejscu, brak wobble.
-         - ::after pseudo z identycznym backgroundem (logo.webp), maskowany
-           tylko do ZEWNĘTRZNEGO pierścienia (zęby piły). Ten warstwa rotuje.
-       Mózg widzi: środek statyczny + pierścień rotujący wokół = realna piła.
-       Mask: smooth radial-gradient z AA-zoną (45-52%), żeby nie bylo seam'a
-       miedzy warstwami. */
+
+    /* === Easter egg: spinning saw — split-render layers ====================
+       Logo dzielimy na dwie warstwy ZAWSZE renderowane (nie tylko na hover):
+         - IMG (.brand__mark) maskowany do środka → K&F monogram, statyczny
+         - ::after pseudo z identycznym logo.webp w background, maskowany do
+           zewnetrznego pierścienia → "zeby piły", ROTUJE
+       Animacja sterowana przez CSS custom property --saw-angle (transform:
+       rotate(var(--saw-angle))). Pętla JS initSawBlade aktualizuje --saw-angle
+       na podstawie:
+         - scroll velocity (zawsze, w tym na mobile — scroll up/down → CW/CCW)
+         - hover (smooth ramp do fast spin, decay po opuszczeniu)
+       Pivot 50% 48.5% (visual center loga, NIE geom center — PNG ma asymetryczny
+       padding 37/51 top/bottom, content przesunięty 7.5px w góre).
+       Wspolny pivot dla mask radial-gradient ('at 50% 48.5%') i transform-origin.
+
+       Split-render seam: mask AA-zone 45-52% w obu warstwach. Tam alpha overlap.
+       Bez seamu bo identyczne źródło image. */
+    .nav .brand .brand__mark {
+      -webkit-mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
+              mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
+      transform-origin: 50% 48.5%;
+    }
     .nav .brand picture::after {
       content: '';
       position: absolute;
       inset: 0;
       background: url('img/logo.webp') center/contain no-repeat;
-      /* Visual centroid loga w PNG (500x500) jest przesuniety w gore o 7.5px:
-         padding top=37, bottom=51 → content bbox center (250.5, 242.5).
-         Rotacja wokol geom. (50% 50%) krešli disc po orbicie 7.5px →
-         percepcyjny "góra-dół". Pivot ustawiony na visual center loga
-         (50% 48.5%) eliminuje wobble. Maska tez od tego punktu. */
       -webkit-mask: radial-gradient(circle at 50% 48.5%, transparent 45%, #000 52%, #000 96%, transparent 100%);
               mask: radial-gradient(circle at 50% 48.5%, transparent 45%, #000 52%, #000 96%, transparent 100%);
       pointer-events: none;
-      opacity: 0;
-      animation: kfd-saw-ring-spin 1.1s linear infinite;
-      animation-play-state: paused;
-      transition: opacity .35s cubic-bezier(.2, .8, .2, 1);
-      will-change: transform, opacity;
+      transform: rotate(var(--saw-angle, 0deg));
       transform-origin: 50% 48.5%;
-    }
-    @keyframes kfd-saw-ring-spin {
-      to { transform: rotate(360deg); }
+      transition: filter .3s ease-out;
+      will-change: transform, filter;
     }
     @media (hover: hover) and (pointer: fine) {
       /* Footer brand: prosty -30deg wobble (bez easter egga). */
       .footer .brand:hover .brand__mark { transform: rotate(-30deg); }
-      /* Nav brand: split-render. IMG dostaje maskę "tylko środek" → K&F
-         widoczne, zewnętrzny pierścień IMG-a znika (zastapi go rotujący ::after).
-         Plus subtelny scale + intensyfikacja glow. */
+      /* Nav brand hover — "fajność": ring nabiera saturacji + brightness
+         (jak gdyby metal sie nagrzewal). Logo center pulsuje glow w heartbeat
+         pattern (1.4s ease-in-out infinite). Scale 1.04 unifies wszystko.
+         Aktywna rotacja sterowana przez JS via --saw-angle (initSawBlade). */
       .nav .brand:hover .brand__mark {
         transform: scale(1.04);
-        transform-origin: 50% 48.5%;
-        /* Maska wycentrowana na visual center loga (patrz komentarz w ::after) */
-        -webkit-mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
-                mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
-        filter:
-          drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.22))
-          drop-shadow(0 0 14px rgba(var(--accent-rgb), 0.55));
+        animation: kfd-logo-glow-pulse 1.4s ease-in-out infinite;
       }
       .nav .brand:hover picture::after {
-        opacity: 1;
-        animation-play-state: running;
+        filter: brightness(1.15) saturate(1.3);
+      }
+    }
+    @keyframes kfd-logo-glow-pulse {
+      0%, 100% {
+        filter:
+          drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.22))
+          drop-shadow(0 0 14px rgba(var(--accent-rgb), 0.50));
+      }
+      50% {
+        filter:
+          drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.24))
+          drop-shadow(0 0 26px rgba(var(--accent-rgb), 0.85));
       }
     }
     @media (prefers-reduced-motion: reduce) {
+      /* Reduce-motion: brak rotacji i pulsacji. Logo statyczne, IMG bez maski. */
       .nav .brand picture::after { display: none; }
+      .nav .brand .brand__mark { mask: none; -webkit-mask: none; }
+      .nav .brand:hover .brand__mark { animation: none; }
     }
     .brand__text {
       font-family: var(--font-display);
@@ -4240,6 +4253,103 @@
             document.documentElement.removeAttribute('data-theme-panel');
             document.body.removeAttribute('data-theme-panel');
             try { sessionStorage.removeItem(HIDE_KEY); } catch (e) {}
+          });
+        }
+      })();
+
+      // ─── Easter egg: spinning saw blade (hover + scroll-driven) ─────────
+      // Aktualizuje CSS custom property --saw-angle, ktora CSS aplikuje na
+      // ::after (rotujacy ring loga w nav). Pętla RAF tylko gdy velocity > 0
+      // lub user hovera. Idle = 0 koszt.
+      //
+      // Zachowanie:
+      //   - Scroll (desktop + mobile): velocity dostaje "kop" proporcjonalny
+      //     do scroll delta. Scroll down → CW spin, scroll up → CCW. Po
+      //     scrollu velocity zanika (decay 0.9^60 per sec ≈ szybko maleje).
+      //   - Hover (desktop only): velocity smooth ramp do HOVER_VEL,
+      //     trzymane stale dopoki user na logu. Po opuszczeniu: smooth decay.
+      //
+      // Reduce-motion: skip całkowicie (CSS tez wylacza ::after).
+      (function initSawBlade () {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        const root = document.documentElement;
+        const navBrand = document.querySelector('.nav .brand');
+        if (!navBrand) return;
+
+        const HOVER_VEL    = 1500;   // deg/s gdy hover (≈ 4 rev/s)
+        const HOVER_ACCEL  = 4500;   // ramp w ~0.33s do HOVER_VEL
+        const SCROLL_KICK  = 0.6;    // deg/s per pixel scrolled (impuls)
+        const SCROLL_CAP   = 900;    // max scroll-induced velocity (deg/s)
+        const DECAY_PER_S  = 2.2;    // ln(decay) per sec — velocity *= exp(-2.2 * dt)
+                                     // ≈ velocity halves every 315ms (~swift decay)
+
+        let angle = 0;
+        let velocity = 0;
+        let lastScroll = window.scrollY;
+        let lastTime = 0;
+        let raf = null;
+        let isHovering = false;
+
+        function tick (t) {
+          if (!lastTime) lastTime = t;
+          const dt = Math.min((t - lastTime) / 1000, 0.05);
+          lastTime = t;
+
+          if (isHovering) {
+            // Smooth ramp do HOVER_VEL (ignorujemy decay)
+            if (velocity < HOVER_VEL)      velocity = Math.min(HOVER_VEL, velocity + HOVER_ACCEL * dt);
+            else if (velocity > HOVER_VEL) velocity = Math.max(HOVER_VEL, velocity - HOVER_ACCEL * dt);
+          } else {
+            // Decay scroll-induced velocity
+            velocity *= Math.exp(-DECAY_PER_S * dt);
+            if (Math.abs(velocity) < 0.3) velocity = 0;
+          }
+
+          angle = (angle + velocity * dt) % 360;
+          root.style.setProperty('--saw-angle', angle.toFixed(2) + 'deg');
+
+          if (Math.abs(velocity) > 0.1 || isHovering) {
+            raf = requestAnimationFrame(tick);
+          } else {
+            raf = null;
+            lastTime = 0;
+          }
+        }
+
+        function ensureRaf () {
+          if (!raf) {
+            lastTime = 0;
+            raf = requestAnimationFrame(tick);
+          }
+        }
+
+        // Scroll handler — działa zarówno desktop scroll wheel JAK i mobile touch.
+        // Każde scroll-event dolicza impuls do velocity, RAF interpoluje + decay.
+        window.addEventListener('scroll', function () {
+          const ns = window.scrollY;
+          const dy = ns - lastScroll;
+          lastScroll = ns;
+          if (!isHovering) {
+            // Scroll DOWN (dy>0) → CW (positive velocity)
+            // Scroll UP (dy<0) → CCW (negative velocity)
+            velocity += dy * SCROLL_KICK;
+            // Cap velocity
+            if (velocity >  SCROLL_CAP) velocity =  SCROLL_CAP;
+            if (velocity < -SCROLL_CAP) velocity = -SCROLL_CAP;
+          }
+          ensureRaf();
+        }, { passive: true });
+
+        // Hover — only on hoverable pointer (desktop). Mobile pomijamy bo tap
+        // by triggerowal niezamierzony stale spin. Scroll wystarczy na mobile.
+        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+          navBrand.addEventListener('mouseenter', function () {
+            isHovering = true;
+            ensureRaf();
+          });
+          navBrand.addEventListener('mouseleave', function () {
+            isHovering = false;
           });
         }
       })();
