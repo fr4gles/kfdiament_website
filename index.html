@@ -3,7 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f5f1e8">
+  <!-- color-scheme: sygnał dla przeglądarki i extensions (Dark Reader) że strona
+       natywnie wspiera oba motywy. Dark Reader respektuje ten meta + CSS
+       `color-scheme: dark` na :root i NIE robi own auto-darkening. -->
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14110d" media="(prefers-color-scheme: dark)">
   <meta name="format-detection" content="telephone=no">
 
   <title>KFDIAMENT — Cięcie i wiercenie diamentowe betonu | PL</title>
@@ -183,28 +188,90 @@
   }
   </script>
 
-  <!-- ─── THEME SWITCHER BOOTSTRAP (przestawne palety testowe) ────────────
-       Synchronicznie odczytuje localStorage I ustawia data-theme NA <html>
-       ZANIM CSS się załaduje — eliminuje FOUC (flash of unstyled content).
-       Tu też respektujemy sessionStorage.kfd_theme_panel_hidden — jeśli user
-       ukrył panel, ustawiamy data-theme-panel="off" na <html> (body jeszcze
-       nie istnieje, więc styl gate'uje na html[data-theme-panel="off"]).
-       Try/catch: niektóre konteksty (sandbox iframe, strict incognito)
-       throwają na localStorage access.
-       Cały panel + mechanizm można WYŁĄCZYĆ jednym attribute na <body>
-       (data-theme-panel="off") albo usunąć ten script + panel HTML/CSS.
+  <!-- ─── THEME BOOTSTRAP (anti-FOUC, synchroniczny) ──────────────────────
+       Ustawia data-theme + data-mode NA <html> ZANIM CSS się załaduje.
+
+       Mechanika:
+       - kfd_theme (localStorage) → palette family slug (= canonical light slug)
+       - kfd_mode  (localStorage) → 'light' | 'dark' (jeśli user wybrał)
+                                   brak = auto, czyli prefers-color-scheme
+
+       Lookup THEME_PAIRS[family] → { light, dark } daje aktywny data-theme slug.
+       Aktywny mode trafia w data-mode (CSS gate'uje na nim color-scheme: dark
+       — Dark Reader respektuje i nie robi double-invert).
+
+       Migracja starych wartości kfd_theme z poprzedniego layoutu listy
+       ("logo-metallic" jako dark-only itp.) — REVERSE_MIGRATE mapuje na nowy
+       family + ustawia mode=dark. Wykonuje się raz, zapis do localStorage.
+
+       Cały panel testowy można WYŁĄCZYĆ data-theme-panel="off" na <body>
+       — bootstrap dalej działa (toggle w nav też). Sam mode/theme zostaje.
        ─────────────────────────────────────────────────────────────────── -->
   <script>
     (function () {
+      // Family slug → { light: slug, dark: slug }. Inline (nie window.X), bo
+      // bootstrap musi być self-contained dla anti-FOUC.
+      // UWAGA: ten obiekt MUSI być w sync z THEME_PAIRS w skrypcie na końcu
+      // <body> (poniżej, w initThemePanel). Patrz komentarz tam.
+      var PAIRS = {
+        '':                    { light: '',                    dark: 'default-dark' },
+        'logo-metallic-light': { light: 'logo-metallic-light', dark: 'logo-metallic' },
+        'parchment-amber':     { light: 'parchment-amber',     dark: 'parchment-amber-dark' },
+        'brass-noon':          { light: 'brass-noon',          dark: 'brass-midnight' },
+        'navy-evening':        { light: 'navy-evening',        dark: 'navy-evening-dark' },
+        'nordic-mist':         { light: 'nordic-mist',         dark: 'nordic-mist-dark' },
+        'solar-bright':        { light: 'solar-bright',        dark: 'solar-bright-dark' },
+        'hivis-daylight':      { light: 'hivis-daylight',      dark: 'hivis-engineer' },
+        'moss-brass':          { light: 'moss-brass',          dark: 'moss-brass-dark' },
+        'concrete-plasma':     { light: 'concrete-plasma',     dark: 'concrete-plasma-dark' },
+        'comp-hilti-red':      { light: 'comp-hilti-red',      dark: 'comp-hilti-red-dark' },
+        'comp-safety-orange':  { light: 'comp-safety-orange',  dark: 'comp-safety-orange-dark' },
+        'comp-corp-blue':      { light: 'comp-corp-blue',      dark: 'comp-corp-blue-dark' },
+        'comp-arcad':          { light: 'comp-arcad',          dark: 'comp-arcad-dark' }
+      };
+      // Migracja: stare slugi dark-only → family + mode=dark
+      var REVERSE_MIGRATE = {
+        'logo-metallic':  'logo-metallic-light',
+        'brass-midnight': 'brass-noon',
+        'hivis-engineer': 'hivis-daylight'
+      };
+
       try {
-        var t = localStorage.getItem('kfd_theme');
-        if (t) document.documentElement.setAttribute('data-theme', t);
-      } catch (e) { /* localStorage niedostępne — fallback do defaultu */ }
+        var family = '';
+        var mode = '';
+        try { family = localStorage.getItem('kfd_theme') || ''; } catch (e) {}
+        try { mode   = localStorage.getItem('kfd_mode')  || ''; } catch (e) {}
+
+        // Migruj stary slug (np. zapisany w storage przed refaktorem)
+        if (REVERSE_MIGRATE[family]) {
+          var migratedFamily = REVERSE_MIGRATE[family];
+          try { localStorage.setItem('kfd_theme', migratedFamily); } catch (e) {}
+          if (mode !== 'light' && mode !== 'dark') {
+            mode = 'dark';
+            try { localStorage.setItem('kfd_mode', 'dark'); } catch (e) {}
+          }
+          family = migratedFamily;
+        }
+
+        // Auto-detect mode z prefers-color-scheme jeśli user nic nie wybrał
+        var effectiveMode = mode;
+        if (effectiveMode !== 'light' && effectiveMode !== 'dark') {
+          effectiveMode = (window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        }
+
+        var pair = PAIRS[family] || PAIRS[''];
+        var slug = pair[effectiveMode] || pair.light;
+
+        if (slug) document.documentElement.setAttribute('data-theme', slug);
+        document.documentElement.setAttribute('data-mode', effectiveMode);
+      } catch (e) { /* localStorage/matchMedia niedostępne — defaultowy light */ }
+
       try {
         if (sessionStorage.getItem('kfd_theme_panel_hidden') === '1') {
           document.documentElement.setAttribute('data-theme-panel', 'off');
         }
-      } catch (e) { /* j.w. */ }
+      } catch (e) {}
     })();
   </script>
 
@@ -309,6 +376,11 @@
     */
 
     :root {
+      /* color-scheme: hint dla przegladarki (form controls, scrollbar styling)
+         + sygnal dla Dark Reader żeby NIE robił auto-darkening (mamy własny dark).
+         Dla aktywnego dark mode: override poniżej na :root[data-mode="dark"]. */
+      color-scheme: light;
+
       --bg:           #f5f1e8;   /* warm cream paper / beton-light */
       --bg-rgb:       245, 241, 232;  /* RGB triplet --bg dla rgba() — MUSI byc w sync z --bg */
       --bg-2:         #ebe5d6;   /* kraft, sekcje alternujące */
@@ -337,6 +409,10 @@
          gdy panel jest widoczny. Override w html[data-theme-panel="off"]. */
       --theme-panel-h: 40px;
     }
+    /* Dark mode marker — gate dla color-scheme + selectorów które potrzebują
+       wiedzieć że jesteśmy w dark (np. accent na photo, picture-source swap).
+       Sam data-theme="X-dark" załatwia kolory; data-mode załatwia signaling. */
+    :root[data-mode="dark"] { color-scheme: dark; }
     /* Gdy panel jest ukryty, nie rezerwujemy miejsca na górze. */
     html[data-theme-panel="off"] { --theme-panel-h: 0px; }
 
@@ -654,6 +730,250 @@
       --bg-rgb:        232, 226, 211;
       --fg-rgb:        42, 38, 32;
       --accent-rgb:    217, 144, 0;
+    }
+
+    /* ─── DARK / LIGHT COUNTERPARTY ────────────────────────────────────
+       Każda paleta z bloków A-E ma swojego odpowiednika w drugim trybie.
+       Konwencja nazewnictwa:
+         - paleta "X-dark"        = dark counterpart palety light X
+         - paleta "X" (dark only) dostaje nowy light slug (np. brass-noon
+           dla brass-midnight), a sam dark slug staje się jej dark
+           counterpartem.
+       Slot/zmienne identyczne jak w light variantach — tylko hex'y różne.
+       Mapping family→pair w JS (bootstrap + initThemePanel). ──────────── */
+
+    /* Default antique brass — dark (komentarz na górze pliku zawierał draft) */
+    :root[data-theme="default-dark"] {
+      --bg:            #14110d;
+      --bg-2:          #1f1b15;
+      --bg-3:          #2a241b;
+      --fg:            #f0e8d4;
+      --muted:         #a39880;
+      --line:          #3d3527;
+      --line-strong:   #5d4f36;
+      --accent:        #d4a84a;
+      --accent-hover:  #e8c46e;
+      --accent-2:      #8a6f2a;
+      --accent-deep:   #b89248;
+      --bg-rgb:        20, 17, 13;
+      --fg-rgb:        240, 232, 212;
+      --accent-rgb:    212, 168, 74;
+    }
+
+    /* Pergamin i bursztyn — dark */
+    :root[data-theme="parchment-amber-dark"] {
+      --bg:            #18130a;
+      --bg-2:          #211a10;
+      --bg-3:          #2d2418;
+      --fg:            #f0e6d0;
+      --muted:         #a8957a;
+      --line:          #3a2f1e;
+      --line-strong:   #5c4d33;
+      --accent:        #d99240;
+      --accent-hover:  #f0a55a;
+      --accent-2:      #8c6818;
+      --accent-deep:   #b87a28;
+      --bg-rgb:        24, 19, 10;
+      --fg-rgb:        240, 230, 208;
+      --accent-rgb:    217, 146, 64;
+    }
+
+    /* Mosiądz w południe (NOWA) — light counterpart dla brass-midnight */
+    :root[data-theme="brass-noon"] {
+      --bg:            #f3eedf;
+      --bg-2:          #e8e1cd;
+      --bg-3:          #d8cdb0;
+      --fg:            #1c1814;
+      --muted:         #5e564a;
+      --line:          #c4b896;
+      --line-strong:   #88795a;
+      --accent:        #b88720;
+      --accent-hover:  #8a6418;
+      --accent-2:      #d4a548;
+      --accent-deep:   #5c4012;
+      --bg-rgb:        243, 238, 223;
+      --fg-rgb:        28, 24, 20;
+      --accent-rgb:    184, 135, 32;
+    }
+
+    /* Granat wieczorny — dark */
+    :root[data-theme="navy-evening-dark"] {
+      --bg:            #0c1320;
+      --bg-2:          #14202f;
+      --bg-3:          #1f2c40;
+      --fg:            #e6e2d2;
+      --muted:         #8a96aa;
+      --line:          #2a3950;
+      --line-strong:   #4a5874;
+      --accent:        #d4a85a;
+      --accent-hover:  #f0c074;
+      --accent-2:      #b8893a;
+      --accent-deep:   #8a6420;
+      --bg-rgb:        12, 19, 32;
+      --fg-rgb:        230, 226, 210;
+      --accent-rgb:    212, 168, 90;
+    }
+
+    /* Mgła skandynawska — dark */
+    :root[data-theme="nordic-mist-dark"] {
+      --bg:            #1a1816;
+      --bg-2:          #24211e;
+      --bg-3:          #2f2b27;
+      --fg:            #e8e4dc;
+      --muted:         #9a948a;
+      --line:          #3a3530;
+      --line-strong:   #585048;
+      --accent:        #d47558;
+      --accent-hover:  #e88a6e;
+      --accent-2:      #a85a3a;
+      --accent-deep:   #80401e;
+      --bg-rgb:        26, 24, 22;
+      --fg-rgb:        232, 228, 220;
+      --accent-rgb:    212, 117, 88;
+    }
+
+    /* Białe słońce (cynober) — dark */
+    :root[data-theme="solar-bright-dark"] {
+      --bg:            #0c0c0d;
+      --bg-2:          #16161a;
+      --bg-3:          #232328;
+      --fg:            #f6f5f3;
+      --muted:         #a4a0aa;
+      --line:          #2e2e34;
+      --line-strong:   #555058;
+      --accent:        #ec6242;
+      --accent-hover:  #ff7a5a;
+      --accent-2:      #c4341a;
+      --accent-deep:   #8a1e0a;
+      --bg-rgb:        12, 12, 13;
+      --fg-rgb:        246, 245, 243;
+      --accent-rgb:    236, 98, 66;
+    }
+
+    /* Hi-Vis Daylight (NOWA) — light counterpart dla hivis-engineer */
+    :root[data-theme="hivis-daylight"] {
+      --bg:            #fafaf8;
+      --bg-2:          #ededea;
+      --bg-3:          #d8d6d0;
+      --fg:            #131418;
+      --muted:         #5a5a60;
+      --line:          #c4c2bc;
+      --line-strong:   #767278;
+      --accent:        #d18a00;
+      --accent-hover:  #a06e00;
+      --accent-2:      #ffbb1a;
+      --accent-deep:   #6a4d00;
+      --bg-rgb:        250, 250, 248;
+      --fg-rgb:        19, 20, 24;
+      --accent-rgb:    209, 138, 0;
+    }
+
+    /* Mech i mosiądz — dark */
+    :root[data-theme="moss-brass-dark"] {
+      --bg:            #131a14;
+      --bg-2:          #1d251f;
+      --bg-3:          #28322a;
+      --fg:            #e4ddc4;
+      --muted:         #8a9080;
+      --line:          #2e3a2f;
+      --line-strong:   #4a5448;
+      --accent:        #d4ad58;
+      --accent-hover:  #f0c870;
+      --accent-2:      #b89540;
+      --accent-deep:   #8a6e20;
+      --bg-rgb:        19, 26, 20;
+      --fg-rgb:        228, 221, 196;
+      --accent-rgb:    212, 173, 88;
+    }
+
+    /* Beton + magenta — dark */
+    :root[data-theme="concrete-plasma-dark"] {
+      --bg:            #1a1a1c;
+      --bg-2:          #25252a;
+      --bg-3:          #303035;
+      --fg:            #e8e4e0;
+      --muted:         #948e94;
+      --line:          #3a3a40;
+      --line-strong:   #58545a;
+      --accent:        #e85088;
+      --accent-hover:  #ff6a9c;
+      --accent-2:      #c8336e;
+      --accent-deep:   #9c1e50;
+      --bg-rgb:        26, 26, 28;
+      --fg-rgb:        232, 228, 224;
+      --accent-rgb:    232, 80, 136;
+    }
+
+    /* Hilti red — dark */
+    :root[data-theme="comp-hilti-red-dark"] {
+      --bg:            #131312;
+      --bg-2:          #1c1c1a;
+      --bg-3:          #28282a;
+      --fg:            #f0eeea;
+      --muted:         #989490;
+      --line:          #34322e;
+      --line-strong:   #524e48;
+      --accent:        #ff3a1a;
+      --accent-hover:  #ff5a3a;
+      --accent-2:      #f7b403;
+      --accent-deep:   #b81f00;
+      --bg-rgb:        19, 19, 18;
+      --fg-rgb:        240, 238, 234;
+      --accent-rgb:    255, 58, 26;
+    }
+
+    /* Safety orange + navy — dark */
+    :root[data-theme="comp-safety-orange-dark"] {
+      --bg:            #0e1a26;
+      --bg-2:          #162638;
+      --bg-3:          #1f3148;
+      --fg:            #e8eef4;
+      --muted:         #8aa0b6;
+      --line:          #2a3e54;
+      --line-strong:   #4a607a;
+      --accent:        #ff8048;
+      --accent-hover:  #ffa070;
+      --accent-2:      #ff6b35;
+      --accent-deep:   #b8480f;
+      --bg-rgb:        14, 26, 38;
+      --fg-rgb:        232, 238, 244;
+      --accent-rgb:    255, 128, 72;
+    }
+
+    /* Corporate blue — dark (navy bg + cyan accent) */
+    :root[data-theme="comp-corp-blue-dark"] {
+      --bg:            #0a1622;
+      --bg-2:          #122030;
+      --bg-3:          #1b2c42;
+      --fg:            #e6ecf2;
+      --muted:         #8e9aab;
+      --line:          #243648;
+      --line-strong:   #475568;
+      --accent:        #3aaadb;
+      --accent-hover:  #5cc0ec;
+      --accent-2:      #006b9e;
+      --accent-deep:   #004870;
+      --bg-rgb:        10, 22, 34;
+      --fg-rgb:        230, 236, 242;
+      --accent-rgb:    58, 170, 219;
+    }
+
+    /* Arcad — dark */
+    :root[data-theme="comp-arcad-dark"] {
+      --bg:            #16140e;
+      --bg-2:          #1f1d15;
+      --bg-3:          #2a271c;
+      --fg:            #e8e2d3;
+      --muted:         #9a8e74;
+      --line:          #34302a;
+      --line-strong:   #5c5546;
+      --accent:        #f0aa1a;
+      --accent-hover:  #ffc04a;
+      --accent-2:      #80a6c2;
+      --accent-deep:   #a86a00;
+      --bg-rgb:        22, 20, 14;
+      --fg-rgb:        232, 226, 211;
+      --accent-rgb:    240, 170, 26;
     }
 
     /* === KONIEC PALET TESTOWYCH ======================================= */
