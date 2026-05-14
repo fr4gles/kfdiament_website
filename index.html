@@ -1378,38 +1378,40 @@
        Plus jeden minimalny halo na .brand__mark + ::after dla "outline" loga. */
     :root[data-mode="dark"] .nav .brand picture {
       border-radius: 50%;
-      /* Backlight:
-         - background radial-gradient z 'at 50% 48.5%' → ALIGNED z visual center
-           loga (PNG ma 1.3px offset w gore — fix przesuniecia). Smooth gradient
-           wypelnia gap miedzy saw rim a bbox edge.
-         - box-shadow outer (4 warstwy z bardzo szerokimi blur radii do 250px) —
-           ambient halo extending daleko, soft fade-out na zewnatrz, NO sharp edge. */
+      /* Backlight z 3 warstw, wszystkie wycentrowane na LOGO VISUAL CENTER
+         (43, 41.7) nie geom center (43, 43) — PNG ma 1.3px offset w góre:
+         1. background radial-gradient 'at 50% 48.5%' — inside fill via picture
+            transparent zones (gap miedzy saw rim a bbox + AA zone masek)
+         2. box-shadow Y-OFFSET -1.3px → shadow circle przesuniety w gore o 1.3px,
+            centered na logo visual center. Wide blur do 280px = super soft fade. */
       background: radial-gradient(
         circle farthest-side at 50% 48.5%,
         transparent 0%,
-        transparent 82%,
-        rgba(var(--fg-rgb), 0.55) 95%,
-        rgba(var(--fg-rgb), 0.40) 100%
+        transparent 78%,
+        rgba(var(--fg-rgb), 0.55) 94%,
+        rgba(var(--fg-rgb), 0.42) 100%
       );
       box-shadow:
-        0 0 30px  rgba(var(--fg-rgb), 0.32),
-        0 0 75px  rgba(var(--fg-rgb), 0.20),
-        0 0 150px rgba(var(--fg-rgb), 0.10),
-        0 0 250px rgba(var(--fg-rgb), 0.04);
+        0 -1.3px 32px  rgba(var(--fg-rgb), 0.35),
+        0 -1.3px 75px  rgba(var(--fg-rgb), 0.22),
+        0 -1.3px 150px rgba(var(--fg-rgb), 0.11),
+        0 -1.3px 230px rgba(var(--fg-rgb), 0.06),
+        0 -1.3px 320px rgba(var(--fg-rgb), 0.025);
     }
     :root[data-mode="dark"] .nav .brand .brand__mark {
       /* brightness() FIRST = rozjaśnia same pixele loga (saw blade body byly
          dark = niewidoczne na czarnym tle). Dopiero potem drop-shadow halos. */
       filter:
-        brightness(1.18)
-        drop-shadow(0 0 4px rgba(var(--fg-rgb), 0.4))
+        brightness(1.22)
+        drop-shadow(0 0 5px rgba(var(--fg-rgb), 0.4))
         drop-shadow(0 0 calc(18px * var(--saw-glow, 0)) rgba(var(--accent-rgb), calc(0.7 * var(--saw-glow, 0))))
         drop-shadow(0 0 calc(50px * var(--saw-glow, 0)) rgba(var(--accent-rgb), calc(0.35 * var(--saw-glow, 0))));
     }
     :root[data-mode="dark"] .nav .brand picture::after {
       filter:
-        brightness(calc(1.18 + 0.12 * var(--saw-glow, 0)))
-        saturate(calc(1 + 0.22 * var(--saw-glow, 0)));
+        brightness(calc(1.22 + 0.12 * var(--saw-glow, 0)))
+        saturate(calc(1 + 0.22 * var(--saw-glow, 0)))
+        drop-shadow(0 0 7px rgba(var(--fg-rgb), 0.38));
     }
     @media (hover: hover) and (pointer: fine) {
       /* Footer brand: prosty -30deg wobble (bez easter egga). */
