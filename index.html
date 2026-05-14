@@ -1537,33 +1537,15 @@
       outline-offset: 3px;
     }
 
-    /* Staged collapse e-maila — gdy do nav dochodzi toggle sun/moon (44px+gap),
-       pelny "E-mail" label przestaje miescic sie miedzy phones a togglem przy
-       narrow desktop (≤1280). Pattern degradacji: pełny → ikonka → ukryty.
-       Icon-only zone: 821-1280 (44x44 circle, sp9jne z toggle). Ukryty <821
-       (już istnieje w bloku ≤820 niżej). */
+    /* Collapse e-maila — brand zawsze 86px (user requirement). Przy ≤1280px
+       (compact desktop) email od razu HIDDEN (skip stage icon-only), zeby
+       miejsce dla pelnego brand 86px + 5 linków + 2 phones + toggle. */
     @media (max-width: 1280px) {
-      .nav__email {
-        width: 44px;
-        height: 44px;
-        padding: 0;
-        gap: 0;
-        border-radius: 999px;
-        justify-content: center;
-        flex-shrink: 0;  /* w flex nav__inner inaczej zostanie scisniety do ~20px */
-      }
-      .nav__email span { display: none; }
-      .nav__email svg { width: 18px; height: 18px; }
+      .nav__email { display: none; }
       /* Toggle + email + phones + 5 linków + brand nie miesci sie z gap=24/32
          na 1100-1280; obcina ostatni element po prawej. Zwezamy odstepy. */
       .nav__inner { gap: 16px; }
       .nav__links { gap: 22px; }
-      /* Brand zmniejszamy: logo 86→68, text 36→30. W navie identyfikator dalej
-         czytelny ale uwalnia ~60px na phones+email+toggle. Tylko w zonie
-         compact desktop (821-1280); przy ≤820 (mobile) odzyskujemy pelny rozmiar
-         bo phones+email+(nav__links) znikaja → jest miejsce na pelny brand. */
-      .nav .brand__mark { width: 68px; height: 68px; }
-      .nav .brand__text { font-size: 30px; }
       /* Pad-x: domyslnie clamp(20, 5vw, 64) → max 64 przy ≥1280. Tu zwezamy
          do clamp(16, 3vw, 40) — uwalnia ~24px po kazdej stronie przy 1100. */
       .nav__inner {
@@ -1836,12 +1818,7 @@
       }
       .nav__phones { gap: 5px; }
       .nav__phone { padding: 10px 12px; font-size: 13px; gap: 6px; }
-      /* Email znika wczesniej niz phones — w navie zostaje wymagane "zadzwon".
-         Pelny e-mail dostepny w mobile menu (.mobile-menu__email) + sekcji 5. */
-      .nav__email { display: none; }
-      /* Brand wraca do pelnego rozmiaru (86/36) — phones+email znikneły, jest miejsce. */
-      .nav .brand__mark { width: 86px; height: 86px; }
-      .nav .brand__text { font-size: 36px; }
+      /* Email juz hidden z ≤1280 (display:none) — nie potrzeba duplicate rule. */
     }
     /* Bardzo waskie mobile (≤380) — brand szuka oddechu, dropniemy z powrotem. */
     @media (max-width: 380px) {
