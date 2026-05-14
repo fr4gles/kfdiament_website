@@ -741,6 +741,62 @@ Project-specific dla KFDIAMENT (zatwierdzone 2026-05-14):
 - **"wiele lat doświadczenia"** w `O nas` para 2 — NIE "3 lata" (mimo że niektóre PDF mówią 3)
 - Hero stats: brak liczby lat doświadczenia (drop podczas `a1cbdee`)
 
+## 49. Theme system: rozdziel family od mode (data-theme + data-mode)
+
+Anty: jeden atrybut `data-theme="logo-metallic-dark"` mieszający paletę z trybem. Skutek: każde dodanie palety = 2 wpisy w selekcie, toggle nie ma o czym pamiętać, switching palette w dark mode wymaga ręcznego map "podaj mi dark version of currently selected" w wielu miejscach JS-u.
+
+Pattern: dwa niezależne atrybuty na `<html>`:
+- `data-theme="<slug>"` — aktywna paleta (light slug ALBO dark slug)
+- `data-mode="light"|"dark"` — aktywny tryb (gate dla `color-scheme`, ikon toggle, Dark Reader)
+
+Plus dwie wartości w localStorage:
+- `kfd_theme` — palette **family** (canonical light slug, np. `parchment-amber`)
+- `kfd_mode` — `light`/`dark`/(brak = auto via prefers-color-scheme)
+
+JS lookup `THEME_PAIRS[family] → { light: slug, dark: slug }` daje aktywny slug. Toggle flipuje **tylko** mode, paleta zostaje. Switching palette zachowuje obecny mode (user nie traci kontekstu trybu jak zmienia paletę).
+
+Anti-FOUC: ten sam THEME_PAIRS musi być **inline w `<head>` bootstrap script** ORAZ w głównym JS na końcu body. Akceptujemy duplikację — koszt syncującej zmiany w 2 miejscach < koszt FOUC. Komentarz wzajemny.
+
+Naming convention: dark variant = light slug + `-dark` (np. `parchment-amber` ↔ `parchment-amber-dark`). Wyjątki gdy CSS jest pre-existing (np. `logo-metallic` było dark-only — pair to `logo-metallic-light` ↔ `logo-metallic`).
+
+REVERSE_MIGRATE dla starych slugów: gdy user miał w storage `logo-metallic` (kiedyś dark-only canonical), mapuj na nowy family + ustaw `mode=dark`. Zapis przy pierwszym ładowaniu.
+
+## 50. Dark Reader signal: color-scheme CSS + meta
+
+Pattern dla "I have native dark mode, nie inwertuj":
+1. `<meta name="color-scheme" content="light dark">` w `<head>` — sygnał browser+extension że strona wspiera oba
+2. `:root { color-scheme: light }` jako default + `:root[data-mode="dark"] { color-scheme: dark }` — Dark Reader respektuje natywne `color-scheme` i wyłącza auto-darkening
+3. `<meta name="theme-color" ...>` z `media="(prefers-color-scheme: light|dark)"` dla mobile address bar
+
+Bez tego: Dark Reader na dark mode zrobi double-invert (dark theme → "auto darken" → koszmar). `color-scheme: dark` to STANDARD signal — działa też dla Safari Reader Mode, Edge auto-dark, future browser features.
+
+## 51. flex space-between z 3 itemami push środek do dead-center
+
+Anty: layout `[brand] [middle-item] [last-item]` z `display: flex; justify-content: space-between`. Z 3 itemami space-between rozkłada przestrzeń **między nimi równo**: first stuck to left, last stuck to right, middle ląduje w idealnym środku — nie obok last-item.
+
+Pattern: gdy chcesz "first left, last 2 grouped right", użyj `margin-left: auto` na drugim itemie. Pushuje on i wszystko po nim do prawej, zachowując standardowy `gap` między prawymi itemami.
+
+```css
+@media (max-width: 460px) {
+  /* tylko brand + toggle + burger zostają */
+  .nav__theme-toggle { margin-left: auto; }
+}
+```
+
+Wystąpiło w session theme-toggle: na ≤460px phones+email znikają, zostaje brand|toggle|burger. Bez margin-left:auto toggle ląduje w dead center. Z margin-left:auto: toggle+burger pushed right group, standardowy `gap: 10px` między nimi.
+
+## 52. Toggle icon convention — show TARGET, nie current state
+
+Anty: w light mode pokazuj sun (current state) — user "widzi że jest jasno" ale klik daje niejasny efekt.
+
+Pattern: pokazuj TARGET state — w light mode moon icon = "klik = pójdziesz w dark". W dark mode sun icon = "klik = pójdziesz w light". User czyta ikonę jako "co się stanie po kliknięciu", nie "co jest teraz".
+
+Bonus: aria-label dynamicznie aktualizowany na ten sam principle:
+- light mode: `aria-label="Przełącz motyw na ciemny"` + `aria-pressed="false"`
+- dark mode: `aria-label="Przełącz motyw na jasny"` + `aria-pressed="true"`
+
+`aria-pressed` traktuje przycisk jako toggle button (true = "dark mode active"). Screen readers ogłaszają "toggle button, pressed/not pressed" + label.
+
 ## Skróty / przyspieszacze
 
 - Lokalny preview: `python -m http.server 8000` → `http://localhost:8000`
