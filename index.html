@@ -1304,6 +1304,14 @@
       -webkit-mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
               mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
       transform-origin: 50% 48.5%;
+      /* Gold halo tied to --saw-glow (JS-driven 0-1, proporcjonalne do velocity).
+         Idle: drop-shadow z 0px radius i 0 alpha → niewidoczne. Spin: rośnie do
+         max ~14px radius / 0.55 alpha. To "tamten delikatny efekt" z v1 ale
+         tylko na statycznym K&F (NIE na całym logu jak w v1 = bez wobble). */
+      filter:
+        drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.18))
+        drop-shadow(0 0 calc(14px * var(--saw-glow, 0)) rgba(var(--accent-rgb), calc(0.55 * var(--saw-glow, 0))));
+      transition: transform .3s cubic-bezier(.2, .8, .2, 1);
     }
     .nav .brand picture::after {
       content: '';
@@ -1315,80 +1323,27 @@
       pointer-events: none;
       transform: rotate(var(--saw-angle, 0deg));
       transform-origin: 50% 48.5%;
-      transition: filter .3s ease-out;
+      /* Ring: brightness + saturate scale z velocity. Subtelnie — metal "ciepleje"
+         od obrotow ale nie krzyczy. */
+      filter:
+        brightness(calc(1 + 0.12 * var(--saw-glow, 0)))
+        saturate(calc(1 + 0.22 * var(--saw-glow, 0)));
       will-change: transform, filter;
-    }
-    /* Sparks (iskry) — pseudo na picture::before. Multi-box-shadow daje
-       kilka kropek wokół loga (3px dotki rozmyte filter:blur). Rotuje razem
-       z saw via --saw-angle. Default: niewidoczne (opacity 0). Hover: fade-in
-       + subtle twinkle pulse (scale 1 ↔ 1.12). Tylko delikatne, nie krzyczące. */
-    .nav .brand picture::before {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: 48.5%;
-      width: 3px;
-      height: 3px;
-      margin: -1.5px 0 0 -1.5px;
-      border-radius: 50%;
-      background: rgba(var(--accent-rgb), 0.9);
-      /* 6 spark positions wokol saw (45-58px od center → tuż za zębami piły) */
-      box-shadow:
-         48px  -10px 1.5px 0.4px rgba(var(--accent-rgb), 0.7),
-        -42px   18px 1.5px 0.4px rgba(var(--accent-rgb), 0.6),
-         24px   42px 2px   0.4px rgba(var(--accent-rgb), 0.65),
-        -30px  -36px 1.5px 0.4px rgba(var(--accent-rgb), 0.7),
-         54px   24px 2px   0.4px rgba(var(--accent-rgb), 0.45),
-        -50px   -8px 2px   0.4px rgba(var(--accent-rgb), 0.55);
-      filter: blur(1.4px);
-      opacity: 0;
-      pointer-events: none;
-      transform: rotate(var(--saw-angle, 0deg));
-      transform-origin: 50% 50%;
-      transition: opacity .4s cubic-bezier(.2, .8, .2, 1);
-      will-change: transform, opacity;
-    }
-    @keyframes kfd-sparks-twinkle {
-      0%, 100% { transform: rotate(var(--saw-angle, 0deg)) scale(1); }
-      50%      { transform: rotate(var(--saw-angle, 0deg)) scale(1.18); }
     }
     @media (hover: hover) and (pointer: fine) {
       /* Footer brand: prosty -30deg wobble (bez easter egga). */
       .footer .brand:hover .brand__mark { transform: rotate(-30deg); }
-      /* Nav brand hover — "fajność": ring nabiera saturacji + brightness
-         (jak gdyby metal sie nagrzewal). Logo center pulsuje glow w heartbeat
-         pattern (1.4s ease-in-out infinite). Scale 1.04 unifies wszystko.
-         Aktywna rotacja sterowana przez JS via --saw-angle (initSawBlade). */
-      .nav .brand:hover .brand__mark {
-        transform: scale(1.04);
-        animation: kfd-logo-glow-pulse 1.4s ease-in-out infinite;
-      }
-      .nav .brand:hover picture::after {
-        filter: brightness(1.15) saturate(1.3);
-      }
-      .nav .brand:hover picture::before {
-        opacity: 1;
-        animation: kfd-sparks-twinkle 1.7s ease-in-out infinite;
-      }
-    }
-    @keyframes kfd-logo-glow-pulse {
-      0%, 100% {
-        filter:
-          drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.22))
-          drop-shadow(0 0 14px rgba(var(--accent-rgb), 0.50));
-      }
-      50% {
-        filter:
-          drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.24))
-          drop-shadow(0 0 26px rgba(var(--accent-rgb), 0.85));
-      }
+      /* Nav brand hover — subtelny scale lift, halo dostarcza --saw-glow var. */
+      .nav .brand:hover .brand__mark { transform: scale(1.04); }
     }
     @media (prefers-reduced-motion: reduce) {
-      /* Reduce-motion: brak rotacji, pulsacji, iskier. Logo statyczne, IMG bez maski. */
-      .nav .brand picture::after,
-      .nav .brand picture::before { display: none; }
-      .nav .brand .brand__mark { mask: none; -webkit-mask: none; }
-      .nav .brand:hover .brand__mark { animation: none; }
+      /* Reduce-motion: brak rotacji, halo, ringu. Logo statyczne, IMG bez maski. */
+      .nav .brand picture::after { display: none; }
+      .nav .brand .brand__mark {
+        mask: none;
+        -webkit-mask: none;
+        filter: drop-shadow(0 2px 6px rgba(var(--fg-rgb), 0.18));
+      }
     }
     .brand__text {
       font-family: var(--font-display);
@@ -4356,12 +4311,19 @@
 
           angle = (angle + velocity * dt) % 360;
           root.style.setProperty('--saw-angle', angle.toFixed(2) + 'deg');
+          // --saw-glow: 0-1 ratio proporcjonalny do |velocity|/HOVER_VEL.
+          // CSS uzywa do skalowania drop-shadow halo + ring brightness/saturate.
+          // Daje "tamten delikatny efekt v1": halo nabiera intensywnosci z RPM.
+          const glow = Math.min(1, Math.abs(velocity) / HOVER_VEL);
+          root.style.setProperty('--saw-glow', glow.toFixed(3));
 
           if (Math.abs(velocity) > 0.1 || isHovering) {
             raf = requestAnimationFrame(tick);
           } else {
             raf = null;
             lastTime = 0;
+            // Idle: snap --saw-glow do 0 zeby halo zniknelo cleanly
+            root.style.setProperty('--saw-glow', '0');
           }
         }
 
