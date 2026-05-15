@@ -640,6 +640,24 @@ Pattern: zmierz sumę widths nav + paddingi + gaps + bufor 40-60px. Jeśli brand
 
 Kiedy: każda nav z multiple buttons gdzie kolejność degradacji ma sense (#28). Case: commit e451883 — 486px (OnePlus 12) burger wypadał, bump 460 → 540.
 
+## 55. Performance-first — scroll MUSI być lagfree (mandat klienta)
+
+**Mandat klienta (zatwierdzony 2026-05-15, niepodważalny): strona musi być lagfree. Laggy scroll = niedopuszczalne. Performance-first przy KAŻDEJ zmianie wizualnej.** Przed dodaniem dowolnego efektu (cień, blur, blend, filtr, animacja) zadaj pytanie: "czy to jest przerysowywane podczas scrolla?". Jeśli tak — uzasadnij koszt albo nie dodawaj.
+
+Anty (katalog scroll-jank wykryty 2026-05-15, potwierdzony empirycznie Chrome DevTools — A/B na żywo: wyłączenie tych efektów podniosło dark z ~55 do stabilnych 60 FPS = poziom light):
+
+1. **`backdrop-filter: blur()` na `position: fixed` elemencie pełnej szerokości** (nav, mobile-menu) → blur re-liczony co klatkę scrolla nad zmienną treścią. Koszt rośnie ~kwadratowo z promieniem.
+2. **Scroll-driven RAF loop piszący custom property na `:root`, która karmi `filter`/`drop-shadow`** (easter egg piły `initSawBlade`) → invalidacja filtra 60×/s. W dark mode 5-warstwowy `drop-shadow` blur do 280px na logo nav = ~10× paint vs light. **To była główna przyczyna „dark gorszy niż light".**
+3. **`mix-blend-mode` na `position: fixed` full-viewport overlay** (`body::before` noise) → kompozytor re-miesza całą klatkę z przewijaną treścią. `multiply` na ciemnym tle droższy → kontrybucja do różnicy dark/light. Przy `opacity ≤ 0.05` efekt niewidoczny, koszt pełny.
+4. **Odczyt geometrii (`scrollHeight`/`getBoundingClientRect`) w rAF-callbacku scrolla** (`updateProgress`) → forced synchronous layout co klatkę. Trace insight 80→111 ms / 5 s. Cache poza pętlą, odśwież na `resize`/`load`.
+5. **Animacja `width`/`top`/`box-shadow`/`filter` zamiast `transform`/`opacity`** (scroll-progress `transition: width`) → layout/paint zamiast composite.
+
+Wzorzec: rotacja/przesunięcie tylko przez `transform`; glow przez `opacity` osobnej composited warstwy (nie pulsujący promień blur w `filter`); fixed elementy → `contain: paint`; sekcje poniżej fold → `content-visibility: auto`; `will-change: transform` TYLKO na realnie animowanym elemencie (nigdy `filter`); efekt-gadżet podczas scrolla → rozważ on-hover-only lub usuń. Każdy nowy `drop-shadow`/`blur`/`blend` na fixed/animowanym elemencie = czerwona flaga do uzasadnienia.
+
+Diagnostyka: 3 niezależne audyty kodu + 1 empiryczny profiling (Chrome DevTools MCP, CPU 4×, A/B na żywo) zbiegły się na tych samych przyczynach — triangulacja > pojedynczy audyt (#8 rozszerzenie). Wykluczone z dowodem: Dark Reader double-invert (sygnał `color-scheme` poprawny dla wszystkich palet), 404 ścieżek (wszystkie względne, 200), ciężki JS (0 long tasków). Pełna analiza: sesja 2026-05-15, tag `stable-2026-05-15-przed-perf` = stan przed naprawami.
+
+Kiedy: każda zmiana dotykająca CSS efektów wizualnych lub JS na ścieżce scrolla. Audyt: grep `backdrop-filter|mix-blend-mode|drop-shadow|will-change|transition:\s*(width|top|left|height)` i sprawdź czy element jest fixed/animowany/w viewport podczas scrolla.
+
 ## Skróty / przyspieszacze
 
 - Lokalny preview: `python -m http.server 8000` → `http://localhost:8000`
