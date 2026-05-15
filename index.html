@@ -4373,8 +4373,10 @@
         // Brak window.__SAW / brak klucza → oryginalna wartość z SAW_DEF →
         // zachowanie IDENTYCZNE jak przed hookiem (panel off = bez zmian).
         // Tani lookup obiektu/klatkę (bez layout/paint) → zgodne z #55.
-        // REVERT: usuń SAW_DEF/SP i przywróć `const HOVER_VEL=1500;` itd.
-        const SAW_DEF = { HOVER_VEL:1500, HOVER_ACCEL:4500, SCROLL_KICK:2.0, SCROLL_CAP:1200, DECAY_PER_S:2.2 };
+        // REVERT (po usunięciu panelu): przywróć stałe z AKTUALNYMI wartościami
+        // SAW_DEF — `const HOVER_VEL=2000; HOVER_ACCEL=4500; SCROLL_KICK=1.5;
+        // SCROLL_CAP=2000; DECAY_PER_S=1.7;` (dostrojone przez klienta panelem).
+        const SAW_DEF = { HOVER_VEL:2000, HOVER_ACCEL:4500, SCROLL_KICK:1.5, SCROLL_CAP:2000, DECAY_PER_S:1.7 };
         function SP (k) { var o = window.__SAW, v = o && o[k];
           return (typeof v === 'number' && isFinite(v)) ? v : SAW_DEF[k]; }
         // HOVER_VEL ≈ deg/s przy hover · HOVER_ACCEL = rozpędzanie (deg/s²) ·
@@ -4721,6 +4723,7 @@
     <div class="tabs" role="tablist">
       <button type="button" data-tab="tlo" role="tab" aria-selected="true">Tło</button>
       <button type="button" data-tab="pila" role="tab" aria-selected="false">Piła</button>
+      <button type="button" data-tab="herotlo" role="tab" aria-selected="false">Piła tło</button>
     </div>
     <div data-pane="tlo">
       <label>Jasność (alpha) <span class="row"><input type="range" id="bgfx-a" min="0" max="1" step="0.01"><output id="bgfx-a-o"></output></span></label>
@@ -4750,8 +4753,20 @@
       </div>
       <div style="margin-top:6px;color:#777;font-size:10px">live kąt: <span id="saw-live">–</span>° &nbsp;(natywne = oddaje sterowanie scroll/hover)</div>
     </div>
+    <div data-pane="herotlo" hidden>
+      <div style="margin:0 0 6px;color:#777;font-size:10px">Wielkie obracające się logo W TLE sekcji hero (.hero__logo) — NIE piła w nav.</div>
+      <label>Opacity <span class="row"><input type="range" id="hl-o" min="0" max="1" step="0.01"><output id="hl-o-o"></output></span></label>
+      <label>Rozmiar (px szer.) <span class="row"><input type="range" id="hl-w" min="200" max="1400" step="10"><output id="hl-w-o"></output></span></label>
+      <label>Czas obrotu (s) <span class="row"><input type="range" id="hl-d" min="5" max="600" step="5"><output id="hl-d-o"></output></span></label>
+      <label>Animacja <span class="row"><select id="hl-st"><option value="run">obraca się</option><option value="paused">pauza</option><option value="none">wyłączona (statyczne)</option></select></span></label>
+      <div class="btns">
+        <button type="button" data-hl-copy>Kopiuj CSS</button>
+        <button type="button" data-hl-reset>Reset</button>
+      </div>
+    </div>
   </div>
   <style id="bgfx-override"></style>
+  <style id="bgfx-hero-override"></style>
   <script>
   (function(){
     var h = location.hostname;
@@ -4833,7 +4848,7 @@
     // natywna → window.__SAW (czyta initSawBlade przez SP()). Defaulty hv..dk
     // = SAW_DEF w initSawBlade → panel on z defaultami = zero zmiany.
     var SAW_D = { mode:'native', spd:600, dir:'1', ang:0,
-                  hv:1500, ha:4500, sk:2.0, sc:1200, dk:2.2 };
+                  hv:2000, ha:4500, sk:1.5, sc:2000, dk:1.7 };
     var sm=document.getElementById('saw-mode'), sp=document.getElementById('saw-spd'),
         sd=document.getElementById('saw-dir'), sa=document.getElementById('saw-ang'),
         sh=document.getElementById('saw-hv'), sha=document.getElementById('saw-ha'),
@@ -4887,6 +4902,38 @@
         'DECAY_PER_S = '+(+sdk.value).toFixed(1)+';');
     });
     sawSet(SAW_D);
+
+    // ══ TAB „Piła tło" — override .hero__logo (wielkie logo w tle hero) ════
+    // Osobny <style> z !important (bije reguly per-mode/media). NIE rusza
+    // committed CSS .hero__logo. Override transform NIE ruszany → keyframes
+    // slow-spin (translateY + rotate) i pozycja dzialaja; sterujemy tylko
+    // animation-duration/play-state, opacity, width. Tylko debug.
+    var hlOvr = document.getElementById('bgfx-hero-override');
+    var HL_D = { o:0.22, w:720, d:180, st:'run' };   // ~ stan w dark mode
+    var hlo=document.getElementById('hl-o'), hlw=document.getElementById('hl-w'),
+        hld=document.getElementById('hl-d'), hlst=document.getElementById('hl-st');
+    function hlApply(){
+      var o=+hlo.value, w=+hlw.value, d=+hld.value, st=hlst.value;
+      document.getElementById('hl-o-o').textContent=o.toFixed(2);
+      document.getElementById('hl-w-o').textContent=w+'px';
+      document.getElementById('hl-d-o').textContent=d+'s';
+      var css='.hero__logo{opacity:'+o+'!important;width:'+w+'px!important;';
+      css += (st==='none')
+        ? 'animation:none!important;'
+        : 'animation-duration:'+d+'s!important;animation-play-state:'+(st==='paused'?'paused':'running')+'!important;';
+      hlOvr.textContent = css + '}';
+    }
+    function hlSet(v){ hlo.value=v.o; hlw.value=v.w; hld.value=v.d; hlst.value=v.st; hlApply(); }
+    [hlo,hlw,hld,hlst].forEach(function(el){ el.addEventListener('input', hlApply); el.addEventListener('change', hlApply); });
+    panel.querySelector('[data-hl-reset]').addEventListener('click', function(){ hlSet(HL_D); toast('reset tła piły'); });
+    panel.querySelector('[data-hl-copy]').addEventListener('click', function(){
+      var o=(+hlo.value).toFixed(2), w=+hlw.value, d=+hld.value, st=hlst.value;
+      clip('/* .hero__logo — wklej do mnie (uwaga: opacity rozni sie per mode/media) */\n'+
+        'opacity: '+o+';\n'+
+        'width: '+w+'px;\n'+
+        (st==='none' ? 'animation: none;' : 'animation-duration: '+d+'s; /* '+st+' */')+'');
+    });
+    hlSet(HL_D);
   })();
   </script>
   <!-- ===== /BGFX TEST PANEL ===== -->
