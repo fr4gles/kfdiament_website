@@ -1376,18 +1376,21 @@
          srodku baneru (bug iPhone SE). calc() to usuwa u zrodla. */
       top: calc(0.47 * var(--brand-size) - var(--nav-h) / 2);
       bottom: calc((var(--brand-size) - var(--nav-h)) / 2);
-      left: -1px;
-      right: -1px;
+      /* L/P -2px (rozlew boków) — dostrojone panelem BGFX; tylko estetyka,
+         nie wplywa na pion/zwis/SE (te z calc top/bottom/clip). */
+      left: -2px;
+      right: -2px;
       z-index: -1;
       pointer-events: none;
       /* border-radius:50% → koło/elipsa wpisana (dol+gora scinane clipem). */
       border-radius: 50%;
       /* alpha = jasnosc halo (1 dzwignia, bez wplywu na geometrie/#55).
-         0.94 → 0.82: delikatnie przyciemnione na zyczenie klienta. */
-      background: rgba(var(--fg-rgb), 0.82);
+         0.94 → 0.82 → 0.45: dostrojone przez klienta panelem BGFX. */
+      background: rgba(var(--fg-rgb), 0.45);
       /* Statyczny blur — miekko ze wszystkich stron; dol/gora przytnie clip,
-         boki przezyja przez ujemny inset. Nie animowany → raster RAZ. #55. */
-      filter: blur(9px);
+         boki przezyja przez ujemny inset. Nie animowany → raster RAZ. #55.
+         9 → 14: dostrojone przez klienta panelem BGFX. */
+      filter: blur(14px);
       /* Ciecie PO blurze (kolejnosc CSS: filter→clip): gora 0.03·B + dol 0
          → plasko DOKLADNIE na obu krawedziach baneru przy kazdym rozmiarze
          (zero zwisu); L/P -28px → region rozszerzony, miekki spadek bokow
@@ -4665,6 +4668,117 @@
       }
     })();
   </script>
+
+  <!-- ===== BGFX DEBUG PANEL — TYMCZASOWE, USUNĄĆ (branch tmp/bgfx-test-panel) =====
+       Steruje na żywo dark-mode halo (::before pod logo nav). Tylko estetyka:
+       geometria (top/bottom/clip/--brand-size) NIE ruszana → zero zwisu i fix
+       iPhone SE zachowane. DEBUG: domyślnie UKRYTY; włącz ?bgfx=1 w URL (albo
+       localStorage.bgfx='1'), tylko na localhost. Gdy ukryty — override pusty,
+       więc obowiązują realne wartości CSS. Cały blok (HTML+style+script) jest
+       jednym kawałkiem — usunąć w całości przed merge na produkcję. -->
+  <div id="bgfx-panel" hidden aria-label="Panel testowy tła logo">
+    <style>
+      #bgfx-panel{position:fixed;right:14px;bottom:14px;z-index:9999;width:248px;
+        font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:#eee;
+        background:#1c1c1ee6;border:1px solid #555;border-radius:10px;
+        padding:12px 12px 10px;backdrop-filter:blur(4px);box-shadow:0 8px 24px #0009}
+      #bgfx-panel h4{margin:0 0 8px;font-size:12px;letter-spacing:.04em;
+        display:flex;justify-content:space-between;align-items:center}
+      #bgfx-panel h4 button{all:unset;cursor:pointer;color:#aaa;padding:0 4px;font-size:14px}
+      #bgfx-panel label{display:block;margin:7px 0 2px;color:#bbb}
+      #bgfx-panel .row{display:flex;align-items:center;gap:8px}
+      #bgfx-panel input[type=range]{flex:1;accent-color:#c9a85a;min-width:0}
+      #bgfx-panel input[type=color]{width:34px;height:22px;padding:0;border:1px solid #555;
+        background:none;border-radius:4px;cursor:pointer}
+      #bgfx-panel output{min-width:46px;text-align:right;color:#c9a85a}
+      #bgfx-panel .btns{display:flex;gap:6px;margin-top:10px}
+      #bgfx-panel .btns button{flex:1;all:unset;text-align:center;cursor:pointer;
+        padding:6px 0;border:1px solid #555;border-radius:6px;color:#eee;font-size:11px}
+      #bgfx-panel .btns button:hover{background:#333;border-color:#777}
+      #bgfx-toast{position:fixed;right:14px;bottom:200px;z-index:10000;background:#2a2a2a;
+        color:#c9a85a;border:1px solid #555;border-radius:6px;padding:6px 10px;
+        font:12px ui-monospace,monospace;opacity:0;transition:opacity .2s;pointer-events:none}
+      #bgfx-toast.show{opacity:1}
+    </style>
+    <h4><span>BGFX tło logo (test)</span><button type="button" data-bgfx-x title="ukryj">×</button></h4>
+    <label>Jasność (alpha) <span class="row"><input type="range" id="bgfx-a" min="0" max="1" step="0.01"><output id="bgfx-a-o"></output></span></label>
+    <label>Kolor halo <span class="row"><input type="color" id="bgfx-c"><span id="bgfx-c-o" style="color:#888"></span></span></label>
+    <label>Blur (px) <span class="row"><input type="range" id="bgfx-b" min="0" max="30" step="1"><output id="bgfx-b-o"></output></span></label>
+    <label>Rozlew boków / rozmiar (px) <span class="row"><input type="range" id="bgfx-s" min="-80" max="24" step="1"><output id="bgfx-s-o"></output></span></label>
+    <label>Zaokrąglenie (%) <span class="row"><input type="range" id="bgfx-r" min="0" max="50" step="1"><output id="bgfx-r-o"></output></span></label>
+    <div class="btns">
+      <button type="button" data-bgfx-copy>Kopiuj CSS</button>
+      <button type="button" data-bgfx-reset>Reset</button>
+    </div>
+  </div>
+  <style id="bgfx-override"></style>
+  <script>
+  (function(){
+    var h = location.hostname;
+    if (h && h !== 'localhost' && h !== '127.0.0.1' && h !== '[::1]') return; // tylko lokalnie
+    // DEBUG: domyślnie WYŁĄCZONY. Włącz przez ?bgfx=1 (zostaje zapamiętane)
+    // albo localStorage.bgfx='1'. ?bgfx=0 wyłącza. Gdy off → return przed
+    // pokazaniem panelu i przed zapisem override (obowiązują realne wartości).
+    try {
+      var qs = new URLSearchParams(location.search);
+      if (qs.has('bgfx')) localStorage.setItem('bgfx', qs.get('bgfx') === '0' ? '0' : '1');
+    } catch (e) {}
+    if ((localStorage.getItem('bgfx') || '0') !== '1') return;
+    var panel = document.getElementById('bgfx-panel');
+    var ovr = document.getElementById('bgfx-override');
+    if (!panel || !ovr) return;
+    panel.hidden = false;
+
+    // Domyślny kolor = aktualny --fg-rgb w dark (cream). Reszta = wartości z CSS.
+    var fgrgb = getComputedStyle(document.documentElement).getPropertyValue('--fg-rgb').trim() || '240, 232, 212';
+    function rgbToHex(s){ var p = s.split(',').map(function(n){return Math.max(0,Math.min(255,parseInt(n,10)||0));});
+      return '#'+p.map(function(n){return ('0'+n.toString(16)).slice(-2);}).join(''); }
+    function hexToRgb(x){ var n=parseInt(x.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+
+    var D = { a:0.82, c:rgbToHex(fgrgb), b:9, s:-1, r:50 };   // defaults = stan zacommitowany
+    var els = { a:'bgfx-a', c:'bgfx-c', b:'bgfx-b', s:'bgfx-s', r:'bgfx-r' };
+    function get(k){ return document.getElementById(els[k]); }
+
+    function apply(){
+      var a=+get('a').value, c=get('c').value, b=+get('b').value, s=+get('s').value, r=+get('r').value;
+      var rgb=hexToRgb(c);
+      document.getElementById('bgfx-a-o').textContent=a.toFixed(2);
+      document.getElementById('bgfx-b-o').textContent=b+'px';
+      document.getElementById('bgfx-s-o').textContent=s+'px';
+      document.getElementById('bgfx-r-o').textContent=r+'%';
+      document.getElementById('bgfx-c-o').textContent=rgb.join(',');
+      // Override TYLKO estetyki — geometria (top/bottom/clip) nietknięta.
+      ovr.textContent =
+        ':root[data-mode="dark"] .nav .brand picture::before{'+
+        'background:rgba('+rgb.join(', ')+', '+a+')!important;'+
+        'filter:blur('+b+'px)!important;'+
+        'left:'+s+'px!important;right:'+s+'px!important;'+
+        'border-radius:'+r+'%!important;}';
+    }
+    function setAll(v){ get('a').value=v.a; get('c').value=v.c; get('b').value=v.b; get('s').value=v.s; get('r').value=v.r; apply(); }
+    Object.keys(els).forEach(function(k){ get(k).addEventListener('input', apply); });
+
+    function toast(t){ var el=document.getElementById('bgfx-toast'); if(!el){el=document.createElement('div');el.id='bgfx-toast';document.body.appendChild(el);} el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('show');},1400); }
+
+    panel.querySelector('[data-bgfx-reset]').addEventListener('click', function(){ setAll(D); toast('reset'); });
+    panel.querySelector('[data-bgfx-x]').addEventListener('click', function(){ panel.hidden=true; });
+    panel.querySelector('[data-bgfx-copy]').addEventListener('click', function(){
+      var a=(+get('a').value).toFixed(2), c=get('c').value, b=+get('b').value, s=+get('s').value, r=+get('r').value;
+      var rgb=hexToRgb(c);
+      var css='/* BGFX — wklej do mnie albo wypisz wartości */\n'+
+        'background: rgba('+rgb.join(', ')+', '+a+');\n'+
+        'filter: blur('+b+'px);\n'+
+        'left: '+s+'px; right: '+s+'px;\n'+
+        'border-radius: '+r+'%;';
+      (navigator.clipboard ? navigator.clipboard.writeText(css) : Promise.reject())
+        .then(function(){ toast('skopiowano do schowka'); })
+        .catch(function(){ console.log(css); toast('w konsoli (schowek off)'); });
+    });
+
+    setAll(D);
+  })();
+  </script>
+  <!-- ===== /BGFX TEST PANEL ===== -->
 
 </body>
 </html>
