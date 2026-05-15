@@ -1382,7 +1382,9 @@
       pointer-events: none;
       /* border-radius:50% → koło/elipsa wpisana (dol+gora scinane clipem). */
       border-radius: 50%;
-      background: rgba(var(--fg-rgb), 0.94);
+      /* alpha = jasnosc halo (1 dzwignia, bez wplywu na geometrie/#55).
+         0.94 → 0.82: delikatnie przyciemnione na zyczenie klienta. */
+      background: rgba(var(--fg-rgb), 0.82);
       /* Statyczny blur — miekko ze wszystkich stron; dol/gora przytnie clip,
          boki przezyja przez ujemny inset. Nie animowany → raster RAZ. #55. */
       filter: blur(9px);
