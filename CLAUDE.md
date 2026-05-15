@@ -658,6 +658,12 @@ Diagnostyka: 3 niezależne audyty kodu + 1 empiryczny profiling (Chrome DevTools
 
 Kiedy: każda zmiana dotykająca CSS efektów wizualnych lub JS na ścieżce scrolla. Audyt: grep `backdrop-filter|mix-blend-mode|drop-shadow|will-change|transition:\s*(width|top|left|height)` i sprawdź czy element jest fixed/animowany/w viewport podczas scrolla.
 
+Zastosowane (commit „perf #55", saw-blade nav, zweryfikowane Chrome DevTools — dark 54→**60 FPS**, p95 22→17 ms, 0 zgubionych klatek):
+- **`--saw-glow` (mnożnik promienia `drop-shadow` w `filter`) USUNIĘTY** z CSS+JS. `--saw-angle` (rotacja, `transform`) ZOSTAJE — transform jest kompozytowany, tani.
+- **Statyczna wartość `filter` na elemencie animowanym `transform` JEST OK** — rasteryzowana raz, potem tylko composite. Zabójcza była tylko *zmienna* wartość filtra co klatkę (`calc(... * var(--saw-glow))`).
+- **Halo dark = statyczny `radial-gradient` na `::before`**, odpięty od rotacji (malowany raz). Pułapka: `z-index:-1` wpadłby za półprzezroczyste tło `.nav`; fix = `isolation: isolate` na `<picture>` → lokalny kontekst stackingu (halo za logo, ale nad tłem nav).
+- **Custom property sterujące co klatkę → pisz na lokalnym elemencie, NIE `:root`** (`navBrand.style.setProperty('--saw-angle')`) — zawęża zakres inwalidacji stylu; konsument musi być potomkiem.
+
 ## Skróty / przyspieszacze
 
 - Lokalny preview: `python -m http.server 8000` → `http://localhost:8000`
