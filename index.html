@@ -1287,7 +1287,10 @@
     /* Nav brand picture: relative container dla overlay-rotating-ring. */
     /* isolation: isolate → lokalny kontekst stackingu, zeby statyczne dark
        halo (::before, z-index:-1) bylo ZA logo ale NAD tlem nav. Patrz #55. */
-    .nav .brand picture { position: relative; isolation: isolate; }
+    /* --brand-size: jedno zrodlo prawdy rozmiaru logo nav (img + ::before
+       halo licza sie z tego). Override w @media ≤380 → wszystko skaluje
+       sie spojnie, bez px-owej kruchosci per-breakpoint. */
+    .nav .brand picture { position: relative; isolation: isolate; --brand-size: 86px; }
 
     /* === Easter egg: spinning saw — split-render layers ====================
        Logo dzielimy na dwie warstwy ZAWSZE renderowane (nie tylko na hover):
@@ -1306,6 +1309,10 @@
        Split-render seam: mask AA-zone 45-52% w obu warstwach. Tam alpha overlap.
        Bez seamu bo identyczne źródło image. */
     .nav .brand .brand__mark {
+      /* Rozmiar z --brand-size (normalnie 86px; ≤380 → 76px). Wspolny z
+         ::before halo, ktore liczy geometrie z tej samej zmiennej. */
+      width: var(--brand-size);
+      height: var(--brand-size);
       -webkit-mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
               mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
       transform-origin: 50% 48.5%;
@@ -1353,23 +1360,22 @@
     :root[data-mode="dark"] .nav .brand picture::before {
       content: '';
       position: absolute;
-      /* WYROWNANIE DO REALNEGO SRODKA KOLA LOGO (nie srodka boxa).
-         Content w logo.webp jest przesuniety ~1.5% w gore → realny srodek
-         koła = 50% 48.5% (zmierzone empirycznie 4 metodami; te same wartosci
-         co maska monogramu / maska piły / transform-origin rotacji — wszystko
-         spojne). picture=86px (bar-local [1,87]); 48.5%·86 = 41.71 picture-
-         local. Box wycentrowany na 41.71 (NIE na 43=srodek boxa) → koło-halo
-         siedzi pod realnym srodkiem obracajacej sie tarczy, nie 1.29px nizej.
-         Geometria: bottom:-1px (dol boxa picture-local 87) BEZ ZMIAN → clip
-         dolny inset 0 dalej tnie plasko na krawedzi baneru = ZERO zwisu
-         (dowod niezmieniony). top:-3.58px → srodek (−3.58+87)/2 = 41.71 ✓.
-         clip GORNY inset 2.58px → tnie plasko dokladnie na gornej krawedzi
-         baneru (picture-local −1), tak jak wczesniej. left/right:-1px →
-         szer. 88; box 88×90.58 → border-radius:50% = elipsa, ale blur(9px)
-         + plaskie ciecia g/d czynia ja wizualnie tym samym „kołem sscietym”
-         co wczesniej, tylko przesunietym na wlasciwy srodek. */
-      top: -3.58px;
-      bottom: -1px;
+      /* GEOMETRIA ROBUST przez calc(--brand-size, --nav-h) — poprawna przy
+         KAZDYM rozmiarze logo (86px desktop, 76px ≤380 iPhone SE, dowolny
+         przyszly). Wyprowadzenie (B=--brand-size=picture, N=--nav-h=88,
+         picture wycentrowane w pasku → picture banner-local [(N-B)/2 ..
+         (N+B)/2]; realny srodek kola logo = 48.5%·B, content w logo.webp
+         przesuniety ~1.5% w gore — spojne z maska/transform-origin pily):
+           bottom = (B-N)/2  → dol boxa = dol baneru → clip dolny 0 tnie
+                    plasko DOKLADNIE na krawedzi baneru = ZERO zwisu.
+           top = 0.47·B − N/2 → srodek boxa = 48.5%·B (realny srodek tarczy).
+           clip gorny = 0.03·B → gorne ciecie plasko DOKLADNIE na gornej
+                    krawedzi baneru. (B=86,N=88 → -3.58/-1/2.58 = identyczne
+                    co przedtem; B=76 → -8.28/-6/2.28 → auto-korekta SE.)
+         Stale px (-3.58 itd.) bylyby zle przy 76px → widoczne ciecia w
+         srodku baneru (bug iPhone SE). calc() to usuwa u zrodla. */
+      top: calc(0.47 * var(--brand-size) - var(--nav-h) / 2);
+      bottom: calc((var(--brand-size) - var(--nav-h)) / 2);
       left: -1px;
       right: -1px;
       z-index: -1;
@@ -1380,11 +1386,12 @@
       /* Statyczny blur — miekko ze wszystkich stron; dol/gora przytnie clip,
          boki przezyja przez ujemny inset. Nie animowany → raster RAZ. #55. */
       filter: blur(9px);
-      /* Ciecie PO blurze: gora 2.58px + dol 0 → plasko DOKLADNIE na obu
-         krawedziach baneru (zero zwisu, niezmienione vs poprzednio); L/P
-         -28px → region rozszerzony, miekki spadek bokow zachowany. */
-      -webkit-clip-path: inset(2.58px -28px 0 -28px);
-              clip-path: inset(2.58px -28px 0 -28px);
+      /* Ciecie PO blurze (kolejnosc CSS: filter→clip): gora 0.03·B + dol 0
+         → plasko DOKLADNIE na obu krawedziach baneru przy kazdym rozmiarze
+         (zero zwisu); L/P -28px → region rozszerzony, miekki spadek bokow
+         zachowany. Statyczne literaly/calc → raster RAZ. #55. */
+      -webkit-clip-path: inset(calc(0.03 * var(--brand-size)) -28px 0 -28px);
+              clip-path: inset(calc(0.03 * var(--brand-size)) -28px 0 -28px);
     }
     :root[data-mode="dark"] .nav .brand .brand__mark {
       /* brightness() rozjasnia pixele loga (dark = niewidoczne na czarnym).
@@ -1875,7 +1882,11 @@
     }
     /* Bardzo waskie mobile (≤380) — brand szuka oddechu, dropniemy z powrotem. */
     @media (max-width: 380px) {
-      .nav .brand__mark { width: 76px; height: 76px; }
+      /* Zmniejsz logo przez --brand-size → img ORAZ ::before halo skaluja
+         sie razem (geometria halo liczona z calc(--brand-size,--nav-h),
+         wiec ciecia dalej trafiaja w krawedzie baneru — bez widocznych
+         odciec na iPhone SE). */
+      .nav .brand picture { --brand-size: 76px; }
       .nav .brand__text { font-size: 32px; }
     }
     @media (max-width: 640px) {
