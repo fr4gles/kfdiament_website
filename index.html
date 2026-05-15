@@ -4368,11 +4368,19 @@
         const navBrand = document.querySelector('.nav .brand');
         if (!navBrand) return;
 
-        const HOVER_VEL    = 1500;   // deg/s gdy hover (≈ 4 rev/s)
-        const HOVER_ACCEL  = 4500;   // ramp w ~0.33s do HOVER_VEL
-        const SCROLL_KICK  = 2.0;    // deg/s per pixel scrolled (impuls)
-        const SCROLL_CAP   = 1200;   // max scroll-induced velocity (deg/s)
-        const DECAY_PER_S  = 2.2;    // ln(decay) per sec — velocity *= exp(-2.2 * dt)
+        // ── BGFX-DEBUG-HOOK (TYMCZASOWE — usunąć razem z blokiem BGFX) ──────
+        // Stałe fizyki czytane NA ŻYWO z window.__SAW (panel debug je pisze).
+        // Brak window.__SAW / brak klucza → oryginalna wartość z SAW_DEF →
+        // zachowanie IDENTYCZNE jak przed hookiem (panel off = bez zmian).
+        // Tani lookup obiektu/klatkę (bez layout/paint) → zgodne z #55.
+        // REVERT: usuń SAW_DEF/SP i przywróć `const HOVER_VEL=1500;` itd.
+        const SAW_DEF = { HOVER_VEL:1500, HOVER_ACCEL:4500, SCROLL_KICK:2.0, SCROLL_CAP:1200, DECAY_PER_S:2.2 };
+        function SP (k) { var o = window.__SAW, v = o && o[k];
+          return (typeof v === 'number' && isFinite(v)) ? v : SAW_DEF[k]; }
+        // HOVER_VEL ≈ deg/s przy hover · HOVER_ACCEL = rozpędzanie (deg/s²) ·
+        // SCROLL_KICK = deg/s na px scrolla · SCROLL_CAP = max v scrolla ·
+        // DECAY_PER_S = tempo zaniku (velocity *= exp(-DECAY*dt)).
+        // ────────────────────────────────────────────────────────────────────
 
         let angle = 0;
         let velocity = 0;
@@ -4388,11 +4396,12 @@
 
           if (isHovering) {
             // Smooth ramp do HOVER_VEL (ignorujemy decay)
-            if (velocity < HOVER_VEL)      velocity = Math.min(HOVER_VEL, velocity + HOVER_ACCEL * dt);
-            else if (velocity > HOVER_VEL) velocity = Math.max(HOVER_VEL, velocity - HOVER_ACCEL * dt);
+            var HV = SP('HOVER_VEL'), HA = SP('HOVER_ACCEL');
+            if (velocity < HV)      velocity = Math.min(HV, velocity + HA * dt);
+            else if (velocity > HV) velocity = Math.max(HV, velocity - HA * dt);
           } else {
             // Decay scroll-induced velocity
-            velocity *= Math.exp(-DECAY_PER_S * dt);
+            velocity *= Math.exp(-SP('DECAY_PER_S') * dt);
             if (Math.abs(velocity) < 0.3) velocity = 0;
           }
 
@@ -4429,10 +4438,11 @@
           if (!isHovering) {
             // Scroll DOWN (dy>0) → CW (positive velocity)
             // Scroll UP (dy<0) → CCW (negative velocity)
-            velocity += dy * SCROLL_KICK;
+            velocity += dy * SP('SCROLL_KICK');
             // Cap velocity
-            if (velocity >  SCROLL_CAP) velocity =  SCROLL_CAP;
-            if (velocity < -SCROLL_CAP) velocity = -SCROLL_CAP;
+            var CAP = SP('SCROLL_CAP');
+            if (velocity >  CAP) velocity =  CAP;
+            if (velocity < -CAP) velocity = -CAP;
           }
           ensureRaf();
         }, { passive: true });
@@ -4728,6 +4738,12 @@
       <label>Prędkość auto (°/s) <span class="row"><input type="range" id="saw-spd" min="0" max="2000" step="10"><output id="saw-spd-o"></output></span></label>
       <label>Kierunek <span class="row"><select id="saw-dir"><option value="1">CW (w prawo)</option><option value="-1">CCW (w lewo)</option></select></span></label>
       <label>Kąt zamrożenia (°) <span class="row"><input type="range" id="saw-ang" min="0" max="359" step="1"><output id="saw-ang-o"></output></span></label>
+      <div style="margin:9px 0 2px;color:#c9a85a;font-size:10px;letter-spacing:.04em;border-top:1px solid #444;padding-top:7px">FIZYKA NATYWNA (scroll/hover — działa w trybie „natywne")</div>
+      <label>Prędkość hover (°/s) <span class="row"><input type="range" id="saw-hv" min="0" max="3000" step="50"><output id="saw-hv-o"></output></span></label>
+      <label>Rozpędzanie (°/s²) <span class="row"><input type="range" id="saw-ha" min="500" max="15000" step="100"><output id="saw-ha-o"></output></span></label>
+      <label>Kop scrolla (°/s na px) <span class="row"><input type="range" id="saw-sk" min="0" max="8" step="0.1"><output id="saw-sk-o"></output></span></label>
+      <label>Limit scrolla (°/s) <span class="row"><input type="range" id="saw-sc" min="0" max="3000" step="50"><output id="saw-sc-o"></output></span></label>
+      <label>Zanik (1/s) <span class="row"><input type="range" id="saw-dk" min="0.2" max="8" step="0.1"><output id="saw-dk-o"></output></span></label>
       <div class="btns">
         <button type="button" data-saw-copy>Kopiuj ustawienia</button>
         <button type="button" data-saw-reset>Reset</button>
@@ -4813,13 +4829,33 @@
     // initSawBlade). Tryb 'native' = nie piszemy → natywne scroll/hover.
     // 'auto' = ciagly spin; 'freeze' = przypiety kat. Tylko debug.
     var navBrand = document.querySelector('.nav .brand');
-    var SAW_D = { mode:'native', spd:600, dir:'1', ang:0 };
+    // mode/spd/dir/ang = override (własny rAF). hv/ha/sk/sc/dk = fizyka
+    // natywna → window.__SAW (czyta initSawBlade przez SP()). Defaulty hv..dk
+    // = SAW_DEF w initSawBlade → panel on z defaultami = zero zmiany.
+    var SAW_D = { mode:'native', spd:600, dir:'1', ang:0,
+                  hv:1500, ha:4500, sk:2.0, sc:1200, dk:2.2 };
     var sm=document.getElementById('saw-mode'), sp=document.getElementById('saw-spd'),
-        sd=document.getElementById('saw-dir'), sa=document.getElementById('saw-ang');
+        sd=document.getElementById('saw-dir'), sa=document.getElementById('saw-ang'),
+        sh=document.getElementById('saw-hv'), sha=document.getElementById('saw-ha'),
+        ssk=document.getElementById('saw-sk'), ssc=document.getElementById('saw-sc'),
+        sdk=document.getElementById('saw-dk');
     var sawRaf=null, sawAngle=0, sawLast=0;
     function sawOut(){
       document.getElementById('saw-spd-o').textContent=sp.value+'°/s';
       document.getElementById('saw-ang-o').textContent=sa.value+'°';
+      document.getElementById('saw-hv-o').textContent=sh.value+'°/s';
+      document.getElementById('saw-ha-o').textContent=sha.value+'°/s²';
+      document.getElementById('saw-sk-o').textContent=(+ssk.value).toFixed(1);
+      document.getElementById('saw-sc-o').textContent=ssc.value+'°/s';
+      document.getElementById('saw-dk-o').textContent=(+sdk.value).toFixed(1);
+    }
+    function sawPhysics(){   // → window.__SAW (initSawBlade czyta na żywo)
+      window.__SAW = window.__SAW || {};
+      window.__SAW.HOVER_VEL   = +sh.value;
+      window.__SAW.HOVER_ACCEL = +sha.value;
+      window.__SAW.SCROLL_KICK = +ssk.value;
+      window.__SAW.SCROLL_CAP  = +ssc.value;
+      window.__SAW.DECAY_PER_S = +sdk.value;
     }
     function sawTick(t){
       if(!navBrand || sm.value==='native'){ sawRaf=null; sawLast=0; return; }
@@ -4832,20 +4868,23 @@
     }
     function sawEnsure(){ if(sm.value!=='native' && !sawRaf){ sawLast=0; sawRaf=requestAnimationFrame(sawTick); } }
     function sawSync(){
-      sawOut();
+      sawOut(); sawPhysics();                            // fizyka zawsze aktywna
       if(sm.value==='native'){ if(navBrand) navBrand.style.setProperty('--saw-angle','0deg');
-        var lv=document.getElementById('saw-live'); if(lv) lv.textContent='–'; }
+        var lv=document.getElementById('saw-live'); if(lv) lv.textContent='– (scroll/hover)'; }
       else sawEnsure();
     }
-    [sm,sp,sd,sa].forEach(function(el){ el.addEventListener('input', sawSync); el.addEventListener('change', sawSync); });
-    function sawSet(v){ sm.value=v.mode; sp.value=v.spd; sd.value=v.dir; sa.value=v.ang; sawSync(); }
+    [sm,sp,sd,sa,sh,sha,ssk,ssc,sdk].forEach(function(el){ el.addEventListener('input', sawSync); el.addEventListener('change', sawSync); });
+    function sawSet(v){ sm.value=v.mode; sp.value=v.spd; sd.value=v.dir; sa.value=v.ang;
+      sh.value=v.hv; sha.value=v.ha; ssk.value=v.sk; ssc.value=v.sc; sdk.value=v.dk; sawSync(); }
     panel.querySelector('[data-saw-reset]').addEventListener('click', function(){ sawSet(SAW_D); toast('reset piły'); });
     panel.querySelector('[data-saw-copy]').addEventListener('click', function(){
-      clip('/* SAW — wklej do mnie (opisz czego chcesz na stałe) */\n'+
-        'tryb: '+sm.value+'\n'+
-        'auto-prędkość: '+sp.value+' °/s\n'+
-        'kierunek: '+(sd.value==='1'?'CW':'CCW')+'\n'+
-        'kąt zamrożenia: '+sa.value+'°');
+      clip('/* SAW — wklej do mnie (te 5 fizyki = stałe w initSawBlade) */\n'+
+        'override: tryb='+sm.value+(sm.value==='auto'?(' speed='+sp.value+'°/s dir='+(sd.value==='1'?'CW':'CCW')):'')+(sm.value==='freeze'?(' kąt='+sa.value+'°'):'')+'\n'+
+        'HOVER_VEL   = '+(+sh.value)+';\n'+
+        'HOVER_ACCEL = '+(+sha.value)+';   // rozpędzanie\n'+
+        'SCROLL_KICK = '+(+ssk.value).toFixed(1)+';\n'+
+        'SCROLL_CAP  = '+(+ssc.value)+';\n'+
+        'DECAY_PER_S = '+(+sdk.value).toFixed(1)+';');
     });
     sawSet(SAW_D);
   })();
