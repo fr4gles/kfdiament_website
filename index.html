@@ -1330,26 +1330,61 @@
          (trzymal droga warstwe filtrowa stale goraca). Patrz #55. */
       will-change: transform;
     }
-    /* Dark mode backlight — STATYCZNE halo (perf #55). Pulse ring usuniety.
-       BYLO: filter: 5x drop-shadow (do 280px) na <picture>. Poniewaz ::after
-       (zeby pily) rotuje co klatke przez --saw-angle, zrodlo drop-shadow
-       (composed content) zmienialo sie co klatke → 280px Gaussian re-liczony
-       60x/s podczas scrolla = GLOWNA przyczyna "dark laguje gorzej".
-       TERAZ: staly radial-gradient na ::before, ODPIETY od rotacji i glow —
-       malowany RAZ, potem tylko composite (GPU, ~0 kosztu na scrollu).
-       z-index:-1 + isolation:isolate na picture → za logo, nad tlem nav.
-       Rotujace ::after nie dotyka ::before (osobne, statyczne paint). */
+    /* Dark mode backlight — JASNE KOLO POD TARCZA, wyrownane do REALNEGO
+       srodka logo, scieta plasko na krawedziach baneru (perf #55). Cel:
+       obracajacy sie brzeszczot (::after, bar-local ≈[1,87]) ma jasne tlo
+       wycentrowane pod jego realnym srodkiem; ZERO zwisu pod baner w hero;
+       ksztalt KOLISTY/organiczny (nie prostokat).
+       Technika: lity jasny fill + border-radius:50% + statyczny blur()
+       (miekko) + clip-path tnacy OSTRO na krawedziach baneru. WAZNE: box
+       jest wycentrowany na realnym srodku koła logo (50% 48.5% = picture-
+       local y 41.71, NIE 43=srodek boxa), bo content w logo.webp jest
+       przesuniety ~1.5% w gore (zob. inline nizej + maska/transform-origin
+       piły uzywaja tych samych 48.5%). Kolejnosc renderu CSS: filter →
+       clip-path, wiec clip tnie JUZ rozmyta elipse: gora 2.58px / dol 0 →
+       plasko DOKLADNIE na obu krawedziach baneru (pokrywaja sie z brzegami
+       nav → niewidoczne; pionowy wyciek blura uciety = ZERO zwisu); L/P
+       inset -28px (UJEMNY = ROZSZERZA region) → poziomy spadek zachowany.
+       Kompromis (zaakceptowany): ksztalt zweza sie przy g/d, wiec skrajne
+       zeby g/d maja mniej tla — swiadomy wybor (kolisty ksztalt).
+       Wszystko statyczne: ::before NIE rotuje (rotuje osobny ::after),
+       blur+clip rasteryzowane RAZ → potem tylko GPU-composite (~0 kosztu).
+       z-index:-1 + isolation. #55. */
     :root[data-mode="dark"] .nav .brand picture::before {
       content: '';
       position: absolute;
-      inset: -55px;
+      /* WYROWNANIE DO REALNEGO SRODKA KOLA LOGO (nie srodka boxa).
+         Content w logo.webp jest przesuniety ~1.5% w gore → realny srodek
+         koła = 50% 48.5% (zmierzone empirycznie 4 metodami; te same wartosci
+         co maska monogramu / maska piły / transform-origin rotacji — wszystko
+         spojne). picture=86px (bar-local [1,87]); 48.5%·86 = 41.71 picture-
+         local. Box wycentrowany na 41.71 (NIE na 43=srodek boxa) → koło-halo
+         siedzi pod realnym srodkiem obracajacej sie tarczy, nie 1.29px nizej.
+         Geometria: bottom:-1px (dol boxa picture-local 87) BEZ ZMIAN → clip
+         dolny inset 0 dalej tnie plasko na krawedzi baneru = ZERO zwisu
+         (dowod niezmieniony). top:-3.58px → srodek (−3.58+87)/2 = 41.71 ✓.
+         clip GORNY inset 2.58px → tnie plasko dokladnie na gornej krawedzi
+         baneru (picture-local −1), tak jak wczesniej. left/right:-1px →
+         szer. 88; box 88×90.58 → border-radius:50% = elipsa, ale blur(9px)
+         + plaskie ciecia g/d czynia ja wizualnie tym samym „kołem sscietym”
+         co wczesniej, tylko przesunietym na wlasciwy srodek. */
+      top: -3.58px;
+      bottom: -1px;
+      left: -1px;
+      right: -1px;
       z-index: -1;
       pointer-events: none;
-      background: radial-gradient(circle at 50% 48.5%,
-        rgba(var(--fg-rgb), 0.34) 0%,
-        rgba(var(--fg-rgb), 0.16) 30%,
-        rgba(var(--fg-rgb), 0.05) 55%,
-        transparent 72%);
+      /* border-radius:50% → koło/elipsa wpisana (dol+gora scinane clipem). */
+      border-radius: 50%;
+      background: rgba(var(--fg-rgb), 0.94);
+      /* Statyczny blur — miekko ze wszystkich stron; dol/gora przytnie clip,
+         boki przezyja przez ujemny inset. Nie animowany → raster RAZ. #55. */
+      filter: blur(9px);
+      /* Ciecie PO blurze: gora 2.58px + dol 0 → plasko DOKLADNIE na obu
+         krawedziach baneru (zero zwisu, niezmienione vs poprzednio); L/P
+         -28px → region rozszerzony, miekki spadek bokow zachowany. */
+      -webkit-clip-path: inset(2.58px -28px 0 -28px);
+              clip-path: inset(2.58px -28px 0 -28px);
     }
     :root[data-mode="dark"] .nav .brand .brand__mark {
       /* brightness() rozjasnia pixele loga (dark = niewidoczne na czarnym).
