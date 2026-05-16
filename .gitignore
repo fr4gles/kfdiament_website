@@ -32,6 +32,9 @@ $RECYCLE.BIN/
 # Playwright (lokalne sesje testowe Claude Code)
 .playwright-mcp/
 
+# Remember plugin (lokalna pamięć/logi Claude Code — NIE deployować na Cloudflare)
+.remember/
+
 # Lokalne screenshoty/artefakty z testów (NIE commituje się — tylko gdy explicite dodane)
 verify-*.png
 hero-desktop.png

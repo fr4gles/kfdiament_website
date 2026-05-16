@@ -1287,7 +1287,10 @@
     /* Nav brand picture: relative container dla overlay-rotating-ring. */
     /* isolation: isolate → lokalny kontekst stackingu, zeby statyczne dark
        halo (::before, z-index:-1) bylo ZA logo ale NAD tlem nav. Patrz #55. */
-    .nav .brand picture { position: relative; isolation: isolate; }
+    /* --brand-size: jedno zrodlo prawdy rozmiaru logo nav (img + ::before
+       halo licza sie z tego). Override w @media ≤380 → wszystko skaluje
+       sie spojnie, bez px-owej kruchosci per-breakpoint. */
+    .nav .brand picture { position: relative; isolation: isolate; --brand-size: 86px; }
 
     /* === Easter egg: spinning saw — split-render layers ====================
        Logo dzielimy na dwie warstwy ZAWSZE renderowane (nie tylko na hover):
@@ -1306,6 +1309,10 @@
        Split-render seam: mask AA-zone 45-52% w obu warstwach. Tam alpha overlap.
        Bez seamu bo identyczne źródło image. */
     .nav .brand .brand__mark {
+      /* Rozmiar z --brand-size (normalnie 86px; ≤380 → 76px). Wspolny z
+         ::before halo, ktore liczy geometrie z tej samej zmiennej. */
+      width: var(--brand-size);
+      height: var(--brand-size);
       -webkit-mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
               mask: radial-gradient(circle at 50% 48.5%, #000 0%, #000 45%, transparent 52%);
       transform-origin: 50% 48.5%;
@@ -1330,26 +1337,66 @@
          (trzymal droga warstwe filtrowa stale goraca). Patrz #55. */
       will-change: transform;
     }
-    /* Dark mode backlight — STATYCZNE halo (perf #55). Pulse ring usuniety.
-       BYLO: filter: 5x drop-shadow (do 280px) na <picture>. Poniewaz ::after
-       (zeby pily) rotuje co klatke przez --saw-angle, zrodlo drop-shadow
-       (composed content) zmienialo sie co klatke → 280px Gaussian re-liczony
-       60x/s podczas scrolla = GLOWNA przyczyna "dark laguje gorzej".
-       TERAZ: staly radial-gradient na ::before, ODPIETY od rotacji i glow —
-       malowany RAZ, potem tylko composite (GPU, ~0 kosztu na scrollu).
-       z-index:-1 + isolation:isolate na picture → za logo, nad tlem nav.
-       Rotujace ::after nie dotyka ::before (osobne, statyczne paint). */
+    /* Dark mode backlight — JASNE KOLO POD TARCZA, wyrownane do REALNEGO
+       srodka logo, scieta plasko na krawedziach baneru (perf #55). Cel:
+       obracajacy sie brzeszczot (::after, bar-local ≈[1,87]) ma jasne tlo
+       wycentrowane pod jego realnym srodkiem; ZERO zwisu pod baner w hero;
+       ksztalt KOLISTY/organiczny (nie prostokat).
+       Technika: lity jasny fill + border-radius:50% + statyczny blur()
+       (miekko) + clip-path tnacy OSTRO na krawedziach baneru. WAZNE: box
+       jest wycentrowany na realnym srodku koła logo (50% 48.5% = picture-
+       local y 41.71, NIE 43=srodek boxa), bo content w logo.webp jest
+       przesuniety ~1.5% w gore (zob. inline nizej + maska/transform-origin
+       piły uzywaja tych samych 48.5%). Kolejnosc renderu CSS: filter →
+       clip-path, wiec clip tnie JUZ rozmyta elipse: gora 2.58px / dol 0 →
+       plasko DOKLADNIE na obu krawedziach baneru (pokrywaja sie z brzegami
+       nav → niewidoczne; pionowy wyciek blura uciety = ZERO zwisu); L/P
+       inset -28px (UJEMNY = ROZSZERZA region) → poziomy spadek zachowany.
+       Kompromis (zaakceptowany): ksztalt zweza sie przy g/d, wiec skrajne
+       zeby g/d maja mniej tla — swiadomy wybor (kolisty ksztalt).
+       Wszystko statyczne: ::before NIE rotuje (rotuje osobny ::after),
+       blur+clip rasteryzowane RAZ → potem tylko GPU-composite (~0 kosztu).
+       z-index:-1 + isolation. #55. */
     :root[data-mode="dark"] .nav .brand picture::before {
       content: '';
       position: absolute;
-      inset: -55px;
+      /* GEOMETRIA ROBUST przez calc(--brand-size, --nav-h) — poprawna przy
+         KAZDYM rozmiarze logo (86px desktop, 76px ≤380 iPhone SE, dowolny
+         przyszly). Wyprowadzenie (B=--brand-size=picture, N=--nav-h=88,
+         picture wycentrowane w pasku → picture banner-local [(N-B)/2 ..
+         (N+B)/2]; realny srodek kola logo = 48.5%·B, content w logo.webp
+         przesuniety ~1.5% w gore — spojne z maska/transform-origin pily):
+           bottom = (B-N)/2  → dol boxa = dol baneru → clip dolny 0 tnie
+                    plasko DOKLADNIE na krawedzi baneru = ZERO zwisu.
+           top = 0.47·B − N/2 → srodek boxa = 48.5%·B (realny srodek tarczy).
+           clip gorny = 0.03·B → gorne ciecie plasko DOKLADNIE na gornej
+                    krawedzi baneru. (B=86,N=88 → -3.58/-1/2.58 = identyczne
+                    co przedtem; B=76 → -8.28/-6/2.28 → auto-korekta SE.)
+         Stale px (-3.58 itd.) bylyby zle przy 76px → widoczne ciecia w
+         srodku baneru (bug iPhone SE). calc() to usuwa u zrodla. */
+      top: calc(0.47 * var(--brand-size) - var(--nav-h) / 2);
+      bottom: calc((var(--brand-size) - var(--nav-h)) / 2);
+      /* L/P -2px (rozlew boków) — dostrojone panelem BGFX; tylko estetyka,
+         nie wplywa na pion/zwis/SE (te z calc top/bottom/clip). */
+      left: -2px;
+      right: -2px;
       z-index: -1;
       pointer-events: none;
-      background: radial-gradient(circle at 50% 48.5%,
-        rgba(var(--fg-rgb), 0.34) 0%,
-        rgba(var(--fg-rgb), 0.16) 30%,
-        rgba(var(--fg-rgb), 0.05) 55%,
-        transparent 72%);
+      /* border-radius:50% → koło/elipsa wpisana (dol+gora scinane clipem). */
+      border-radius: 50%;
+      /* alpha = jasnosc halo (1 dzwignia, bez wplywu na geometrie/#55).
+         0.94 → 0.82 → 0.45: dostrojone przez klienta panelem BGFX. */
+      background: rgba(var(--fg-rgb), 0.45);
+      /* Statyczny blur — miekko ze wszystkich stron; dol/gora przytnie clip,
+         boki przezyja przez ujemny inset. Nie animowany → raster RAZ. #55.
+         9 → 14: dostrojone przez klienta panelem BGFX. */
+      filter: blur(14px);
+      /* Ciecie PO blurze (kolejnosc CSS: filter→clip): gora 0.03·B + dol 0
+         → plasko DOKLADNIE na obu krawedziach baneru przy kazdym rozmiarze
+         (zero zwisu); L/P -28px → region rozszerzony, miekki spadek bokow
+         zachowany. Statyczne literaly/calc → raster RAZ. #55. */
+      -webkit-clip-path: inset(calc(0.03 * var(--brand-size)) -28px 0 -28px);
+              clip-path: inset(calc(0.03 * var(--brand-size)) -28px 0 -28px);
     }
     :root[data-mode="dark"] .nav .brand .brand__mark {
       /* brightness() rozjasnia pixele loga (dark = niewidoczne na czarnym).
@@ -1840,7 +1887,11 @@
     }
     /* Bardzo waskie mobile (≤380) — brand szuka oddechu, dropniemy z powrotem. */
     @media (max-width: 380px) {
-      .nav .brand__mark { width: 76px; height: 76px; }
+      /* Zmniejsz logo przez --brand-size → img ORAZ ::before halo skaluja
+         sie razem (geometria halo liczona z calc(--brand-size,--nav-h),
+         wiec ciecia dalej trafiaja w krawedzie baneru — bez widocznych
+         odciec na iPhone SE). */
+      .nav .brand picture { --brand-size: 76px; }
       .nav .brand__text { font-size: 32px; }
     }
     @media (max-width: 640px) {
@@ -4317,11 +4368,21 @@
         const navBrand = document.querySelector('.nav .brand');
         if (!navBrand) return;
 
-        const HOVER_VEL    = 1500;   // deg/s gdy hover (≈ 4 rev/s)
-        const HOVER_ACCEL  = 4500;   // ramp w ~0.33s do HOVER_VEL
-        const SCROLL_KICK  = 2.0;    // deg/s per pixel scrolled (impuls)
-        const SCROLL_CAP   = 1200;   // max scroll-induced velocity (deg/s)
-        const DECAY_PER_S  = 2.2;    // ln(decay) per sec — velocity *= exp(-2.2 * dt)
+        // ── BGFX-DEBUG-HOOK (TYMCZASOWE — usunąć razem z blokiem BGFX) ──────
+        // Stałe fizyki czytane NA ŻYWO z window.__SAW (panel debug je pisze).
+        // Brak window.__SAW / brak klucza → oryginalna wartość z SAW_DEF →
+        // zachowanie IDENTYCZNE jak przed hookiem (panel off = bez zmian).
+        // Tani lookup obiektu/klatkę (bez layout/paint) → zgodne z #55.
+        // REVERT (po usunięciu panelu): przywróć stałe z AKTUALNYMI wartościami
+        // SAW_DEF — `const HOVER_VEL=2000; HOVER_ACCEL=4500; SCROLL_KICK=1.5;
+        // SCROLL_CAP=2000; DECAY_PER_S=1.7;` (dostrojone przez klienta panelem).
+        const SAW_DEF = { HOVER_VEL:2000, HOVER_ACCEL:4500, SCROLL_KICK:1.5, SCROLL_CAP:2000, DECAY_PER_S:1.7 };
+        function SP (k) { var o = window.__SAW, v = o && o[k];
+          return (typeof v === 'number' && isFinite(v)) ? v : SAW_DEF[k]; }
+        // HOVER_VEL ≈ deg/s przy hover · HOVER_ACCEL = rozpędzanie (deg/s²) ·
+        // SCROLL_KICK = deg/s na px scrolla · SCROLL_CAP = max v scrolla ·
+        // DECAY_PER_S = tempo zaniku (velocity *= exp(-DECAY*dt)).
+        // ────────────────────────────────────────────────────────────────────
 
         let angle = 0;
         let velocity = 0;
@@ -4337,11 +4398,12 @@
 
           if (isHovering) {
             // Smooth ramp do HOVER_VEL (ignorujemy decay)
-            if (velocity < HOVER_VEL)      velocity = Math.min(HOVER_VEL, velocity + HOVER_ACCEL * dt);
-            else if (velocity > HOVER_VEL) velocity = Math.max(HOVER_VEL, velocity - HOVER_ACCEL * dt);
+            var HV = SP('HOVER_VEL'), HA = SP('HOVER_ACCEL');
+            if (velocity < HV)      velocity = Math.min(HV, velocity + HA * dt);
+            else if (velocity > HV) velocity = Math.max(HV, velocity - HA * dt);
           } else {
             // Decay scroll-induced velocity
-            velocity *= Math.exp(-DECAY_PER_S * dt);
+            velocity *= Math.exp(-SP('DECAY_PER_S') * dt);
             if (Math.abs(velocity) < 0.3) velocity = 0;
           }
 
@@ -4378,10 +4440,11 @@
           if (!isHovering) {
             // Scroll DOWN (dy>0) → CW (positive velocity)
             // Scroll UP (dy<0) → CCW (negative velocity)
-            velocity += dy * SCROLL_KICK;
+            velocity += dy * SP('SCROLL_KICK');
             // Cap velocity
-            if (velocity >  SCROLL_CAP) velocity =  SCROLL_CAP;
-            if (velocity < -SCROLL_CAP) velocity = -SCROLL_CAP;
+            var CAP = SP('SCROLL_CAP');
+            if (velocity >  CAP) velocity =  CAP;
+            if (velocity < -CAP) velocity = -CAP;
           }
           ensureRaf();
         }, { passive: true });
@@ -4617,6 +4680,263 @@
       }
     })();
   </script>
+
+  <!-- ===== BGFX DEBUG PANEL — TYMCZASOWE, USUNĄĆ (branch tmp/bgfx-test-panel) =====
+       Steruje na żywo dark-mode halo (::before pod logo nav). Tylko estetyka:
+       geometria (top/bottom/clip/--brand-size) NIE ruszana → zero zwisu i fix
+       iPhone SE zachowane. DEBUG: domyślnie UKRYTY; włącz ?bgfx=1 w URL (albo
+       localStorage.bgfx='1'), tylko na localhost. Gdy ukryty — override pusty,
+       więc obowiązują realne wartości CSS. Cały blok (HTML+style+script) jest
+       jednym kawałkiem — usunąć w całości przed merge na produkcję. -->
+  <div id="bgfx-panel" hidden aria-label="Panel testowy tła logo">
+    <style>
+      #bgfx-panel{position:fixed;right:14px;bottom:14px;z-index:9999;width:248px;
+        font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:#eee;
+        background:#1c1c1ee6;border:1px solid #555;border-radius:10px;
+        padding:12px 12px 10px;backdrop-filter:blur(4px);box-shadow:0 8px 24px #0009}
+      #bgfx-panel h4{margin:0 0 8px;font-size:12px;letter-spacing:.04em;
+        display:flex;justify-content:space-between;align-items:center}
+      #bgfx-panel h4 button{all:unset;cursor:pointer;color:#aaa;padding:0 4px;font-size:14px}
+      #bgfx-panel label{display:block;margin:7px 0 2px;color:#bbb}
+      #bgfx-panel .row{display:flex;align-items:center;gap:8px}
+      #bgfx-panel input[type=range]{flex:1;accent-color:#c9a85a;min-width:0}
+      #bgfx-panel input[type=color]{width:34px;height:22px;padding:0;border:1px solid #555;
+        background:none;border-radius:4px;cursor:pointer}
+      #bgfx-panel output{min-width:46px;text-align:right;color:#c9a85a}
+      #bgfx-panel .btns{display:flex;gap:6px;margin-top:10px}
+      #bgfx-panel .btns button{flex:1;all:unset;text-align:center;cursor:pointer;
+        padding:6px 0;border:1px solid #555;border-radius:6px;color:#eee;font-size:11px}
+      #bgfx-panel .btns button:hover{background:#333;border-color:#777}
+      #bgfx-toast{position:fixed;right:14px;bottom:200px;z-index:10000;background:#2a2a2a;
+        color:#c9a85a;border:1px solid #555;border-radius:6px;padding:6px 10px;
+        font:12px ui-monospace,monospace;opacity:0;transition:opacity .2s;pointer-events:none}
+      #bgfx-toast.show{opacity:1}
+      #bgfx-panel .tabs{display:flex;gap:4px;margin:0 0 8px}
+      #bgfx-panel .tabs button{all:unset;flex:1;text-align:center;cursor:pointer;
+        padding:5px 0;font-size:11px;color:#aaa;border:1px solid #444;border-radius:6px}
+      #bgfx-panel .tabs button[aria-selected="true"]{color:#1c1c1e;background:#c9a85a;
+        border-color:#c9a85a;font-weight:600}
+      #bgfx-panel [data-pane][hidden]{display:none}
+      #bgfx-panel select{font:inherit}
+    </style>
+    <h4><span>BGFX debug</span><button type="button" data-bgfx-x title="ukryj">×</button></h4>
+    <div class="tabs" role="tablist">
+      <button type="button" data-tab="tlo" role="tab" aria-selected="true">Tło</button>
+      <button type="button" data-tab="pila" role="tab" aria-selected="false">Piła</button>
+      <button type="button" data-tab="herotlo" role="tab" aria-selected="false">Piła tło</button>
+    </div>
+    <div data-pane="tlo">
+      <label>Jasność (alpha) <span class="row"><input type="range" id="bgfx-a" min="0" max="1" step="0.01"><output id="bgfx-a-o"></output></span></label>
+      <label>Kolor halo <span class="row"><input type="color" id="bgfx-c"><span id="bgfx-c-o" style="color:#888"></span></span></label>
+      <label>Blur (px) <span class="row"><input type="range" id="bgfx-b" min="0" max="30" step="1"><output id="bgfx-b-o"></output></span></label>
+      <label>Rozlew boków (px) <span class="row"><input type="range" id="bgfx-s" min="-80" max="24" step="1"><output id="bgfx-s-o"></output></span></label>
+      <label>Zaokrąglenie (%) <span class="row"><input type="range" id="bgfx-r" min="0" max="50" step="1"><output id="bgfx-r-o"></output></span></label>
+      <div class="btns">
+        <button type="button" data-bgfx-copy>Kopiuj CSS</button>
+        <button type="button" data-bgfx-reset>Reset</button>
+      </div>
+    </div>
+    <div data-pane="pila" hidden>
+      <label>Tryb <span class="row"><select id="saw-mode"><option value="native">natywne (scroll/hover)</option><option value="auto">auto-spin</option><option value="freeze">zamroź pod kątem</option></select></span></label>
+      <label>Prędkość auto (°/s) <span class="row"><input type="range" id="saw-spd" min="0" max="2000" step="10"><output id="saw-spd-o"></output></span></label>
+      <label>Kierunek <span class="row"><select id="saw-dir"><option value="1">CW (w prawo)</option><option value="-1">CCW (w lewo)</option></select></span></label>
+      <label>Kąt zamrożenia (°) <span class="row"><input type="range" id="saw-ang" min="0" max="359" step="1"><output id="saw-ang-o"></output></span></label>
+      <div style="margin:9px 0 2px;color:#c9a85a;font-size:10px;letter-spacing:.04em;border-top:1px solid #444;padding-top:7px">FIZYKA NATYWNA (scroll/hover — działa w trybie „natywne")</div>
+      <label>Prędkość hover (°/s) <span class="row"><input type="range" id="saw-hv" min="0" max="3000" step="50"><output id="saw-hv-o"></output></span></label>
+      <label>Rozpędzanie (°/s²) <span class="row"><input type="range" id="saw-ha" min="500" max="15000" step="100"><output id="saw-ha-o"></output></span></label>
+      <label>Kop scrolla (°/s na px) <span class="row"><input type="range" id="saw-sk" min="0" max="8" step="0.1"><output id="saw-sk-o"></output></span></label>
+      <label>Limit scrolla (°/s) <span class="row"><input type="range" id="saw-sc" min="0" max="3000" step="50"><output id="saw-sc-o"></output></span></label>
+      <label>Zanik (1/s) <span class="row"><input type="range" id="saw-dk" min="0.2" max="8" step="0.1"><output id="saw-dk-o"></output></span></label>
+      <div class="btns">
+        <button type="button" data-saw-copy>Kopiuj ustawienia</button>
+        <button type="button" data-saw-reset>Reset</button>
+      </div>
+      <div style="margin-top:6px;color:#777;font-size:10px">live kąt: <span id="saw-live">–</span>° &nbsp;(natywne = oddaje sterowanie scroll/hover)</div>
+    </div>
+    <div data-pane="herotlo" hidden>
+      <div style="margin:0 0 6px;color:#777;font-size:10px">Wielkie obracające się logo W TLE sekcji hero (.hero__logo) — NIE piła w nav.</div>
+      <label>Opacity <span class="row"><input type="range" id="hl-o" min="0" max="1" step="0.01"><output id="hl-o-o"></output></span></label>
+      <label>Rozmiar (px szer.) <span class="row"><input type="range" id="hl-w" min="200" max="1400" step="10"><output id="hl-w-o"></output></span></label>
+      <label>Czas obrotu (s) <span class="row"><input type="range" id="hl-d" min="5" max="600" step="5"><output id="hl-d-o"></output></span></label>
+      <label>Animacja <span class="row"><select id="hl-st"><option value="run">obraca się</option><option value="paused">pauza</option><option value="none">wyłączona (statyczne)</option></select></span></label>
+      <div class="btns">
+        <button type="button" data-hl-copy>Kopiuj CSS</button>
+        <button type="button" data-hl-reset>Reset</button>
+      </div>
+    </div>
+  </div>
+  <style id="bgfx-override"></style>
+  <style id="bgfx-hero-override"></style>
+  <script>
+  (function(){
+    var h = location.hostname;
+    if (h && h !== 'localhost' && h !== '127.0.0.1' && h !== '[::1]') return; // tylko lokalnie
+    // DEBUG: domyślnie WYŁĄCZONY. Włącz przez ?bgfx=1 (zostaje zapamiętane)
+    // albo localStorage.bgfx='1'. ?bgfx=0 wyłącza. Gdy off → return przed
+    // pokazaniem panelu i przed zapisem override (obowiązują realne wartości).
+    try {
+      var qs = new URLSearchParams(location.search);
+      if (qs.has('bgfx')) localStorage.setItem('bgfx', qs.get('bgfx') === '0' ? '0' : '1');
+    } catch (e) {}
+    if ((localStorage.getItem('bgfx') || '0') !== '1') return;
+    var panel = document.getElementById('bgfx-panel');
+    var ovr = document.getElementById('bgfx-override');
+    if (!panel || !ovr) return;
+    panel.hidden = false;
+
+    function toast(t){ var el=document.getElementById('bgfx-toast'); if(!el){el=document.createElement('div');el.id='bgfx-toast';document.body.appendChild(el);} el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('show');},1400); }
+    function clip(css){ (navigator.clipboard ? navigator.clipboard.writeText(css) : Promise.reject())
+      .then(function(){ toast('skopiowano do schowka'); })
+      .catch(function(){ console.log(css); toast('w konsoli (schowek off)'); }); }
+
+    panel.querySelector('[data-bgfx-x]').addEventListener('click', function(){ panel.hidden=true; });
+
+    // ── Zakładki ───────────────────────────────────────────────────────────
+    var tabs = panel.querySelectorAll('.tabs button');
+    tabs.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        tabs.forEach(function(b){ b.setAttribute('aria-selected', b===btn ? 'true':'false'); });
+        panel.querySelectorAll('[data-pane]').forEach(function(p){ p.hidden = (p.getAttribute('data-pane') !== btn.getAttribute('data-tab')); });
+      });
+    });
+
+    // ══ TAB „Tło" — override estetyki ::before (geometria nietknięta) ═══════
+    var fgrgb = getComputedStyle(document.documentElement).getPropertyValue('--fg-rgb').trim() || '240, 232, 212';
+    function rgbToHex(s){ var p = s.split(',').map(function(n){return Math.max(0,Math.min(255,parseInt(n,10)||0));});
+      return '#'+p.map(function(n){return ('0'+n.toString(16)).slice(-2);}).join(''); }
+    function hexToRgb(x){ var n=parseInt(x.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+
+    var D = { a:0.45, c:rgbToHex(fgrgb), b:14, s:-2, r:50 };   // = wartości zacommitowane
+    var els = { a:'bgfx-a', c:'bgfx-c', b:'bgfx-b', s:'bgfx-s', r:'bgfx-r' };
+    function get(k){ return document.getElementById(els[k]); }
+
+    function apply(){
+      var a=+get('a').value, c=get('c').value, b=+get('b').value, s=+get('s').value, r=+get('r').value;
+      var rgb=hexToRgb(c);
+      document.getElementById('bgfx-a-o').textContent=a.toFixed(2);
+      document.getElementById('bgfx-b-o').textContent=b+'px';
+      document.getElementById('bgfx-s-o').textContent=s+'px';
+      document.getElementById('bgfx-r-o').textContent=r+'%';
+      document.getElementById('bgfx-c-o').textContent=rgb.join(',');
+      ovr.textContent =
+        ':root[data-mode="dark"] .nav .brand picture::before{'+
+        'background:rgba('+rgb.join(', ')+', '+a+')!important;'+
+        'filter:blur('+b+'px)!important;'+
+        'left:'+s+'px!important;right:'+s+'px!important;'+
+        'border-radius:'+r+'%!important;}';
+    }
+    function setAll(v){ get('a').value=v.a; get('c').value=v.c; get('b').value=v.b; get('s').value=v.s; get('r').value=v.r; apply(); }
+    Object.keys(els).forEach(function(k){ get(k).addEventListener('input', apply); });
+    panel.querySelector('[data-bgfx-reset]').addEventListener('click', function(){ setAll(D); toast('reset tła'); });
+    panel.querySelector('[data-bgfx-copy]').addEventListener('click', function(){
+      var a=(+get('a').value).toFixed(2), c=get('c').value, b=+get('b').value, s=+get('s').value, r=+get('r').value;
+      var rgb=hexToRgb(c);
+      clip('/* BGFX tło — wklej do mnie */\n'+
+        'background: rgba('+rgb.join(', ')+', '+a+');\n'+
+        'filter: blur('+b+'px);\n'+
+        'left: '+s+'px; right: '+s+'px;\n'+
+        'border-radius: '+r+'%;');
+    });
+    setAll(D);
+
+    // ══ TAB „Piła" — override animacji --saw-angle (NIE rusza initSawBlade) ═
+    // Wlasny rAF pisze --saw-angle na .nav .brand (ten sam target co
+    // initSawBlade). Tryb 'native' = nie piszemy → natywne scroll/hover.
+    // 'auto' = ciagly spin; 'freeze' = przypiety kat. Tylko debug.
+    var navBrand = document.querySelector('.nav .brand');
+    // mode/spd/dir/ang = override (własny rAF). hv/ha/sk/sc/dk = fizyka
+    // natywna → window.__SAW (czyta initSawBlade przez SP()). Defaulty hv..dk
+    // = SAW_DEF w initSawBlade → panel on z defaultami = zero zmiany.
+    var SAW_D = { mode:'native', spd:600, dir:'1', ang:0,
+                  hv:2000, ha:4500, sk:1.5, sc:2000, dk:1.7 };
+    var sm=document.getElementById('saw-mode'), sp=document.getElementById('saw-spd'),
+        sd=document.getElementById('saw-dir'), sa=document.getElementById('saw-ang'),
+        sh=document.getElementById('saw-hv'), sha=document.getElementById('saw-ha'),
+        ssk=document.getElementById('saw-sk'), ssc=document.getElementById('saw-sc'),
+        sdk=document.getElementById('saw-dk');
+    var sawRaf=null, sawAngle=0, sawLast=0;
+    function sawOut(){
+      document.getElementById('saw-spd-o').textContent=sp.value+'°/s';
+      document.getElementById('saw-ang-o').textContent=sa.value+'°';
+      document.getElementById('saw-hv-o').textContent=sh.value+'°/s';
+      document.getElementById('saw-ha-o').textContent=sha.value+'°/s²';
+      document.getElementById('saw-sk-o').textContent=(+ssk.value).toFixed(1);
+      document.getElementById('saw-sc-o').textContent=ssc.value+'°/s';
+      document.getElementById('saw-dk-o').textContent=(+sdk.value).toFixed(1);
+    }
+    function sawPhysics(){   // → window.__SAW (initSawBlade czyta na żywo)
+      window.__SAW = window.__SAW || {};
+      window.__SAW.HOVER_VEL   = +sh.value;
+      window.__SAW.HOVER_ACCEL = +sha.value;
+      window.__SAW.SCROLL_KICK = +ssk.value;
+      window.__SAW.SCROLL_CAP  = +ssc.value;
+      window.__SAW.DECAY_PER_S = +sdk.value;
+    }
+    function sawTick(t){
+      if(!navBrand || sm.value==='native'){ sawRaf=null; sawLast=0; return; }
+      if(!sawLast) sawLast=t; var dt=Math.min((t-sawLast)/1000,0.05); sawLast=t;
+      if(sm.value==='auto'){ sawAngle=(sawAngle + (+sd.value)*(+sp.value)*dt)%360; if(sawAngle<0) sawAngle+=360; }
+      else { sawAngle=+sa.value; }                       // freeze
+      navBrand.style.setProperty('--saw-angle', sawAngle.toFixed(2)+'deg');
+      var lv=document.getElementById('saw-live'); if(lv) lv.textContent=sawAngle.toFixed(0);
+      sawRaf=requestAnimationFrame(sawTick);
+    }
+    function sawEnsure(){ if(sm.value!=='native' && !sawRaf){ sawLast=0; sawRaf=requestAnimationFrame(sawTick); } }
+    function sawSync(){
+      sawOut(); sawPhysics();                            // fizyka zawsze aktywna
+      if(sm.value==='native'){ if(navBrand) navBrand.style.setProperty('--saw-angle','0deg');
+        var lv=document.getElementById('saw-live'); if(lv) lv.textContent='– (scroll/hover)'; }
+      else sawEnsure();
+    }
+    [sm,sp,sd,sa,sh,sha,ssk,ssc,sdk].forEach(function(el){ el.addEventListener('input', sawSync); el.addEventListener('change', sawSync); });
+    function sawSet(v){ sm.value=v.mode; sp.value=v.spd; sd.value=v.dir; sa.value=v.ang;
+      sh.value=v.hv; sha.value=v.ha; ssk.value=v.sk; ssc.value=v.sc; sdk.value=v.dk; sawSync(); }
+    panel.querySelector('[data-saw-reset]').addEventListener('click', function(){ sawSet(SAW_D); toast('reset piły'); });
+    panel.querySelector('[data-saw-copy]').addEventListener('click', function(){
+      clip('/* SAW — wklej do mnie (te 5 fizyki = stałe w initSawBlade) */\n'+
+        'override: tryb='+sm.value+(sm.value==='auto'?(' speed='+sp.value+'°/s dir='+(sd.value==='1'?'CW':'CCW')):'')+(sm.value==='freeze'?(' kąt='+sa.value+'°'):'')+'\n'+
+        'HOVER_VEL   = '+(+sh.value)+';\n'+
+        'HOVER_ACCEL = '+(+sha.value)+';   // rozpędzanie\n'+
+        'SCROLL_KICK = '+(+ssk.value).toFixed(1)+';\n'+
+        'SCROLL_CAP  = '+(+ssc.value)+';\n'+
+        'DECAY_PER_S = '+(+sdk.value).toFixed(1)+';');
+    });
+    sawSet(SAW_D);
+
+    // ══ TAB „Piła tło" — override .hero__logo (wielkie logo w tle hero) ════
+    // Osobny <style> z !important (bije reguly per-mode/media). NIE rusza
+    // committed CSS .hero__logo. Override transform NIE ruszany → keyframes
+    // slow-spin (translateY + rotate) i pozycja dzialaja; sterujemy tylko
+    // animation-duration/play-state, opacity, width. Tylko debug.
+    var hlOvr = document.getElementById('bgfx-hero-override');
+    var HL_D = { o:0.22, w:720, d:180, st:'run' };   // ~ stan w dark mode
+    var hlo=document.getElementById('hl-o'), hlw=document.getElementById('hl-w'),
+        hld=document.getElementById('hl-d'), hlst=document.getElementById('hl-st');
+    function hlApply(){
+      var o=+hlo.value, w=+hlw.value, d=+hld.value, st=hlst.value;
+      document.getElementById('hl-o-o').textContent=o.toFixed(2);
+      document.getElementById('hl-w-o').textContent=w+'px';
+      document.getElementById('hl-d-o').textContent=d+'s';
+      var css='.hero__logo{opacity:'+o+'!important;width:'+w+'px!important;';
+      css += (st==='none')
+        ? 'animation:none!important;'
+        : 'animation-duration:'+d+'s!important;animation-play-state:'+(st==='paused'?'paused':'running')+'!important;';
+      hlOvr.textContent = css + '}';
+    }
+    function hlSet(v){ hlo.value=v.o; hlw.value=v.w; hld.value=v.d; hlst.value=v.st; hlApply(); }
+    [hlo,hlw,hld,hlst].forEach(function(el){ el.addEventListener('input', hlApply); el.addEventListener('change', hlApply); });
+    panel.querySelector('[data-hl-reset]').addEventListener('click', function(){ hlSet(HL_D); toast('reset tła piły'); });
+    panel.querySelector('[data-hl-copy]').addEventListener('click', function(){
+      var o=(+hlo.value).toFixed(2), w=+hlw.value, d=+hld.value, st=hlst.value;
+      clip('/* .hero__logo — wklej do mnie (uwaga: opacity rozni sie per mode/media) */\n'+
+        'opacity: '+o+';\n'+
+        'width: '+w+'px;\n'+
+        (st==='none' ? 'animation: none;' : 'animation-duration: '+d+'s; /* '+st+' */')+'');
+    });
+    hlSet(HL_D);
+  })();
+  </script>
+  <!-- ===== /BGFX TEST PANEL ===== -->
 
 </body>
 </html>
